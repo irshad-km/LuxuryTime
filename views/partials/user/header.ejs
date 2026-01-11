@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luxury Time | Premium Collection</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d0d0d",
+                        "accent": "#C0C0C0",
+                        "background-dark": "#0E0E0E",
+                        "surface-dark": "#141414",
+                    },
+                    fontFamily: { "display": ["Manrope", "sans-serif"] }
+                },
+            },
+        }
+    </script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0E0E0E;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        @keyframes subtle-glow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            }
+
+            50% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        .hero-title {
+            animation: subtle-glow 5s infinite;
+        }
+
+        /* Custom selection color */
+        ::selection {
+            background: white;
+            color: black;
+        }
+    </style>
+</head>
+
+<body class="bg-background-dark text-white font-display overflow-x-hidden">
+    <header class="sticky top-0 z-50 w-full border-b border-white/10 bg-background-dark/80 backdrop-blur-md">
+        <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+
+            <!-- Logo -->
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-white text-3xl">watch</span>
+                <h1 class="text-xl font-bold tracking-[0.1em]">LUXURY TIME</h1>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center gap-10">
+                <a href="/" class="text-sm font-medium uppercase tracking-widest text-white">Home</a>
+                <a href="/shop"
+                    class="text-sm font-medium uppercase tracking-widest text-gray-300 hover:text-white transition-colors">
+                    Shop
+                </a>
+                <a href="/about"
+                    class="text-sm font-medium uppercase tracking-widest text-gray-300 hover:text-white transition-colors">
+                    About
+                </a>
+            </nav>
+
+            <!-- Right Side -->
+            <div class="flex items-center gap-4">
+
+                <% if (user) { %>
+                    <!-- Logged in user dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
+                            <span class="material-symbols-outlined text-2xl">account_circle</span>
+                            <span>
+                                <%= user.fullname %>
+                            </span>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div
+                            class="absolute right-0 mt-3 w-40 rounded-lg bg-surface-dark border border-white/10 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                            <a href="/profile"
+                                class="block px-4 py-2 text-sm hover:bg-white hover:text-black transition">
+                                My Profile
+                            </a>
+                            <a href="/orders"
+                                class="block px-4 py-2 text-sm hover:bg-white hover:text-black transition">
+                                My Orders
+                            </a>
+                            <form action="/logout" method="POST">
+                                <button type="submit"
+                                    class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white transition">
+                                    Logout
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+
+                    <% } else { %>
+                        <!-- Login & Signup buttons -->
+                        <a href="/login">
+                            <button
+                                class="border border-white px-5 py-2 text-xs font-bold uppercase rounded-full hover:bg-white hover:text-black transition-all">
+                                Login
+                            </button>
+                        </a>
+
+                        <a href="/signUp">
+                            <button
+                                class="bg-white px-5 py-2 text-xs font-bold uppercase text-black rounded-full hover:bg-gray-200 transition-all">
+                                Sign Up
+                            </button>
+                        </a>
+                        <% } %>
+
+            </div>
+        </div>
+    </header>

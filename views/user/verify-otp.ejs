@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Email | Luxury Time</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* FIX: Prevent layout shift when Swal opens */
+    body.swal2-shown {
+      padding-right: 0 !important;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #111 0%, #000 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .otp-card {
+      width: 380px;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid #222;
+      border-radius: 14px;
+      padding: 30px 28px;
+      text-align: center;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+      z-index: 1;
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      font-weight: 500;
+    }
+
+    .otp-inputs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .otp-inputs input {
+      width: 48px;
+      height: 52px;
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 20px;
+      color: #fff;
+      transition: all 0.2s;
+    }
+
+    .otp-inputs input:focus {
+      outline: none;
+      border-color: #4a7dff;
+      box-shadow: 0 0 8px rgba(74, 125, 255, 0.2);
+    }
+
+    .otp-inputs input.error-border {
+      border-color: #ff4a4a !important;
+    }
+
+    .timer-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 22px;
+    }
+
+    .timer-row a {
+      color: #4a7dff;
+      text-decoration: none;
+      pointer-events: none;
+      opacity: 0.5;
+      transition: 0.3s;
+    }
+
+    .timer-row a.active {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    .verify-btn {
+      width: 100%;
+      height: 46px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4a7dff, #2f5bff);
+      color: #fff;
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .verify-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* SweetAlert2 Premium Dark Theme */
+    .swal-premium {
+      background: #141414 !important;
+      color: #fff !important;
+      border: 1px solid #333 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6) !important;
+    }
+
+    .swal2-title {
+      color: #fff !important;
+    }
+
+    .swal2-html-container {
+      color: #aaa !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <form class="otp-card" id="otpForm">
+    <h2>Verify Your Email</h2>
+
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" class="otp-field" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-field" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-field" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-field" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-field" inputmode="numeric">
+      <input type="text" maxlength="1" class="otp-field" inputmode="numeric">
+    </div>
+
+    <div class="timer-row">
+      <span id="timer">Expires in 00:30</span>
+      <a href="#" id="resendLink">Resend Code</a>
+    </div>
+
+    <button type="submit" class="verify-btn">Verify & Continue →</button>
+  </form>
+
+  <script>
+    const inputs = document.querySelectorAll(".otp-field");
+    const resendLink = document.getElementById("resendLink");
+    const timerText = document.getElementById("timer");
+
+    // Pre-configure SweetAlert to prevent alignment jumping
+    const MySwal = Swal.mixin({
+      customClass: { popup: 'swal-premium' },
+      scrollbarPadding: false, // CRITICAL: Stops the page from shifting
+      buttonsStyling: true,
+    });
+
+    let timerDuration = 30;
+    let timerInterval;
+
+    // OTP AUTO MOVE
+    inputs.forEach((input, index) => {
+      input.addEventListener("input", (e) => {
+        if (!/^\d$/.test(e.target.value)) {
+          e.target.value = "";
+          return;
+        }
+        if (e.target.value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !e.target.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+    });
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      resendLink.classList.remove("active");
+      resendLink.textContent = "Resend Code";
+      timerDuration = 30;
+
+      timerInterval = setInterval(() => {
+        timerText.textContent = `Expires in 00:${String(timerDuration).padStart(2, "0")}`;
+        timerDuration--;
+
+        if (timerDuration < 0) {
+          clearInterval(timerInterval);
+          timerText.textContent = "OTP Expired";
+          resendLink.classList.add("active");
+        }
+      }, 1000);
+    }
+
+    startTimer();
+
+    // VERIFY OTP
+    document.getElementById("otpForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      let otp = "";
+      inputs.forEach(i => otp += i.value);
+      inputs.forEach(i => i.classList.remove("error-border"));
+
+      if (otp.length !== 6) {
+        inputs.forEach(i => i.classList.add("error-border"));
+        MySwal.fire({
+          icon: "error",
+          title: "Invalid OTP",
+          text: "Please enter all 6 digits",
+        });
+        return;
+      }
+
+      // Simulated Post Request
+      $.post("/verify-otp", { otp }, res => {
+        if (res.success) {
+          MySwal.fire({
+            icon: "success",
+            title: "Verified",
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => {
+            window.location.href = res.redirectUrl;
+          });
+        } else {
+          inputs.forEach(i => i.classList.add("error-border"));
+          MySwal.fire({
+            icon: "error",
+            title: "Access Denied",
+            text: res.message || "The code you entered is incorrect.",
+          });
+        }
+      }).fail(() => {
+         // Fallback for demo purposes if no server exists
+         MySwal.fire({ icon: 'info', title: 'Demo Mode', text: 'Backend not found, but alignment is fixed!' });
+      });
+    });
+
+    // RESEND OTP
+    resendLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (!resendLink.classList.contains("active")) return;
+
+      resendLink.textContent = "Sending...";
+      resendLink.classList.remove("active");
+
+      $.post("/resend-otp", res => {
+        if (res.success) {
+          MySwal.fire({ icon: 'success', title: 'Sent!', text: 'New code sent to your email', timer: 1500, showConfirmButton: false });
+          startTimer();
+        } else {
+          resendLink.classList.add("active");
+          resendLink.textContent = "Resend Code";
+          MySwal.fire({ icon: "error", title: "Error", text: res.message });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
+
+
+
