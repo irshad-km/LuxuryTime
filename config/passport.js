@@ -24,7 +24,7 @@ passport.use(
           fullname: profile.displayName,
           email: profile.emails[0].value,
           googleId: profile.id,
-          isVerified:true,
+          isVerified: true,
         });
 
         await user.save();
@@ -36,12 +36,12 @@ passport.use(
   )
 );
 
-// Serialize user
+
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-// Deserialize user
+
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);

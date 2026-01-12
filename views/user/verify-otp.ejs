@@ -19,7 +19,6 @@
       font-family: 'Poppins', sans-serif;
     }
 
-    /* FIX: Prevent layout shift when Swal opens */
     body.swal2-shown {
       padding-right: 0 !important;
     }
@@ -116,7 +115,7 @@
       transform: scale(0.98);
     }
 
-    /* SweetAlert2 Premium Dark Theme */
+
     .swal-premium {
       background: #141414 !important;
       color: #fff !important;
@@ -162,10 +161,10 @@
     const resendLink = document.getElementById("resendLink");
     const timerText = document.getElementById("timer");
 
-    // Pre-configure SweetAlert to prevent alignment jumping
+
     const MySwal = Swal.mixin({
       customClass: { popup: 'swal-premium' },
-      scrollbarPadding: false, // CRITICAL: Stops the page from shifting
+      scrollbarPadding: false, 
       buttonsStyling: true,
     });
 
@@ -249,7 +248,6 @@
           });
         }
       }).fail(() => {
-         // Fallback for demo purposes if no server exists
          MySwal.fire({ icon: 'info', title: 'Demo Mode', text: 'Backend not found, but alignment is fixed!' });
       });
     });
