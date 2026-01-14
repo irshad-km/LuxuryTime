@@ -1,29 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luxury Watches - My Profile</title>
-    
+    <title>Edit Profile | Luxury Watches</title>
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        /* Custom Premium Styles */
         :root {
             --accent-purple: #5b42f3;
-            --dark-surface: #1a1a1a;
-            --input-bg: #121212;
+            --dark-surface: #111111;
+            --input-bg: #1a1a1a;
             --border-color: #333333;
         }
 
         body {
-            background-color: black;
+            background-color: #070707;
             color: white;
             font-family: 'Inter', sans-serif;
+            margin: 0;
         }
 
-        /* Sidebar Navigation Items */
+        /* Sidebar Navigation */
         .nav-item {
             display: flex;
             align-items: center;
@@ -46,7 +47,7 @@
             border: 1px solid rgba(91, 66, 243, 0.2);
         }
 
-        /* Form Controls */
+        /* Form Styling */
         .label {
             display: block;
             font-size: 0.75rem;
@@ -61,56 +62,54 @@
             width: 100%;
             background: var(--input-bg);
             border: 1px solid var(--border-color);
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 14px 16px;
+            border-radius: 10px;
             color: white;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         .input-field:focus {
             border-color: var(--accent-purple);
+            background: #222;
         }
 
         /* Buttons */
         .btn-primary {
             background: var(--accent-purple);
-            padding: 12px 28px;
+            color: white;
+            padding: 14px 32px;
             border-radius: 10px;
             font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: transform 0.2s, opacity 0.2s;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            max-width: 280px;
         }
 
         .btn-primary:hover {
             opacity: 0.9;
             transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: #222;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-
-        .btn-secondary:hover {
-            background: #333;
+            box-shadow: 0 4px 15px rgba(91, 66, 243, 0.3);
         }
 
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-size: 0.875rem;
             color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             transition: all 0.2s;
+            text-decoration: none;
         }
 
         .btn-outline:hover {
@@ -118,23 +117,33 @@
             color: white;
         }
 
-        /* Custom Scrollbar for dark theme */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .profile-pic-container {
+            position: relative;
+            width: 112px;
+            height: 112px;
         }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
+
+        .edit-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--accent-purple);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--dark-surface);
+            cursor: pointer;
         }
     </style>
 </head>
+
 <body>
 
     <div class="flex min-h-screen">
-        <aside class="w-72 border-r border-gray-800 p-8 flex flex-col justify-between sticky top-0 h-screen">
+        <aside class="w-72 border-r border-gray-800 p-8 flex flex-col justify-between sticky top-0 h-screen bg-black">
             <div>
                 <div class="flex items-center gap-2 mb-12">
                     <i class="ph-bold ph-watch text-2xl text-[var(--accent-purple)]"></i>
@@ -144,8 +153,12 @@
                 <div class="flex items-center gap-3 mb-10">
                     <img src="<%= user.avatar %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">
                     <div>
-                        <h3 class="text-sm font-bold truncate w-32"><%= user.name %></h3>
-                        <p class="text-[10px] text-gray-500 uppercase tracking-wider"><%= user.membership %></p>
+                        <h3 class="text-sm font-bold truncate w-32">
+                            <%= user.name %>
+                        </h3>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-wider">
+                            <%= user.membership %>
+                        </p>
                     </div>
                 </div>
 
@@ -162,88 +175,84 @@
                     <a href="/address" class="nav-item">
                         <i class="ph ph-map-pin text-xl"></i> Address
                     </a>
-                    <a href="/refer" class="nav-item text-indigo-400">
-                        <i class="ph ph-crown text-xl"></i> Refer & Earn
-                    </a>
                 </nav>
             </div>
-            
-            <a href="/logout" class="flex items-center gap-2 text-gray-500 hover:text-red-400 transition text-sm font-medium">
+
+            <a href="/logout"
+                class="flex items-center gap-2 text-gray-500 hover:text-red-400 transition text-sm font-medium">
                 <i class="ph ph-sign-out text-xl"></i> Logout
             </a>
         </aside>
 
-        <main class="flex-1 p-16 bg-[#070707]">
-            <header class="mb-12">
-                <h1 class="text-4xl font-bold tracking-tight">My Profile</h1>
-                <p class="text-gray-500 mt-2">Manage your personal information and security settings.</p>
-            </header>
+        <main class="flex-1 p-16">
 
-            <section class="bg-[#111111] rounded-2xl p-10 max-w-5xl border border-gray-800 shadow-2xl">
-                
-                <div class="flex items-center gap-8 mb-12 pb-12 border-b border-gray-800">
-                    <div class="relative group">
-                        <img src="<%= user.avatar %>" class="w-28 h-28 rounded-full object-cover border-4 border-[#222]">
-                        <div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                            <i class="ph ph-camera text-2xl"></i>
+
+            <section
+                class="bg-[var(--dark-surface)] rounded-2xl p-12 max-w-4xl border border-gray-800 mx-auto shadow-2xl">
+
+                <form action="/update-profile" method="POST" enctype="multipart/form-data">
+                    <div class="flex flex-col items-center mb-12">
+                        <div class="profile-pic-container mb-4">
+                            <img src="<%= user.avatar %>"
+                                class="w-28 h-28 rounded-full object-cover border-4 border-[#222]">
+                            <label for="avatar-upload" class="edit-badge">
+                                <i class="ph ph-pencil-simple text-white text-sm"></i>
+                            </label>
+                            <input type="file" id="avatar-upload" name="avatar" class="hidden">
                         </div>
+                        <h1 class="text-3xl font-bold">Edit Profile</h1>
                     </div>
-                    <div>
-                        <h2 class="text-3xl font-bold"><%= user.name %></h2>
-                        <p class="text-gray-400 mb-5 text-lg"><%= user.email %></p>
-                        <div class="flex gap-4">
-                            <button class="btn-secondary">Upload New Photo</button>
-                            <button class="btn-outline">Remove</button>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="label">Full Name</label>
+                            <input type="text" name="name" value="<%= user.fullname %>" class="input-field"
+                                placeholder="Alexander Pierce" readonly>
                         </div>
-                    </div>
-                </div>
 
-                <form action="/profile/update" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="md:col-span-2">
-                        <label class="label">Full Name</label>
-                        <input type="text" name="name" value="<%= user.name %>" class="input-field" placeholder="Enter your full name">
-                    </div>
-
-                    <div>
-                        <label class="label">Phone Number</label>
-                        <input type="text" name="phone" value="<%= user.phone %>" class="input-field" placeholder="+1 (000) 000-0000">
-                    </div>
-
-                    <div>
-                        <label class="label">Email Address</label>
-                        <input type="email" name="email" value="<%= user.email %>" class="input-field" placeholder="email@example.com">
-                    </div>
-
-                    <div>
-                        <label class="label">Date of Birth</label>
-                        <input type="date" name="dob" value="<%= user.dob %>" class="input-field">
-                    </div>
-
-                    <div>
-                        <label class="label">Gender</label>
-                        <select name="gender" class="input-field appearance-none">
-                            <option value="Male" <%= user.gender === 'Male' ? 'selected' : '' %>>Male</option>
-                            <option value="Female" <%= user.gender === 'Female' ? 'selected' : '' %>>Female</option>
-                            <option value="Other" <%= user.gender === 'Other' ? 'selected' : '' %>>Other</option>
-                        </select>
-                    </div>
-
-                    <div class="md:col-span-2 mt-8">
-                        <h3 class="text-sm font-bold uppercase tracking-widest text-gray-600 mb-6">Security Settings</h3>
-                        <div class="flex flex-wrap gap-4">
-                            <button type="button" class="btn-outline flex items-center gap-2">
-                                <i class="ph ph-lock"></i> Change Password
-                            </button>
-                            <button type="button" class="btn-outline flex items-center gap-2">
-                                <i class="ph ph-envelope-simple"></i> Change Email
-                            </button>
+                        <div>
+                            <label class="label">Phone Number</label>
+                            <input type="text" name="phone" value="<%= user.phone  %>" class="input-field"
+                                placeholder="+1 (555) 012-3456" readonly>
                         </div>
-                    </div>
 
-                    <div class="md:col-span-2 mt-10">
-                        <button type="submit" class="btn-primary">
-                            Save Changes <i class="ph-bold ph-check"></i>
-                        </button>
+                        <div>
+                            <label class="label">Email Address</label>
+                            <input type="email" name="email" value="<%= user.email %>" class="input-field" readonly readonly>
+                        </div>
+
+                        <div>
+                            <label class="label">Gender</label>
+                            <select name="gender" class="input-field bg-gray-900/50 cursor-not-allowed" >
+                                <option value="Male" <%=user.gender==='Male' ? 'selected' : '' %>>Male</option>
+                                <option value="Female" <%=user.gender==='Female' ? 'selected' : '' %>>Female</option>
+                            </select>
+
+                            <input type="hidden" name="gender" value="<%= user.gender %>">
+                        </div>
+
+                        <div>
+                            <label class="label">Date of Birth</label>
+                            <input type="date" name="dob" value="<%= user.dob %>" class="input-field" >
+                        </div>
+
+                        <div class="md:col-span-2 mt-8">
+                            <h3 class="label mb-4">Security</h3>
+                            <div class="flex gap-4">
+                                <a href="/change-password" class="btn-outline">
+                                    <i class="ph ph-lock"></i> Change Password
+                                </a>
+                                <a href="/change-email" class="btn-outline">
+                                    <i class="ph ph-envelope"></i> Change Email
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2 mt-12 flex flex-col items-center">
+                            <a href="/edit-profile" class="btn-primary">
+                                Edit Profile <i class="ph-bold ph-check"></i>
+                            </a>
+                        </div>
                     </div>
                 </form>
             </section>
@@ -251,4 +260,5 @@
     </div>
 
 </body>
+
 </html>

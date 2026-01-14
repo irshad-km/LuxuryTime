@@ -1,3 +1,4 @@
+import { loadAddress } from "../controllers/user/userController.js";
 import User from "../models/userSchema.js";
 
 const requireLogin = async (req, res, next) => {
@@ -9,9 +10,15 @@ const requireLogin = async (req, res, next) => {
     }
 
     const user = await User.findById(loggedUser._id || loggedUser.id);
+
     if (!user) {
       req.session.destroy(() => { });
       return res.redirect("/login");
+    }
+
+    if (user.isBlocked) {
+      req.session.destroy(() => { });
+      return res.redirect("/login")
     }
 
     res.locals.user = user;

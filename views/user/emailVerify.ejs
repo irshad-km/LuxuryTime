@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email | Luxury Watches</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #141414;
+            --primary-purple: #6366f1;
+            --text-white: #ffffff;
+            --text-gray: #a0a0a0;
+            --input-bg: #1f1f1f;
+            --border-color: #2a2a2a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Header */
+        header {
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo { font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-size: 18px; }
+        .nav-links { display: flex; gap: 30px; font-size: 14px; color: var(--text-gray); }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Ambient Glow Effect (Matches your screenshot) */
+        .ambient-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: 0;
+        }
+
+        .verify-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            padding: 45px 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Shield Icon Header */
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 25px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .icon-circle i { color: var(--primary-purple); font-size: 24px; }
+
+        h2 { font-size: 26px; margin-bottom: 12px; font-weight: 600; }
+        .subtitle { font-size: 14px; color: var(--text-gray); margin-bottom: 35px; line-height: 1.6; }
+
+        /* Form Styling */
+        .form-group { text-align: left; margin-bottom: 25px; }
+        label { display: block; font-size: 11px; color: var(--text-gray); letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600; }
+
+        .input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box i.prefix-icon { position: absolute; left: 16px; color: #444; font-size: 16px; }
+        .input-box i.suffix-icon { position: absolute; right: 16px; color: #444; font-size: 16px; }
+
+        input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px 45px;
+            color: var(--text-white);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus { border-color: var(--primary-purple); background: #252525; }
+
+        /* Button Styling */
+        .btn-send {
+            width: 100%;
+            background: var(--primary-purple);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-send:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+
+        /* Footer links */
+        .footer-note { font-size: 12px; color: #555; margin-top: 25px; padding-top: 20px; border-top: 1px solid #1a1a1a; }
+        .resend-text { margin-top: 20px; font-size: 13px; color: var(--text-gray); }
+        .resend-text span { color: #555; font-weight: 600; }
+
+        .error-msg { color: #f87171; font-size: 13px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Luxury Watches</div>
+        <div class="nav-links">
+            <span>Home</span>
+            <span>Shop</span>
+            <span>About</span>
+        </div>
+        <div class="nav-icons" style="display: flex; gap: 20px;">
+            <i class="fa-regular fa-heart"></i>
+            <i class="fa-solid fa-bag-shopping"></i>
+            <i class="fa-regular fa-user"></i>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="ambient-glow"></div>
+
+        <div class="verify-card">
+            <div class="icon-circle">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <h2>Verify Your Current Email</h2>
+            <p class="subtitle">We need to confirm your identity. An OTP will be sent to your registered email address.</p>
+
+            <% if (locals.error) { %>
+                <div class="error-msg"><%= error %></div>
+            <% } %>
+
+            <form action="/change-email" method="POST">
+                <div class="form-group">
+                    <label>CURRENT EMAIL ADDRESS</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope prefix-icon"></i>
+                        <input type="email" name="newEmail" value="<%= userEmail %>" readonly placeholder="email@example.com">
+                        <i class="fa-solid fa-lock suffix-icon"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-send">
+                    Send OTP <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="footer-note">
+                Secure verification powered by LuxTime Auth
+            </div>
+
+            <div class="resend-text">
+                Didn't receive OTP? <span>Resend (00:30)</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

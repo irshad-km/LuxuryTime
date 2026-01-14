@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
       default: null,
-      sparse:true,
+      sparse: true,
     },
     googleId: {
       type: String,
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required:false,
+      required: false,
     },
     isVerified: {
       type: Boolean,

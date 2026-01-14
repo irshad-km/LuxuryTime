@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management | Admin</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-deep: #070707;
+            --surface: #111111;
+            --accent-blue: #0061ff;
+            --border: #222222;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .sidebar-item.active {
+            background: rgba(0, 97, 255, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(0, 97, 255, 0.2);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Toggle Switch Styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent-blue);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(14px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="flex min-h-screen">
+
+        <!-- Sidebar -->
+        <%- include('../partials/admin/sidebar') %>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-10 bg-[#070707]">
+                <div class="max-w-7xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold">Customer Management</h1>
+                            <p class="text-gray-500 text-sm mt-1">Manage your customers and view their details</p>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <i
+                                    class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                                <input id="searchInput" type="text" placeholder="Search by name, email, phone..."
+                                    class="bg-[#1a1a1a] border border-[#333] rounded-lg py-2 pl-10 pr-4 text-sm w-80 focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <button id="searchBtn"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                                <i class="ph ph-magnifying-glass"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Table -->
+                    <div class="bg-[#111] border border-[#222] rounded-2xl overflow-hidden shadow-2xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="border-b border-[#222] bg-[#161616]">
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                            Customer ID</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Name
+                                        </th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email
+                                        </th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone
+                                        </th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status
+                                        </th>
+                                        <th
+                                            class="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
+                                            Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-[#222]">
+                                    <% users.forEach(user=> { %>
+                                        <tr class="hover:bg-white/5 transition-colors">
+                                            <td class="p-4 text-sm font-mono text-gray-400">#CUS-<%= user._id %>
+                                            </td>
+                                            <td class="p-4 text-sm font-semibold">
+                                                <%= user.fullname %>
+                                            </td>
+                                            <td class="p-4 text-sm text-gray-400">
+                                                <%= user.email %>
+                                            </td>
+                                            <td class="p-4 text-sm text-gray-400">
+                                                <%= user.phone %>
+                                            </td>
+                                            <td class="p-4">
+                                                <span
+                                                    class="status-badge <%= user.status==='Active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20' %>">
+                                                    <i
+                                                        class="ph-fill <%= user.status==='Active' ? 'ph-circle text-[6px]' : 'ph-prohibit text-[12px]' %>"></i>
+                                                    <%= user.status %>
+                                                </span>
+                                            </td>
+                                            <td class="p-4 text-right">
+                                                <label class="switch">
+                                                    <input type="checkbox"
+                                                     <%=!user.isBlocked ? 'checked' : ''%>
+                                                    onchange="toggleStatus('<%= user._id %>', this)">
+                                                        <span class="slider"></span>
+                                                </label>
+                                            </td>
+
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="p-4 flex items-center justify-between border-t border-[#222] bg-[#161616]">
+                            <span class="text-xs text-gray-500">Showing 1-<%= users.length %> of <%= totalUsers %>
+                                        customers</span>
+                            <div class="flex items-center gap-1">
+                                <% for(let i=1;i<=totalPages;i++){ %>
+                                    <button
+                                        class="w-8 h-8 <%= i===currentPage ? 'bg-blue-600 text-white' : 'hover:bg-white/5 text-gray-500' %> rounded-md text-xs font-bold">
+                                        <%= i %>
+                                    </button>
+                                    <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            tableRows.forEach(row => {
+                const name = row.cells[1].textContent.toLowerCase();
+                const email = row.cells[2].textContent.toLowerCase();
+                const phone = row.cells[3].textContent.toLowerCase();
+                row.style.display = (name.includes(query) || email.includes(query) || phone.includes(query)) ? '' : 'none';
+            });
+        });
+
+        // Toggle user block/unblock
+
+        async function toggleStatus(userId, checkbox) {
+            const originalState = !checkbox.checked;
+
+            try {
+                const response = await fetch(`/admin/users/${userId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const row = checkbox.closest('tr');
+                    const badge = row.querySelector('.status-badge');
+
+                    // data.isBlocked comes from the database
+                    if (data.isBlocked) {
+                        badge.className = 'status-badge bg-red-500/10 text-red-500 border border-red-500/20';
+                        badge.innerHTML = '<i class="ph-fill ph-prohibit text-[12px]"></i> Blocked';
+                        checkbox.checked = false; // Slider to left (Blocked)
+                    } else {
+                        badge.className = 'status-badge bg-green-500/10 text-green-500 border border-green-500/20';
+                        badge.innerHTML = '<i class="ph-fill ph-circle text-[6px]"></i> Active';
+                        checkbox.checked = true; // Slider to right (Active)
+                    }
+                } else {
+                    alert("Error: " + data.message);
+                    checkbox.checked = originalState;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Server error - could not update status");
+                checkbox.checked = originalState; // Revert toggle
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>

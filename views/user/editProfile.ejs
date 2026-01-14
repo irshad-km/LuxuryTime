@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile | Luxury Watches</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-dark: #161616;
+            --input-bg: #1f1f1f;
+            --accent-purple: #5b42f3;
+            --text-gray: #a0a0a0;
+            --white: #ffffff;
+            --border-color: #2a2a2a;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Navbar Styling */
+        nav {
+            width: 100%;
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            border-bottom: 1px solid #222;
+        }
+
+        .logo {
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+        }
+
+        .nav-icons i {
+            margin-left: 20px;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        /* Main Container */
+        .wrapper {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .back-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--white);
+        }
+
+        .card {
+            background-color: var(--card-dark);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #222;
+        }
+
+        /* Profile Image Section */
+        .profile-pic-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px auto;
+        }
+
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #333;
+        }
+
+        .edit-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--accent-purple);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            border: 2px solid var(--card-dark);
+            color: white;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        /* Form Styling */
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-purple);
+        }
+
+        /* Button Layout */
+        .button-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 14px;
+            background-color: transparent;
+            color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-size: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-gray);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        footer {
+            margin-top: 50px;
+            color: #444;
+            font-size: 11px;
+            padding-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">⌚ LUXURY WATCHES</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shop">Shop</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="nav-icons">
+            <i class="fa-regular fa-heart"></i>
+            <i class="fa-solid fa-bag-shopping"></i>
+            <i class="fa-regular fa-user"></i>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+
+
+        <div class="card">
+            <div class="profile-pic-container">
+                <img src="<%= user.avatar || '/default-avatar.png' %>" alt="Profile" class="profile-pic">
+                <label for="file-upload" class="edit-badge">
+                    <i class="fa-solid fa-pen"></i>
+                </label>
+            </div>
+
+            <h1>Edit Profile</h1>
+
+            <form action="/edit-profile" method="POST">
+                <input id="file-upload" type="file" name="avatar" style="display:none;">
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="fullname" value="<%= user.fullname %>" placeholder="Alexander Pierce"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" value="<%= user.phone %>" placeholder="+1 (555) 012-3456">
+                </div>
+
+                <div class="button-stack">
+                    <button type="submit" class="btn-primary">
+                        Save Changes <i class="fa-solid fa-check"></i>
+                    </button>
+
+                    <a href="/profile" class="btn-secondary"style=" margin-left: -18px;">
+                        <i class="fa-solid fa-user"></i> Back to Profile
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <footer>
+        © 2026 Luxe Watches Inc. All rights reserved.
+    </footer>
+
+</body>
+
+</html>

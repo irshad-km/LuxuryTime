@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Your Email | Luxury Watches</title>
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --card-bg: #1a1a1a;
+            --accent-blue: #6384f7;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Navbar Simulation */
+        nav {
+            width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .logo { font-weight: bold; letter-spacing: 1px; }
+
+        /* Main Card */
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            margin-top: 100px;
+            text-align: left;
+        }
+
+        h1 { font-size: 24px; margin-bottom: 10px; }
+        
+        .description {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-continue:hover { opacity: 0.9; }
+
+        .btn-cancel {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">⌚ LUXURY WATCHES</div>
+        <div>
+            <a href="/" style="color: white; margin-right: 20px; text-decoration: none;">Home</a>
+            <a href="/shop" style="color: white; text-decoration: none;">Shop</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Change Your Email</h1>
+        <p class="description">
+            Enter your new email address below. We'll send a verification code to it.<br>
+            <strong>Current Email:</strong> <%= user.maskedEmail %>
+        </p>
+
+        <form action="/change-new-email" method="POST">
+            <div class="form-group">
+                <label for="newEmail">New Email Address</label>
+                <input type="email" id="newEmail" name="newEmail" placeholder="Enter your new email" required>
+            </div>
+
+            <button type="submit" class="btn-continue">Continue</button>
+            <a href="/profile" class="btn-cancel">Cancel</a>
+        </form>
+    </div>
+
+</body>
+</html>

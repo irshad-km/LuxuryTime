@@ -7,42 +7,66 @@ import passport from "passport";
 
 const router = express.Router();
 
-// --------------------- HOME ---------------------
+//  HOME 
 router.get("/", userController.loadHomepage);
 
-// --------------------- AUTH PAGES ---------------------
+// AUTH PAGES 
 router.get("/login", guestOnly, userController.loadLoginpage);
 router.get("/signUp", guestOnly, userController.loadSignup);
 router.get("/profile", requireLogin, userController.loadProfile);
-router.get("/newpass",userController.loadnewPassword)
+router.get("/newpass", userController.loadnewPassword)
 
-// --------------------- SIGNUP FLOW ---------------------
+// SIGNUP FLOW 
 router.post("/signUp", userController.signUp);
 
-// --------------------- OTP FLOW (Signup & Forgot) ---------------------
-// Use same route for both flows
+//  OTP FLOW (Signup & Forgot) 
 router.get("/verify-otp", userController.loadVerifyOtp);
 router.post("/verify-otp", userController.verifyOtp);
 router.post("/resend-otp", userController.resendotp);
 
-// --------------------- LOGIN ---------------------
+//  LOGIN 
 router.post("/login", userController.login);
 
-// --------------------- FORGOT PASSWORD ---------------------
+// FORGOT PASSWORD 
 router.get("/forgot-password", guestOnly, userController.loadForgotPassword);
 router.post("/forgot-password", userController.sendForgotOtp);
 
-router.post("/newpass",userController.updatePassword)
+//CHANGE PASSWORD
+router.get("/change-password", requireLogin, userController.loadChangePassword)
+router.post("/change-password", requireLogin, userController.updatePasswordProfile)
 
-// --------------------- LOGOUT ---------------------
+//CHANGE EMAIL
+router.get("/change-email", requireLogin, userController.loadChangeEmail)
+router.post("/change-email", requireLogin, userController.sendChangeEmailOtp);
+
+//SET NEW EMAIL
+router.get("/change-new-email", requireLogin, userController.loadChangenewEmail)
+router.post("/change-new-email", requireLogin, userController.sendChangenewEmailOtp);
+
+// EDIT PROFILE
+router.get("/edit-profile", requireLogin, userController.loadEditProfile),
+  router.post("/edit-profile", requireLogin, userController.updateProfile);
+
+//ADDRESS
+router.get("/address", requireLogin, userController.loadAddress);
+router.post("/address/add", requireLogin, userController.addAddress)
+router.post("/address/edit", requireLogin, userController.updateAddress);
+router.post("/address/delete/:id",requireLogin,userController.deleteAddress)
+
+
+
+router.post("/newpass", userController.updatePassword)
+
+// LOGOUT 
 router.post("/logout", requireLogin, userController.logout);
 
-// --------------------- GOOGLE AUTH ---------------------
+// GOOGLE AUTH 
 router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"], prompt: "select_account" })
 );
 
+//GOOGLE AUTH CALL
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/signUp" }),

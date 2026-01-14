@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import session from "express-session";
+import morgan from "morgan"
 import passport from "./config/passport.js"
 import noCache from "./middlewares/no-cache.js";
 import dotenv from "dotenv";
@@ -9,10 +10,13 @@ import { fileURLToPath } from "url";
 
 import connectDB from "./config/db.js";
 import userRouter from "./routes/userRouter.js";
+import adminRouter from "./routes/adminRouter.js"
 
 dotenv.config();
 
 const app = express();
+
+app.use(morgan("dev"))
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,6 +63,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 app.use("/", userRouter);
+app.use("/admin",adminRouter);
 
 
 const PORT = process.env.PORT || 3000;

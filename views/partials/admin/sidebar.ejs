@@ -1,0 +1,101 @@
+<!-- PHOSPHOR ICONS (LOAD ONCE) -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+<style>
+    body {
+        background-color: #0a0a0a;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        color: #9ca3af;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .sidebar-item:hover {
+        background-color: #1a1a1a;
+        color: #ffffff;
+    }
+
+    .sidebar-item.active {
+        background-color: #2563eb;
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .sidebar-item i {
+        font-size: 18px;
+    }
+</style>
+
+<aside class="w-64 min-h-screen bg-[#0b0b0b] border-r border-[#222] p-6">
+    <!-- Project Logo / Name -->
+    <div class="mb-6 flex flex-col items-center">
+        <!-- If you have a logo image -->
+
+        <!-- Or just project name if no image -->
+        <h1 class="text-2xl font-bold tracking-wide text-white">Luxury Time</h1>
+    </div>
+
+    <!-- Admin Panel heading -->
+    <div class="mb-8 text-center">
+        <h2 class="text-xl font-bold tracking-wide">Admin Panel</h2>
+        <p class="text-xs text-gray-500 mt-1">Manage your dashboard</p>
+    </div>
+
+    <!-- Sidebar nav -->
+    <nav class="space-y-2">
+        <a href="/admin/dashboard" class="sidebar-item <%= activePage === 'dashboard' ? 'active' : '' %>">
+            <i class="ph ph-gauge"></i> Dashboard
+        </a>
+
+        <a href="/admin/orders" class="sidebar-item <%= activePage === 'orders' ? 'active' : '' %>">
+            <i class="ph ph-shopping-cart"></i> Orders
+        </a>
+
+        <a href="/admin/products" class="sidebar-item <%= activePage === 'products' ? 'active' : '' %>">
+            <i class="ph ph-package"></i> Products
+        </a>
+
+        <a href="/admin/users" class="sidebar-item <%= activePage === 'users' ? 'active' : '' %>">
+            <i class="ph ph-users"></i> Customers
+        </a>
+
+        <a href="/admin/sales-report" class="sidebar-item <%= activePage === 'sales' ? 'active' : '' %>">
+            <i class="ph ph-chart-line-up"></i> Sales Report
+        </a>
+
+        <a href="/admin/coupons" class="sidebar-item <%= activePage === 'coupons' ? 'active' : '' %>">
+            <i class="ph ph-ticket"></i> Coupons
+        </a>
+
+        <a href="/admin/settings" class="sidebar-item <%= activePage === 'settings' ? 'active' : '' %>">
+            <i class="ph ph-gear"></i> Settings
+        </a>
+    </nav>
+</aside>
+
+
+<script>
+    // Get current path
+    const currentPath = window.location.pathname;
+
+    // Select all sidebar links
+    const sidebarLinks = document.querySelectorAll('.sidebar-item');
+
+    sidebarLinks.forEach(link => {
+        // Check if link's href matches the current path
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+</script>
