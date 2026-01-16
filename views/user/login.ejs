@@ -1,123 +1,175 @@
 <%- include('../partials/user/header') %>
 
-  <body class="font-display text-white bg-black overflow-hidden">
+<body class="font-display text-white bg-black overflow-hidden">
 
-    
-    <div class="relative min-h-screen w-full overflow-hidden">
+  <div class="relative min-h-screen w-full overflow-hidden">
 
-      <!-- BACKGROUND IMAGE -->
-      <div class="absolute inset-0 bg-center bg-cover bg-no-repeat opacity-25"
-        style="background-image: url('/images/back.png');">
-      </div>
-
-     
-      <div class="absolute inset-0 bg-black/55"></div>
-
-      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black"></div>
-
-      
-      <main class="relative z-10 flex items-center justify-center min-h-screen px-4">
-
-        <!-- LOGIN CARD -->
-        <div
-          class="w-full max-w-[420px] bg-[#0b0b0b]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
-
-          <!-- HEADER -->
-          <div class="px-8 pt-10 pb-6 text-center">
-            <div
-              class="w-14 h-14 mx-auto mb-6 rounded-xl bg-[#3e3efa]/15 border border-[#3e3efa]/30 flex items-center justify-center">
-              <span class="material-symbols-outlined text-[#3e3efa] text-[30px]">watch</span>
-            </div>
-
-            <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
-            <p class="text-slate-400 text-sm">Log in to continue</p>
-
-            <% if (typeof error !=='undefined' && error) { %>
-              <p class="mt-4 text-red-400 text-xs font-semibold bg-red-500/10 py-2 rounded-lg">
-                <%= error %>
-              </p>
-              <% } %>
-          </div>
-
-          <!-- BODY -->
-          <div class="px-8 pb-8">
-
-            <!-- GOOGLE LOGIN -->
-            <button onclick="window.location.href='/auth/google'"
-              class="w-full flex items-center justify-center gap-3 bg-white text-black font-semibold h-12 rounded-lg hover:bg-gray-200 transition">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
-              Sign in with Google
-            </button>
-
-           
-            <div class="flex items-center my-6">
-              <div class="flex-grow border-t border-white/10"></div>
-              <span class="mx-4 text-xs text-slate-500 uppercase">or</span>
-              <div class="flex-grow border-t border-white/10"></div>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <form action="/login" method="POST" class="space-y-5">
-
-              <div>
-                <label class="text-xs font-semibold text-slate-300 ml-1">Email</label>
-                <input name="email" type="email" required placeholder="name@example.com"
-                  class="w-full mt-1 bg-black/60 border border-white/10 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#3e3efa] outline-none">
-              </div>
-
-              <div>
-                <label class="text-xs font-semibold text-slate-300 ml-1">Password</label>
-                <div class="relative mt-1">
-                  <input name="password" id="password" type="password" required placeholder="••••••••"
-                    class="w-full bg-black/60 border border-white/10 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#3e3efa] outline-none">
-                  <button type="button" onclick="togglePassword()"
-                    class="absolute right-3 top-3 text-slate-500 hover:text-white">
-                    <span class="material-symbols-outlined" id="eye-icon">visibility</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="flex justify-end">
-                <a href="/forgot-password" class="text-xs text-slate-400 hover:text-[#3e3efa]">
-                  Forgot password?
-                </a>
-              </div>
-
-              <button class="w-full py-3 rounded-lg font-bold text-sm shadow-lg transition" style="background:#3e3efa">
-                Log In
-              </button>
-
-            </form>
-          </div>
-
-          <!-- FOOTER -->
-          <div class="px-8 py-5 border-t border-white/10 text-center">
-            <p class="text-sm text-slate-400">
-              Don't have an account?
-              <a href="/signup" class="text-[#3e3efa] font-bold hover:underline ml-1">
-                Sign Up
-              </a>
-            </p>
-          </div>
-
-        </div>
-      </main>
+    <div class="absolute inset-0 bg-center bg-cover bg-no-repeat opacity-25"
+      style="background-image: url('/images/back.png');">
     </div>
 
-    <script>
-      function togglePassword() {
-        const input = document.getElementById('password');
-        const icon = document.getElementById('eye-icon');
-        if (input.type === 'password') {
-          input.type = 'text';
-          icon.innerText = 'visibility_off';
-        } else {
-          input.type = 'password';
-          icon.innerText = 'visibility';
-        }
+    <div class="absolute inset-0 bg-black/55"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black"></div>
+
+    <main class="relative z-10 flex items-center justify-center min-h-screen px-4">
+
+      <div class="w-full max-w-[420px] bg-[#0b0b0b]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+
+        <div class="px-8 pt-10 pb-4 text-center">
+          <div
+            class="w-14 h-14 mx-auto mb-6 rounded-xl bg-[#3e3efa]/15 border border-[#3e3efa]/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#3e3efa] text-[30px]">watch</span>
+          </div>
+
+          <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
+          <p class="text-slate-400 text-sm">Log in to continue</p>
+
+          <% if (typeof error !=='undefined' && error) { %>
+            <p id="backend-error" class="mt-4 text-red-400 text-xs font-semibold bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+              <%= error %>
+            </p>
+          <% } %>
+        </div>
+
+        <div class="px-8 pb-8">
+
+          <button onclick="window.location.href='/auth/google'"
+            class="w-full flex items-center justify-center gap-3 bg-white text-black font-semibold h-12 rounded-lg hover:bg-gray-200 transition">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
+            Sign in with Google
+          </button>
+
+          <div class="flex items-center my-6">
+            <div class="flex-grow border-t border-white/10"></div>
+            <span class="mx-4 text-xs text-slate-500 uppercase">or</span>
+            <div class="flex-grow border-t border-white/10"></div>
+          </div>
+
+          <form id="loginForm" action="/login" method="POST" class="space-y-4" novalidate>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-300 ml-1">Email</label>
+              <input name="email" id="email" type="email" placeholder="name@example.com"
+                class="w-full mt-1 bg-black/60 border border-white/10 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#3e3efa] outline-none transition-all">
+              <p id="emailError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-300 ml-1">Password</label>
+              <div class="relative mt-1">
+                <input name="password" id="password" type="password" placeholder="••••••••"
+                  class="w-full bg-black/60 border border-white/10 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#3e3efa] outline-none transition-all">
+                <button type="button" onclick="togglePassword()"
+                  class="absolute right-3 top-3 text-slate-500 hover:text-white transition-colors">
+                  <span class="material-symbols-outlined" id="eye-icon">visibility</span>
+                </button>
+              </div>
+              <p id="passwordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+            </div>
+
+            <div class="flex justify-end !mt-1">
+              <a href="/forgot-password" class="text-xs text-slate-400 hover:text-[#3e3efa] transition-colors">
+                Forgot password?
+              </a>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-lg font-bold text-sm shadow-lg transition active:scale-[0.98] !mt-6" style="background:#3e3efa">
+              Log In
+            </button>
+
+          </form>
+        </div>
+
+        <div class="px-8 py-5 border-t border-white/10 text-center">
+          <p class="text-sm text-slate-400">
+            Don't have an account?
+            <a href="/signup" class="text-[#3e3efa] font-bold hover:underline ml-1">
+              Sign Up
+            </a>
+          </p>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Password Toggle Logic
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerText = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.innerText = 'visibility';
       }
-    </script>
+    }
 
-  </body>
+    // Input Validation Logic
+    const form = document.getElementById("loginForm");
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
 
-  </html>
+    const emailError = document.getElementById("emailError");
+    const passwordError = document.getElementById("passwordError");
+    const backendError = document.getElementById("backend-error");
+
+    function validateEmail(emailVal) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+    }
+
+    form.addEventListener("submit", function (e) {
+      let isValid = true;
+
+      // Email validation
+      if (email.value.trim() === "") {
+        emailError.textContent = "Email is required";
+        email.classList.add("border-red-500/50");
+        isValid = false;
+      } else if (!validateEmail(email.value.trim())) {
+        emailError.textContent = "Please enter a valid email";
+        email.classList.add("border-red-500/50");
+        isValid = false;
+      } else {
+        emailError.textContent = "";
+        email.classList.remove("border-red-500/50");
+      }
+
+      // Password validation
+      if (password.value.trim() === "") {
+        passwordError.textContent = "Password is required";
+        password.classList.add("border-red-500/50");
+        isValid = false;
+      } else if (password.value.length < 6) {
+        passwordError.textContent = "Minimum 6 characters required";
+        password.classList.add("border-red-500/50");
+        isValid = false;
+      } else {
+        passwordError.textContent = "";
+        password.classList.remove("border-red-500/50");
+      }
+
+      if (!isValid) {
+        e.preventDefault();
+      }
+    });
+
+    // Remove errors in real-time while typing
+    [email, password].forEach(input => {
+      input.addEventListener("input", function() {
+        const errorElement = this.id === "email" ? emailError : passwordError;
+        errorElement.textContent = "";
+        this.classList.remove("border-red-500/50");
+        
+        // Hide backend error when user tries to correct input
+        if (backendError) {
+          backendError.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

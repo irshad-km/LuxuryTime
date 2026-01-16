@@ -1,40 +1,31 @@
-
 import User from "../../models/userSchema.js";
 import bcrypt from "bcrypt";
 
-/* ===============================
-    LOAD ADMIN LOGIN PAGE
-================================ */
+
 const loadLoginPage = async (req, res) => {
     try {
-        // If already logged in, go to dashboard
-        if (req.session.adminId) {
+        if (req.session.admin) {
             return res.redirect("/admin/dashboard");
         }
         res.render("admin/adminLogin", { error: null });
     } catch (error) {
-        console.error("Load Login Page Error:", error);
+        console.log(error);
         res.status(500).send("Server Error");
     }
 };
 
-/* ===============================
-    ADMIN LOGIN
-================================ */
 const login = async (req, res) => {
     try {
+          
         const { email, password } = req.body;
 
-        // Find user who is marked as admin
         const admin = await User.findOne({ email, isAdmin: true });
-
         if (!admin) {
             return res.render("admin/adminLogin", {
                 error: "Invalid email or password",
             });
         }
 
-        // Secure password comparison
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) {
             return res.render("admin/adminLogin", {
@@ -42,76 +33,99 @@ const login = async (req, res) => {
             });
         }
 
-        // Initialize session
-        req.session.adminId = admin._id;
-        res.redirect("/admin/dashboard");
+        req.session.admin = {
+            _id: admin._id,
+            email: admin.email,
+            isAdmin: true,
+        };
+        console.log("success work")
 
+        return res.redirect("/admin/dashboard");
     } catch (error) {
-        console.error("Admin login error:", error);
+        console.log("Admin login error:", error);
         res.status(500).send("Server Error");
     }
 };
 
-/* ===============================
-    LOAD DASHBOARD
-================================ */
+/**
+ * --- ADMIN LOGOUT ---
+ * Destroys the admin session and clears the specific admin cookie.
+ */
+const logout = (req, res) => {
+    delete req.session.admin;
+    res.clearCookie("LuxuryTime.admin.sid");
+    res.redirect("/admin");
+};
+
+/**
+ * --- LOAD DASHBOARD ---
+ * Displays high-level stats (like total users) to the admin.
+ */
 const loadDashboard = async (req, res) => {
     try {
-        // Fetch admin details and total count in parallel for better performance
-        const [admin, totalUsers] = await Promise.all([
-            User.findById(req.session.adminId),
-            User.countDocuments({ isAdmin: false })
-        ]);
-
-        if (!admin) return res.redirect("/admin/login");
+        console.log("success")
+        if (!req.session.admin) {
+            return res.redirect("/admin");
+        }
+        const admin = await User.findById(req.session.admin._id);
+        const totalUsers = await User.countDocuments({ isAdmin: false });
 
         res.render("admin/dashboard", {
             admin,
             totalUsers,
-            activePage: "dashboard" // Used to highlight 'Dashboard' in sidebar
+            activePage: "dashboard",
         });
     } catch (error) {
-        console.error("Dashboard Error:", error);
+        console.log(error);
         res.status(500).send("Server Error");
     }
 };
 
-/* ===============================
-    LOAD USER LIST (Customer Management)
-================================ */
-// adminController.js
+/**
+ * --- LOAD USERS (WITH SEARCH & PAGINATION) ---
+ * Lists all registered users with the ability to search and paginate results.
+ */
 const loadUsers = async (req, res) => {
     try {
+        if (!req.session.admin) {
+            return res.redirect("/admin");
+        }
+
+        // Pagination setup
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
         const skip = (page - 1) * limit;
         const searchQuery = req.query.search || "";
 
+        // Filter: only regular users + regex search on name, email, or phone
         const query = {
             isAdmin: false,
             $or: [
                 { fullname: { $regex: searchQuery, $options: "i" } },
                 { email: { $regex: searchQuery, $options: "i" } },
-                { phone: { $regex: searchQuery, $options: "i" } }
-            ]
+                { phone: { $regex: searchQuery, $options: "i" } },
+            ],
         };
 
-        const [users, totalUsers, admin] = await Promise.all([
-            User.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
+        // Run both queries simultaneously for better performance
+        const [users, totalUsers] = await Promise.all([
+            User.find(query)
+                .skip(skip)
+                .limit(limit)
+                .sort({ createdAt: -1 }),
             User.countDocuments(query),
-            User.findById(req.session.adminId)
         ]);
 
         const totalPages = Math.ceil(totalUsers / limit);
 
         res.render("admin/userlist", {
             users,
-            admin,
+            admin: req.session.admin,
             currentPage: page,
             totalPages,
             totalUsers,
             search: searchQuery,
-            activePage: "customers"
+            activePage: "customers",
         });
     } catch (error) {
         console.error("Load Users Error:", error);
@@ -119,8 +133,10 @@ const loadUsers = async (req, res) => {
     }
 };
 
-
-
+/**
+ * --- BLOCK / UNBLOCK USER ---
+ * Updates user status and forcefully destroys their active session if blocked.
+ */
 const toggleUserStatus = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -130,19 +146,23 @@ const toggleUserStatus = async (req, res) => {
             return res.status(404).json({ success: false });
         }
 
-        // Toggle block
+        // Toggle logic
         user.isBlocked = !user.isBlocked;
         user.status = user.isBlocked ? "Blocked" : "Active";
         await user.save();
 
-        // 🔥 DESTROY USER SESSION IF BLOCKED
+        /**
+         * SESSION FORCING:
+         * If the user is blocked, we iterate through the session store to find 
+         * and destroy any active sessions belonging to this specific user ID.
+         */
         if (user.isBlocked && req.sessionStore) {
             req.sessionStore.all((err, sessions) => {
                 if (err) return;
 
                 for (let sid in sessions) {
                     const sess = sessions[sid];
-
+                    // Match session user ID with the blocked user ID
                     if (sess.user?._id?.toString() === userId.toString()) {
                         req.sessionStore.destroy(sid, () => { });
                     }
@@ -153,21 +173,20 @@ const toggleUserStatus = async (req, res) => {
         res.json({
             success: true,
             isBlocked: user.isBlocked,
-            status: user.status
+            status: user.status,
         });
-
     } catch (error) {
         console.error("Toggle user error:", error);
         res.status(500).json({ success: false });
     }
 };
 
-
-
+// EXPORTS
 export {
     loadLoginPage,
     login,
+    logout,
     loadDashboard,
     loadUsers,
-    toggleUserStatus
+    toggleUserStatus,
 };

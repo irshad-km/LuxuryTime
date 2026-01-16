@@ -1,5 +1,5 @@
-<!-- PHOSPHOR ICONS (LOAD ONCE) -->
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     body {
@@ -30,72 +30,102 @@
         font-weight: 600;
     }
 
+    /* Red Logout Styling */
+    .logout-item {
+        color: #f87171; 
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .logout-item:hover {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+
     .sidebar-item i {
         font-size: 18px;
     }
+
+    /* Custom SweetAlert Dark Theme Styling */
+    .swal2-popup {
+        background: #1a1a1a !important;
+        color: #fff !important;
+        border: 1px solid #333;
+    }
 </style>
 
-<aside class="w-64 min-h-screen bg-[#0b0b0b] border-r border-[#222] p-6">
-    <!-- Project Logo / Name -->
+<aside class="w-64 h-screen bg-[#0b0b0b] border-r border-[#222] p-6 flex flex-col">
+    
     <div class="mb-6 flex flex-col items-center">
-        <!-- If you have a logo image -->
-
-        <!-- Or just project name if no image -->
         <h1 class="text-2xl font-bold tracking-wide text-white">Luxury Time</h1>
     </div>
 
-    <!-- Admin Panel heading -->
     <div class="mb-8 text-center">
         <h2 class="text-xl font-bold tracking-wide">Admin Panel</h2>
         <p class="text-xs text-gray-500 mt-1">Manage your dashboard</p>
     </div>
 
-    <!-- Sidebar nav -->
-    <nav class="space-y-2">
-        <a href="/admin/dashboard" class="sidebar-item <%= activePage === 'dashboard' ? 'active' : '' %>">
+    <nav class="space-y-2 flex-1">
+        <a href="/admin/dashboard" class="sidebar-item">
             <i class="ph ph-gauge"></i> Dashboard
         </a>
-
-        <a href="/admin/orders" class="sidebar-item <%= activePage === 'orders' ? 'active' : '' %>">
+        <a href="/admin/orders" class="sidebar-item">
             <i class="ph ph-shopping-cart"></i> Orders
         </a>
-
-        <a href="/admin/products" class="sidebar-item <%= activePage === 'products' ? 'active' : '' %>">
+        <a href="/admin/products" class="sidebar-item">
             <i class="ph ph-package"></i> Products
         </a>
-
-        <a href="/admin/users" class="sidebar-item <%= activePage === 'users' ? 'active' : '' %>">
+        <a href="/admin/users" class="sidebar-item">
             <i class="ph ph-users"></i> Customers
         </a>
-
-        <a href="/admin/sales-report" class="sidebar-item <%= activePage === 'sales' ? 'active' : '' %>">
+        <a href="/admin/sales-report" class="sidebar-item">
             <i class="ph ph-chart-line-up"></i> Sales Report
         </a>
-
-        <a href="/admin/coupons" class="sidebar-item <%= activePage === 'coupons' ? 'active' : '' %>">
+        <a href="/admin/coupons" class="sidebar-item">
             <i class="ph ph-ticket"></i> Coupons
         </a>
-
-        <a href="/admin/settings" class="sidebar-item <%= activePage === 'settings' ? 'active' : '' %>">
+        <a href="/admin/settings" class="sidebar-item">
             <i class="ph ph-gear"></i> Settings
         </a>
     </nav>
+
+    <div class="pt-6 border-t border-[#222] mt-auto">
+        <a href="javascript:void(0)" id="logout-btn" class="sidebar-item logout-item">
+            <i class="ph ph-sign-out"></i> Logout
+        </a>
+    </div>
 </aside>
 
-
 <script>
-    // Get current path
+    // 1. Handle Active State
     const currentPath = window.location.pathname;
-
-    // Select all sidebar links
     const sidebarLinks = document.querySelectorAll('.sidebar-item');
 
     sidebarLinks.forEach(link => {
-        // Check if link's href matches the current path
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
-        } else {
-            link.classList.remove('active');
         }
+    });
+
+    // 2. Handle Logout Popup
+    document.getElementById('logout-btn').addEventListener('click', function (e) {
+        Swal.fire({
+            title: 'Logout?',
+            text: "Are you sure you want to exit the admin panel?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb', // Blue
+            cancelButtonColor: '#1a1a1a',  // Dark
+            confirmButtonText: 'Yes, Logout',
+            cancelButtonText: 'Cancel',
+            background: '#1a1a1a',
+            color: '#ffffff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to logout URL
+                window.location.href = "/admin/logout";
+            }
+        });
     });
 </script>

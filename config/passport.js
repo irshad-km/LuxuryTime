@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+
 passport.use(
   new GoogleStrategy(
     {
@@ -14,33 +15,44 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await User.findOne({ googleId: profile.id });
+        const email = profile.emails[0].value;
+
+        let user = await User.findOne({ email });
 
         if (user) {
+          
+          if (!user.googleId) {
+            user.googleId = profile.id;
+            user.isVerified = true; 
+            await user.save();
+          }
           return done(null, user);
         }
 
         user = new User({
           fullname: profile.displayName,
-          email: profile.emails[0].value,
+          email,
           googleId: profile.id,
           isVerified: true,
+          isBlocked: false,
         });
 
         await user.save();
         return done(null, user);
-      } catch (error) {
-        return done(error, null);
+      } catch (err) {
+        return done(err, null);
       }
     }
   )
 );
 
+/**
+ * --- SESSION SERIALIZATION ---
+ */
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
-
 
 passport.deserializeUser(async (id, done) => {
   try {

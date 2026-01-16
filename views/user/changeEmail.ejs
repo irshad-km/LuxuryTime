@@ -11,6 +11,7 @@
             --accent-blue: #6384f7;
             --text-main: #ffffff;
             --text-dim: #a0a0a0;
+            --error-red: #ef4444;
         }
 
         body {
@@ -74,6 +75,19 @@
             color: white;
             box-sizing: border-box;
             outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input.invalid {
+            border-color: var(--error-red) !important;
+        }
+
+        .error-message {
+            color: var(--error-red);
+            font-size: 11px;
+            margin-top: 6px;
+            height: 12px;
+            display: block;
         }
 
         .btn-continue {
@@ -86,6 +100,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: opacity 0.2s;
+            margin-top: 10px;
         }
 
         .btn-continue:hover { opacity: 0.9; }
@@ -117,16 +132,58 @@
             <strong>Current Email:</strong> <%= user.maskedEmail %>
         </p>
 
-        <form action="/change-new-email" method="POST">
+        <form id="emailChangeForm" action="/change-new-email" method="POST" novalidate>
             <div class="form-group">
                 <label for="newEmail">New Email Address</label>
-                <input type="email" id="newEmail" name="newEmail" placeholder="Enter your new email" required>
+                <input type="email" id="newEmail" name="newEmail" placeholder="Enter your new email">
+                <span id="emailError" class="error-message"></span>
             </div>
 
             <button type="submit" class="btn-continue">Continue</button>
             <a href="/profile" class="btn-cancel">Cancel</a>
         </form>
     </div>
+
+    <script>
+        const form = document.getElementById('emailChangeForm');
+        const emailInput = document.getElementById('newEmail');
+        const emailError = document.getElementById('emailError');
+
+        // Email validation helper
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        form.onsubmit = function (e) {
+            let isValid = true;
+            const emailValue = emailInput.value.trim();
+
+            // Reset error state
+            emailError.textContent = "";
+            emailInput.classList.remove('invalid');
+
+            // Validation logic
+            if (emailValue === "") {
+                emailError.textContent = "Please enter your new email address";
+                emailInput.classList.add('invalid');
+                isValid = false;
+            } else if (!isValidEmail(emailValue)) {
+                emailError.textContent = "Please enter a valid email address";
+                emailInput.classList.add('invalid');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault(); // Stop form submission
+            }
+        };
+
+        // Real-time error removal
+        emailInput.addEventListener('input', function() {
+            this.classList.remove('invalid');
+            emailError.textContent = "";
+        });
+    </script>
 
 </body>
 </html>

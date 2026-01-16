@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Time Has Stopped | Luxury Time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;600&display=swap');
+
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Animated Clock Circle Background */
+        .clock-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 0;
+        }
+
+        .clock-circle::before {
+            content: '';
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            border: 1px dashed rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+            animation: rotate 60s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Glass Card Effect */
+        .content-box {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            backdrop-filter: blur(4px);
+            padding: 2rem;
+        }
+
+        .error-code {
+            font-size: 12rem;
+            font-weight: 200;
+            letter-spacing: -0.05em;
+            line-height: 1;
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.1) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-outline {
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline:hover {
+            border-color: #666;
+            background: rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="absolute top-0 w-full p-8 flex justify-center lg:justify-start">
+        <div class="flex items-center gap-2">
+            <i class="ph ph-watch text-2xl text-white"></i>
+            <span class="text-xl font-bold tracking-widest uppercase">Luxury Time</span>
+        </div>
+    </header>
+
+    <main class="relative h-screen flex items-center justify-center">
+        
+        <div class="clock-circle"></div>
+
+        <div class="content-box">
+            <h1 class="error-code">404</h1>
+            
+            <h2 class="text-3xl font-light mb-4">Time has stopped here.</h2>
+            
+            <p class="text-neutral-500 max-w-md mx-auto mb-10 leading-relaxed">
+                The page you are looking for does not exist or has been moved. 
+                Let's get you back on track to find your perfect timepiece.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="/" class="btn-primary px-8 py-3 rounded-full font-semibold flex items-center gap-2">
+                    Go to Home <i class="ph ph-arrow-right"></i>
+                </a>
+                
+                <a href="/shop" class="btn-outline px-8 py-3 rounded-full font-semibold flex items-center gap-2">
+                    Explore Watches <i class="ph ph-clock"></i>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="absolute bottom-0 w-full p-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-neutral-600 uppercase tracking-widest">
+        <div>&copy; 2026 Luxury Timepieces. All Rights Reserved.</div>
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-white">Privacy Policy</a>
+            <a href="#" class="hover:text-white">Terms of Service</a>
+            <a href="#" class="hover:text-white">Contact</a>
+        </div>
+    </footer>
+
+</body>
+</html>

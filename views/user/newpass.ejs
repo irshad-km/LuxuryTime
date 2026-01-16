@@ -15,6 +15,7 @@
             --text-muted: #a0a0a0;
             --input-bg: #1f1f1f;
             --border-color: #333333;
+            --error-red: #ef4444;
         }
 
         body {
@@ -39,7 +40,6 @@
             position: relative;
         }
 
-        /* Top blue accent line */
         .reset-container::before {
             content: '';
             position: absolute;
@@ -66,7 +66,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             position: relative;
         }
 
@@ -85,7 +85,6 @@
             width: 100%;
             padding: 12px 15px;
             padding-right: 40px;
-            /* space for icon */
             background: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -97,6 +96,18 @@
 
         input:focus {
             border-color: var(--primary-blue);
+        }
+
+        input.invalid {
+            border-color: var(--error-red);
+        }
+
+        .error-message {
+            color: var(--error-red);
+            font-size: 11px;
+            margin-top: 5px;
+            height: 12px;
+            display: block;
         }
 
         .toggle-password {
@@ -135,10 +146,6 @@
             font-size: 13px;
         }
 
-        .back-to-login i {
-            margin-right: 5px;
-        }
-
         .footer-info {
             text-align: center;
             margin-top: 30px;
@@ -152,7 +159,6 @@
 
         .footer-info i {
             color: #22c55e;
-            /* Green lock icon */
         }
     </style>
 </head>
@@ -163,23 +169,23 @@
         <h2>Set New Password</h2>
         <p class="subtitle">Create a strong password to secure your account.</p>
 
-        <form id="resetForm" action="/newpass" method="POST">
+        <form id="resetForm" action="/newpass" method="POST" novalidate>
             <div class="form-group">
                 <label>New Password</label>
                 <div class="input-wrapper">
-                    <input type="password" id="newPassword" name="password" placeholder="Enter new password" required>
+                    <input type="password" id="newPassword" name="password" placeholder="Enter new password">
                     <i class="fa-regular fa-eye toggle-password" onclick="togglePass('newPassword', this)"></i>
                 </div>
+                <span id="passError" class="error-message"></span>
             </div>
 
             <div class="form-group">
                 <label>Confirm New Password</label>
                 <div class="input-wrapper">
-                    <input type="password" id="confirmPassword" name="confirmPassword"
-                        placeholder="Confirm new password" required>
-
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password">
                     <i class="fa-regular fa-eye toggle-password" onclick="togglePass('confirmPassword', this)"></i>
                 </div>
+                <span id="confirmError" class="error-message"></span>
             </div>
 
             <button type="submit" class="btn-update">Update Password</button>
@@ -207,16 +213,54 @@
             }
         }
 
-        // Basic Client-side Validation
-        document.getElementById('resetForm').onsubmit = function (e) {
-            const pass = document.getElementById('newPassword').value;
-            const confirm = document.getElementById('confirmPassword').value;
+        // Improved Input Validation
+        const resetForm = document.getElementById('resetForm');
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        const passError = document.getElementById('passError');
+        const confirmError = document.getElementById('confirmError');
 
-            if (pass !== confirm) {
+        resetForm.onsubmit = function (e) {
+            let isValid = true;
+
+            // Reset errors
+            passError.textContent = "";
+            confirmError.textContent = "";
+            newPassword.classList.remove('invalid');
+            confirmPassword.classList.remove('invalid');
+
+            // Validate New Password
+            if (newPassword.value.trim().length < 6) {
+                passError.textContent = "Password must be at least 6 characters";
+                newPassword.classList.add('invalid');
+                isValid = false;
+            }
+
+            // Validate Confirm Password
+            if (confirmPassword.value.trim() === "") {
+                confirmError.textContent = "Please confirm your password";
+                confirmPassword.classList.add('invalid');
+                isValid = false;
+            } else if (newPassword.value !== confirmPassword.value) {
+                confirmError.textContent = "Passwords do not match!";
+                confirmPassword.classList.add('invalid');
+                isValid = false;
+            }
+
+            if (!isValid) {
                 e.preventDefault();
-                alert("Passwords do not match!");
             }
         };
+
+        // Clear error as user types
+        [newPassword, confirmPassword].forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('invalid');
+                if (this.id === 'newPassword') passError.textContent = "";
+                else confirmError.textContent = "";
+            });
+        });
     </script>
 </body>
 

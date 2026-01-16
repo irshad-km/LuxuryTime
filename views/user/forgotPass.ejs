@@ -1,10 +1,13 @@
-
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
             --brand-blue: #3b82f6;
             --card-bg: #111111;
-            /* Changed background back to dark/black */
             --input-bg: #050505; 
             --border-color: #262626;
         }
@@ -13,6 +16,7 @@
             background-color: #000000;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
+            margin: 0;
         }
 
         .glass-card {
@@ -21,35 +25,30 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .input-dark {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-            /* Changed text color back to white */
-            color: #ffffff !important; 
-            font-weight: 400;
-        }
-
-        .input-dark::placeholder {
-            color: #4b5563; /* Subtle gray for placeholder */
-        }
-
-        .input-dark:focus {
-            border-color: var(--brand-blue);
-            /* Keeps it dark on focus but adds a subtle glow */
-            background: #000000; 
-            outline: none;
-            box-shadow: 0 0 0 1px var(--brand-blue);
-        }
-
         .btn-blue {
             background: var(--brand-blue);
             transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-blue:hover {
             opacity: 0.9;
             transform: translateY(-1px);
+        }
+
+        /* Error Text Style matching your signup/login */
+        .error-text {
+            color: #ef4444;
+            font-size: 11px;
+            margin-top: 6px;
+            height: 14px; /* Space reserved for message */
+            display: block;
+            margin-left: 4px;
+        }
+
+        .input-error-border {
+            border: 1px solid rgba(239, 68, 68, 0.5) !important;
         }
     </style>
 </head>
@@ -72,8 +71,8 @@
                 </p>
             </div>
 
-            <form action="/forgot-password" method="POST" class="w-full">
-                <div class="mb-6">
+            <form id="forgotForm" action="/forgot-password" method="POST" class="w-full" novalidate>
+                <div class="mb-2">
                     <label class="block text-[10px] uppercase tracking-[0.15em] text-gray-500 font-bold mb-3 ml-1">
                         Email Address
                     </label>
@@ -82,21 +81,22 @@
                             <i class="ph ph-envelope-simple text-xl"></i>
                         </span>
                         <input 
+                            id="email"
                             type="email" 
                             name="email" 
                             placeholder="name@example.com" 
-                            required
-                            class=" w-full py-4 pl-12 pr-4 rounded-xl text-sm placeholder:text-gray-600 focus:ring-1 focus:ring-blue-500"
-                            style="background-color: black;color:white"
+                            class="w-full py-4 pl-12 pr-4 rounded-xl text-sm placeholder:text-gray-600 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                            style="background-color: black; color:white; border: 1px solid var(--border-color);"
                         >
                     </div>
+                    <span id="emailError" class="error-text"></span>
                 </div>
 
-                <button type="submit" class="btn-blue w-full py-4 rounded-xl font-bold text-sm text-white shadow-lg shadow-blue-600/20 mb-6 uppercase tracking-wider">
+                <button type="submit" class="btn-blue w-full py-4 rounded-xl font-bold text-sm text-white shadow-lg shadow-blue-600/20 mb-6 uppercase tracking-wider mt-4">
                     Send OTP
                 </button>
 
-                <a href="/login" class="flex items-center justify-center gap-2 text-gray-500 hover:text-white text-xs transition-colors duration-200">
+                <a href="/login" class="flex items-center justify-center gap-2 text-gray-500 hover:text-white text-xs transition-colors duration-200" style="text-decoration: none;">
                     <i class="ph ph-arrow-left"></i>
                     Back to Login
                 </a>
@@ -110,5 +110,45 @@
         </p>
     </footer>
 
+    <script>
+        const forgotForm = document.getElementById('forgotForm');
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+
+        // Validation function
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        forgotForm.addEventListener('submit', function (e) {
+            const emailValue = emailInput.value.trim();
+            let isValid = true;
+
+            if (emailValue === "") {
+                emailError.textContent = "Please enter your email address";
+                emailInput.classList.add('input-error-border');
+                isValid = false;
+            } else if (!validateEmail(emailValue)) {
+                emailError.textContent = "Please enter a valid email address";
+                emailInput.classList.add('input-error-border');
+                isValid = false;
+            } else {
+                emailError.textContent = "";
+                emailInput.classList.remove('input-error-border');
+            }
+
+            if (!isValid) {
+                e.preventDefault(); // Stop form submission
+            }
+        });
+
+        // Clear error when user starts typing
+        emailInput.addEventListener('input', function() {
+            if (emailError.textContent !== "") {
+                emailError.textContent = "";
+                emailInput.classList.remove('input-error-border');
+            }
+        });
+    </script>
 </body>
 </html>
