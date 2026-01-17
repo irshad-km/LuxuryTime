@@ -46,9 +46,6 @@ passport.use(
   )
 );
 
-/**
- * --- SESSION SERIALIZATION ---
- */
 
 passport.serializeUser((user, done) => {
   done(null, user.id);

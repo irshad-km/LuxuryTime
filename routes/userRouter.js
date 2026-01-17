@@ -71,12 +71,16 @@ router.get(
   (req, res) => {
     if (req.user.isBlocked) {
       req.logout(() => {
-        return res.redirect("/login?error=blocked");
+        req.session.destroy(() => {
+          res.clearCookie("LuxuryTime.user.sid");
+          return res.redirect("/login?error=blocked");
+        });
       });
     } else {
       res.redirect("/");
     }
   }
 );
+
 
 export default router;

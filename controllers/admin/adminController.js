@@ -47,20 +47,14 @@ const login = async (req, res) => {
     }
 };
 
-/**
- * --- ADMIN LOGOUT ---
- * Destroys the admin session and clears the specific admin cookie.
- */
+
 const logout = (req, res) => {
     delete req.session.admin;
     res.clearCookie("LuxuryTime.admin.sid");
     res.redirect("/admin");
 };
 
-/**
- * --- LOAD DASHBOARD ---
- * Displays high-level stats (like total users) to the admin.
- */
+
 const loadDashboard = async (req, res) => {
     try {
         console.log("success")
@@ -81,23 +75,18 @@ const loadDashboard = async (req, res) => {
     }
 };
 
-/**
- * --- LOAD USERS (WITH SEARCH & PAGINATION) ---
- * Lists all registered users with the ability to search and paginate results.
- */
+
 const loadUsers = async (req, res) => {
     try {
         if (!req.session.admin) {
             return res.redirect("/admin");
         }
 
-        // Pagination setup
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
         const skip = (page - 1) * limit;
         const searchQuery = req.query.search || "";
 
-        // Filter: only regular users + regex search on name, email, or phone
         const query = {
             isAdmin: false,
             $or: [
@@ -107,7 +96,6 @@ const loadUsers = async (req, res) => {
             ],
         };
 
-        // Run both queries simultaneously for better performance
         const [users, totalUsers] = await Promise.all([
             User.find(query)
                 .skip(skip)
@@ -133,10 +121,7 @@ const loadUsers = async (req, res) => {
     }
 };
 
-/**
- * --- BLOCK / UNBLOCK USER ---
- * Updates user status and forcefully destroys their active session if blocked.
- */
+
 const toggleUserStatus = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -146,23 +131,18 @@ const toggleUserStatus = async (req, res) => {
             return res.status(404).json({ success: false });
         }
 
-        // Toggle logic
+        
         user.isBlocked = !user.isBlocked;
         user.status = user.isBlocked ? "Blocked" : "Active";
         await user.save();
 
-        /**
-         * SESSION FORCING:
-         * If the user is blocked, we iterate through the session store to find 
-         * and destroy any active sessions belonging to this specific user ID.
-         */
+      
         if (user.isBlocked && req.sessionStore) {
             req.sessionStore.all((err, sessions) => {
                 if (err) return;
 
                 for (let sid in sessions) {
                     const sess = sessions[sid];
-                    // Match session user ID with the blocked user ID
                     if (sess.user?._id?.toString() === userId.toString()) {
                         req.sessionStore.destroy(sid, () => { });
                     }
