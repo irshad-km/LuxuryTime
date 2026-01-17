@@ -6,6 +6,8 @@ import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
 
 const router = express.Router();
 
+router.use(checkUserBlocked)
+
 // --- HOME ---
 router.get("/", userController.loadHomepage);
 
@@ -69,18 +71,24 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
+
+    //  Blocked user
     if (req.user.isBlocked) {
-      req.logout(() => {
-        req.session.destroy(() => {
-          res.clearCookie("LuxuryTime.user.sid");
-          return res.redirect("/login?error=blocked");
-        });
-      });
-    } else {
-      res.redirect("/");
+      req.logout(() => {});
+      return res.redirect("/login?error=blocked");
     }
+
+    //  VERY IMPORTANT (THIS WAS MISSING)
+    req.session.user = {
+      _id: req.user._id,
+      email: req.user.email,
+      fullname: req.user.fullname,
+    };
+
+    return res.redirect("/");
   }
 );
+
 
 
 export default router;

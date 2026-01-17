@@ -1,12 +1,9 @@
 import express from "express";
 import * as adminController from "../controllers/admin/adminController.js";
-import { requireAdminLogin } from "../middlewares/adminauth.js";
+import { requireAdminLogin } from "../middlewares/adminBLOCK.js";
 import adminSession from "../middlewares/adminsession.js";
 
 const router = express.Router();
-
-
-router.use(adminSession);
 
 
 router.get("/", adminController.loadLoginPage); 

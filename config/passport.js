@@ -19,16 +19,17 @@ passport.use(
 
         let user = await User.findOne({ email });
 
+        // Existing user
         if (user) {
-          
           if (!user.googleId) {
             user.googleId = profile.id;
-            user.isVerified = true; 
+            user.isVerified = true;
             await user.save();
           }
           return done(null, user);
         }
 
+        // New user
         user = new User({
           fullname: profile.displayName,
           email,
@@ -39,8 +40,10 @@ passport.use(
 
         await user.save();
         return done(null, user);
-      } catch (err) {
-        return done(err, null);
+
+      } catch (error) {
+        console.log("Google auth error:", error);
+        return done(error, null);
       }
     }
   )

@@ -9,14 +9,17 @@ dotenv.config();
 
 // PAGE LOADERS 
 
-const loadHomepage = async (req, res) => {
+const loadHomepage = async (req, res) => {  
   if (req.session.user) {
     const user = await User.findById(req.session.user._id);
     if (!user || user.isBlocked) {
       req.session.destroy(() => { });
       return res.redirect("/login");
     }
+    console.log(user);
+    
   }
+  
   res.render("user/home");
 };
 

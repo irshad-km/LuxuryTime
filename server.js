@@ -7,6 +7,7 @@ import noCache from "./middlewares/no-cache.js";
 import dotenv from "dotenv";
 import MongoStore from "connect-mongo";
 import { fileURLToPath } from "url";
+import { checkUserBlocked } from "./middlewares/adminBLOCK.js";
 
 import connectDB from "./config/db.js";
 import userRouter from "./routes/userRouter.js";

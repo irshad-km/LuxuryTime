@@ -3,29 +3,28 @@ import User from "../models/userSchema.js";
 
 const requireAdminLogin = async (req, res, next) => {
     try {
-        if (!req.session.adminId) {
-            return res.redirect("/admin/login");
+        if (!req.session.admin) {
+            return res.redirect("/admin");
         }
 
-        const admin = await User.findById(req.session.adminId);
+        const admin = await User.findById(req.session.admin);
+
         if (!admin || !admin.isAdmin) {
-            return res.redirect("/admin/login");
+            delete req.session.admin;
+            return res.redirect("/admin");
         }
 
-        req.admin = admin;
         next();
     } catch (error) {
         console.log("Admin auth error:", error);
-        res.redirect("/admin/login");
+        res.redirect("/admin");
     }
 };
 
 
 const checkUserBlocked = async (req, res, next) => {
     try {
-        if (!req.session.user) {
-            return res.redirect("/login");
-        }
+        if (!req.session.user) return next()
 
         const user = await User.findById(req.session.user._id);
 
@@ -42,23 +41,20 @@ const checkUserBlocked = async (req, res, next) => {
     }
 };
 
-export { requireAdminLogin, checkUserBlocked };
-
-
 
 const requireAdminLoginSimple = (req, res, next) => {
-  if (!req.session.admin || !req.session.admin.isAdmin) {
-    return res.redirect("/admin");
-  }
-  next();
+    if (!req.session.admin || !req.session.admin.isAdmin) {
+        return res.redirect("/admin");
+    }
+    next();
 };
 
 
 const guestOnly = (req, res, next) => {
-  if (req.session.admin) {
-    return res.redirect("/admin/dashboard");
-  }
-  next();
+    if (req.session.admin) {
+        return res.redirect("/admin/dashboard");
+    }
+    next();
 };
 
-export { guestOnly, requireAdminLoginSimple };
+export {requireAdminLogin, guestOnly, requireAdminLoginSimple, checkUserBlocked };

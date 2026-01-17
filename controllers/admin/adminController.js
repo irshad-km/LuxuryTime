@@ -136,19 +136,20 @@ const toggleUserStatus = async (req, res) => {
         user.status = user.isBlocked ? "Blocked" : "Active";
         await user.save();
 
-      
-        if (user.isBlocked && req.sessionStore) {
-            req.sessionStore.all((err, sessions) => {
-                if (err) return;
 
-                for (let sid in sessions) {
-                    const sess = sessions[sid];
-                    if (sess.user?._id?.toString() === userId.toString()) {
-                        req.sessionStore.destroy(sid, () => { });
-                    }
-                }
-            });
-        }
+      
+        // if (user.isBlocked && req.sessionStore) {
+        //     req.sessionStore.all((err, sessions) => {
+        //         if (err) return;
+
+        //         for (let sid in sessions) {
+        //             const sess = sessions[sid];
+        //             if (sess.user?._id?.toString() === userId.toString()) {
+        //                 req.sessionStore.destroy(sid, () => { });
+        //             }
+        //         }
+        //     });
+        // }
 
         res.json({
             success: true,
