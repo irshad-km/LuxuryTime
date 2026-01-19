@@ -3,18 +3,21 @@ import * as userController from "../controllers/user/userController.js";
 import { requireLogin, guestOnly } from "../middlewares/auth.js";
 import passport from "passport";
 import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
+import  noCache  from "../middlewares/no-cache.js"
+
 
 const router = express.Router();
 
 router.use(checkUserBlocked)
 
 // --- HOME ---
-router.get("/", userController.loadHomepage);
+router.get("/", noCache, userController.loadHomepage);
 
 // --- AUTH PAGES ---
 router.get("/login", guestOnly, userController.loadLoginpage);
 router.get("/signUp", guestOnly, userController.loadSignup);
 router.get("/profile", requireLogin, userController.loadProfile);
+router.get("/shope",requireLogin,userController.loadshopepage)
 router.get("/newpass", userController.loadnewPassword);
 
 // --- SIGNUP FLOW ---
@@ -74,7 +77,7 @@ router.get(
 
     //  Blocked user
     if (req.user.isBlocked) {
-      req.logout(() => {});
+      req.logout(() => { });
       return res.redirect("/login?error=blocked");
     }
 

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Time | Our Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #121212;
+            --border-color: #262626;
+            --accent-blue: #2563eb;
+            --text-muted: #888888;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Premium Glass Card Effect */
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            border-color: #404040;
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Filter Sidebar Styling */
+        .sidebar-item {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Custom Radio/Checkboxes */
+        input[type="radio"], input[type="checkbox"] {
+            accent-color: var(--accent-blue);
+            width: 16px;
+            height: 16px;
+            background: transparent;
+        }
+
+        /* Search Bar Alignment */
+        .search-input {
+            background: #111;
+            border: 1px solid var(--border-color);
+            transition: border 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+
+        .badge-new { background: #2563eb; font-size: 10px; font-weight: bold; }
+        .badge-sale { background: #dc2626; font-size: 10px; font-weight: bold; }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <nav class="border-b border-neutral-900 py-6 px-10 flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-md z-50">
+        <div class="text-xl font-light tracking-[0.3em] uppercase">Luxury Time</div>
+        <div class="hidden md:flex space-x-10 text-[11px] uppercase tracking-[0.2em] text-neutral-400">
+            <a href="#" class="hover:text-white transition">Home</a>
+            <a href="#" class="text-white border-b border-white pb-1">Shop</a>
+            <a href="#" class="hover:text-white transition">About</a>
+        </div>
+        <div class="flex space-x-6 items-center text-neutral-300">
+            <i class="far fa-heart cursor-pointer hover:text-white"></i>
+            <div class="relative">
+                <i class="fas fa-shopping-bag cursor-pointer hover:text-white"></i>
+                <span class="absolute -top-2 -right-2 bg-blue-600 text-[9px] w-4 h-4 rounded-full flex items-center justify-center text-white">2</span>
+            </div>
+            <i class="fas fa-globe-americas cursor-pointer hover:text-white"></i>
+        </div>
+    </nav>
+
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-12 py-12">
+        <header class="mb-16">
+            <h1 class="text-5xl font-light tracking-tight mb-3">Our Collection</h1>
+            <p class="text-neutral-500 font-light tracking-wide italic">Crafted for timeless elegance</p>
+        </header>
+
+        <div class="grid grid-cols-12 gap-12">
+            
+            <aside class="col-span-12 lg:col-span-3">
+                <div class="bg-[#111] p-8 rounded-xl border border-neutral-900 sticky top-28">
+                    <div class="flex justify-between items-center mb-8">
+                        <span class="text-sm font-semibold tracking-widest uppercase">Filters</span>
+                        <button class="text-[10px] uppercase text-blue-500 hover:text-blue-400">Reset</button>
+                    </div>
+
+                    <div class="sidebar-item">
+                        <h4 class="text-[11px] uppercase text-neutral-500 mb-5 tracking-[0.2em]">Category</h4>
+                        <div class="space-y-4 text-sm font-light text-neutral-300">
+                            <label class="flex items-center justify-between cursor-pointer group">
+                                <span class="group-hover:text-white transition">All</span>
+                                <input type="radio" name="cat" checked>
+                            </label>
+                            <label class="flex items-center justify-between cursor-pointer group">
+                                <span class="group-hover:text-white transition">Men</span>
+                                <input type="radio" name="cat">
+                            </label>
+                            <label class="flex items-center justify-between cursor-pointer group">
+                                <span class="group-hover:text-white transition">Women</span>
+                                <input type="radio" name="cat">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-item">
+                        <h4 class="text-[11px] uppercase text-neutral-500 mb-5 tracking-[0.2em]">Price</h4>
+                        <div class="space-y-4 text-sm font-light text-neutral-300">
+                            <label class="flex items-center space-x-3"><input type="checkbox"> <span>Below $1,000</span></label>
+                            <label class="flex items-center space-x-3"><input type="checkbox"> <span>$1,000 - $5,000</span></label>
+                            <label class="flex items-center space-x-3"><input type="checkbox"> <span>Above $5,000</span></label>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
+                        Apply Filters
+                    </button>
+                </div>
+            </aside>
+
+            <section class="col-span-12 lg:col-span-9">
+                <div class="mb-10">
+                    <input type="text" placeholder="Search our collection..." class="search-input w-full max-w-lg py-4 px-6 rounded-full text-sm text-neutral-300">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <% products.forEach(product => { %>
+                        <div class="product-card rounded-2xl">
+                            <div class="relative bg-neutral-900/50 aspect-[4/5] flex items-center justify-center p-10">
+                                <% if(product.tag) { %>
+                                    <span class="absolute top-5 left-5 <%= product.tag === 'SALE' ? 'badge-sale' : 'badge-new' %> px-3 py-1 rounded-full uppercase tracking-tighter">
+                                        <%= product.tag %>
+                                    </span>
+                                <% } %>
+                                <button class="absolute top-5 right-5 text-neutral-600 hover:text-white transition">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <img src="<%= product.image %>" alt="<%= product.name %>" class="max-h-full object-contain drop-shadow-2xl">
+                            </div>
+
+                            <div class="p-6">
+                                <h3 class="text-lg font-light tracking-wide mb-1 text-neutral-100"><%= product.name %></h3>
+                                <p class="text-[11px] text-neutral-500 mb-6 uppercase tracking-widest"><%= product.description %></p>
+                                <div class="flex items-end space-x-3">
+                                    <span class="text-xl font-semibold">$<%= product.price.toLocaleString() %></span>
+                                    <% if(product.oldPrice) { %>
+                                        <span class="text-sm text-neutral-600 line-through mb-1">$<%= product.oldPrice.toLocaleString() %></span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <div class="mt-20 flex justify-center items-center space-x-4">
+                    <button class="w-10 h-10 rounded border border-neutral-800 flex items-center justify-center hover:bg-neutral-800 transition"><i class="fas fa-chevron-left text-xs"></i></button>
+                    <button class="w-10 h-10 rounded bg-blue-600 text-sm font-bold">1</button>
+                    <button class="w-10 h-10 rounded border border-neutral-800 text-sm hover:bg-neutral-800 transition">2</button>
+                    <button class="w-10 h-10 rounded border border-neutral-800 flex items-center justify-center hover:bg-neutral-800 transition"><i class="fas fa-chevron-right text-xs"></i></button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <footer class="bg-black border-t border-neutral-900 pt-20 pb-10 px-10 mt-20">
+        <div class="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div class="space-y-6">
+                <div class="font-bold tracking-[0.3em] uppercase">Luxe Time</div>
+                <p class="text-neutral-500 text-xs leading-relaxed tracking-wider">
+                    Redefining luxury timepieces for the modern era. Experience precision, craftsmanship, and timeless elegance.
+                </p>
+                <div class="flex space-x-4 text-neutral-400">
+                    <i class="fab fa-instagram cursor-pointer hover:text-white"></i>
+                    <i class="fab fa-facebook-f cursor-pointer hover:text-white"></i>
+                    <i class="fab fa-twitter cursor-pointer hover:text-white"></i>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-[10px] uppercase font-bold tracking-[0.3em] text-neutral-400 mb-8">Shop</h4>
+                <ul class="text-xs text-neutral-500 space-y-4 tracking-widest uppercase">
+                    <li><a href="#" class="hover:text-white">New Arrivals</a></li>
+                    <li><a href="#" class="hover:text-white">Best Sellers</a></li>
+                    <li><a href="#" class="hover:text-white">Men's Watches</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-[10px] uppercase font-bold tracking-[0.3em] text-neutral-400 mb-8">Support</h4>
+                <ul class="text-xs text-neutral-500 space-y-4 tracking-widest uppercase">
+                    <li><a href="#" class="hover:text-white">FAQ</a></li>
+                    <li><a href="#" class="hover:text-white">Shipping</a></li>
+                    <li><a href="#" class="hover:text-white">Warranty</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-[10px] uppercase font-bold tracking-[0.3em] text-neutral-400 mb-8">Newsletter</h4>
+                <div class="flex flex-col space-y-4">
+                    <input type="email" placeholder="Email Address" class="bg-neutral-900 border border-neutral-800 p-3 text-xs focus:outline-none focus:border-neutral-600">
+                    <button class="bg-blue-600 text-[10px] font-bold uppercase tracking-widest py-3">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-[9px] text-neutral-700 tracking-widest border-t border-neutral-900 pt-10 uppercase">
+            &copy; 2026 Luxe Time Inc. All Rights Reserved.
+        </div>
+    </footer>
+
+</body>
+</html>

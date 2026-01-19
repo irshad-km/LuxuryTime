@@ -29,21 +29,23 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
+
 
 
 app.use(
   session({
-    name: "LuxuryTime.user.sid", 
+    name: "LuxuryTime.user.sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false, 
+    saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
     }),
     cookie: {
-      secure: false, 
-      httpOnly: true, 
-      maxAge: 72 * 60 * 60 * 1000, 
+      secure: false,
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
     },
   })
 );
@@ -62,14 +64,14 @@ app.use((req, res, next) => {
 });
 
 //  VIEW ENGINE 
- 
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
 //ROUTES
 app.use("/", userRouter);
-app.use("/admin", adminRouter); 
+app.use("/admin", adminRouter);
 
 
 app.use((req, res) => {

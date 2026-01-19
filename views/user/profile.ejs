@@ -178,10 +178,12 @@
                 </nav>
             </div>
 
-            <a href="/logout"
-                class="flex items-center gap-2 text-gray-500 hover:text-red-400 transition text-sm font-medium">
-                <i class="ph ph-sign-out text-xl"></i> Logout
-            </a>
+            <form action="/logout" method="POST">
+                <button type="submit"
+                    class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white transition">
+                    Logout
+                </button>
+            </form>
         </aside>
 
         <main class="flex-1 p-16">
@@ -218,12 +220,13 @@
 
                         <div>
                             <label class="label">Email Address</label>
-                            <input type="email" name="email" value="<%= user.email %>" class="input-field" readonly readonly>
+                            <input type="email" name="email" value="<%= user.email %>" class="input-field" readonly
+                                readonly>
                         </div>
 
                         <div>
                             <label class="label">Gender</label>
-                            <select name="gender" class="input-field bg-gray-900/50 cursor-not-allowed" >
+                            <select name="gender" class="input-field bg-gray-900/50 cursor-not-allowed">
                                 <option value="Male" <%=user.gender==='Male' ? 'selected' : '' %>>Male</option>
                                 <option value="Female" <%=user.gender==='Female' ? 'selected' : '' %>>Female</option>
                             </select>
@@ -233,7 +236,7 @@
 
                         <div>
                             <label class="label">Date of Birth</label>
-                            <input type="date" name="dob" value="<%= user.dob %>" class="input-field" >
+                            <input type="date" name="dob" value="<%= user.dob %>" class="input-field">
                         </div>
 
                         <div class="md:col-span-2 mt-8">

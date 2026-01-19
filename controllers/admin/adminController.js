@@ -1,4 +1,6 @@
 import User from "../../models/userSchema.js";
+import Category from "../../models/categorySchema.js";
+import Product from "../../models/productSchema.js";
 import bcrypt from "bcrypt";
 
 
@@ -16,7 +18,7 @@ const loadLoginPage = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-          
+
         const { email, password } = req.body;
 
         const admin = await User.findOne({ email, isAdmin: true });
@@ -131,25 +133,11 @@ const toggleUserStatus = async (req, res) => {
             return res.status(404).json({ success: false });
         }
 
-        
+
         user.isBlocked = !user.isBlocked;
         user.status = user.isBlocked ? "Blocked" : "Active";
         await user.save();
 
-
-      
-        // if (user.isBlocked && req.sessionStore) {
-        //     req.sessionStore.all((err, sessions) => {
-        //         if (err) return;
-
-        //         for (let sid in sessions) {
-        //             const sess = sessions[sid];
-        //             if (sess.user?._id?.toString() === userId.toString()) {
-        //                 req.sessionStore.destroy(sid, () => { });
-        //             }
-        //         }
-        //     });
-        // }
 
         res.json({
             success: true,
@@ -162,6 +150,31 @@ const toggleUserStatus = async (req, res) => {
     }
 };
 
+
+const loadproduct = async (req, res) => {
+    try {
+        const products = await Product.find()
+            .populate("category")
+            .sort({ createdAt: -1 });
+
+        res.render("admin/product", { products });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server error");
+    }
+};
+
+
+const loadaddproduct = async (req, res) => {
+    try {
+        const categories = await Category.find({ isListed: true });
+        res.render("admin/addproduct", { categories });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server error");
+    }
+};
+
 // EXPORTS
 export {
     loadLoginPage,
@@ -170,4 +183,6 @@ export {
     loadDashboard,
     loadUsers,
     toggleUserStatus,
+    loadproduct,
+    loadaddproduct
 };

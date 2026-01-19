@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Add New Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        :root {
+            --bg-main: #050505;
+            --card-bg: #111111;
+            --input-bg: #1a1a1a;
+            --border-subtle: #262626;
+            --accent-blue: #2563eb;
+        }
+        body {
+            background-color: var(--bg-main);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        .main-content { flex-grow: 1; padding: 3rem; width: calc(100% - 260px); }
+        .glass-card { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; }
+        .form-label { font-size: 13px; font-weight: 600; color: #a1a1aa; display: block; margin-bottom: 8px; }
+        .input-field { background: var(--input-bg); border: 1px solid var(--border-subtle); color: white; border-radius: 8px; padding: 12px 16px; width: 100%; font-size: 14px; transition: all 0.3s ease; }
+        .input-field:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+        .remove-variant { position: absolute; top: 20px; right: 20px; color: #4b5563; cursor: pointer; transition: 0.2s; }
+        .remove-variant:hover { color: #ef4444; }
+        .image-upload-box { border: 2px dashed var(--border-subtle); border-radius: 12px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .image-upload-box:hover { border-color: var(--accent-blue); background: rgba(37, 99, 235, 0.05); }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('../partials/admin/sidebar') %>
+
+        <main class="main-content max-w-5xl mx-auto">
+            <nav class="flex items-center gap-2 text-[11px] uppercase tracking-widest text-neutral-500 mb-4">
+                <span>Products</span> <i class="fas fa-chevron-right text-[8px]"></i>
+                <span>All Products</span> <i class="fas fa-chevron-right text-[8px]"></i>
+                <span class="text-white">Add New Product</span>
+            </nav>
+
+            <h1 class="text-3xl font-bold mb-8">Add New Product</h1>
+
+            <form id="productForm" action="/admin/products/add" method="POST" enctype="multipart/form-data">
+
+                <!-- Product Details -->
+                <div class="glass-card">
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i> Product Details
+                    </h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="form-label">Product Name</label>
+                            <input type="text" name="name" id="name" class="input-field" placeholder="e.g. Air Runner Pro" required>
+                        </div>
+                        <div>
+                            <label class="form-label">Product Description</label>
+                            <textarea name="description" id="description" rows="4" class="input-field" placeholder="Describe the product details..." required></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Category</label>
+                            <select name="category" id="category" class="input-field" required>
+                                <% categories.forEach(cat => { %>
+                                    <option value="<%= cat._id %>"><%= cat.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Variants -->
+                <div id="variantsContainer">
+                    <h2 class="text-xl font-bold mb-4">Color Variants</h2>
+
+                    <div class="glass-card variant-card" data-index="0">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="form-label">Color Name</label>
+                                <select name="variants[0][color]" class="input-field" required>
+                                    <option value="">Select Color</option>
+                                    <option value="Black">Black</option>
+                                    <option value="White">White</option>
+                                    <option value="Red">Red</option>
+                                    <option value="Blue">Blue</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Regular Price</label>
+                                    <input type="number" name="variants[0][regularPrice]" class="input-field" placeholder="120" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Sale Price (Optional)</label>
+                                    <input type="number" name="variants[0][salePrice]" class="input-field" placeholder="99.99">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label">Quantity</label>
+                                <input type="number" name="variants[0][quantity]" class="input-field w-32" placeholder="Qty" required>
+                            </div>
+                            <div>
+                                <label class="form-label">Product Images</label>
+                                <div class="grid grid-cols-4 gap-4">
+                                    <div class="image-upload-box" onclick="this.querySelector('input').click()">
+                                        <i class="fas fa-image text-neutral-600 text-xl"></i>
+                                        <input type="file" name="variants[0][images]" class="hidden" multiple accept="image/*" onchange="previewImages(this)" required>
+                                    </div>
+                                    <div class="image-upload-box opacity-30 bg-neutral-900"></div>
+                                    <div class="image-upload-box opacity-30 bg-neutral-900"></div>
+                                    <div class="image-upload-box opacity-30 bg-neutral-900"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <i class="fas fa-trash remove-variant" onclick="removeVariant(this)"></i>
+                    </div>
+                </div>
+
+                <button type="button" id="addVariantBtn" class="w-full py-4 border-2 border-dashed border-neutral-800 rounded-xl text-blue-500 font-semibold hover:bg-blue-500/5 transition mb-8">
+                    <i class="fas fa-plus-circle mr-2"></i> Add New Color Variant
+                </button>
+
+                <div class="flex justify-end gap-4">
+                    <button type="button" class="px-8 py-3 rounded-xl border border-neutral-800 text-sm font-bold hover:bg-neutral-900">Cancel</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold text-sm shadow-lg">
+                        Add Product
+                    </button>
+                </div>
+
+            </form>
+        </main>
+    </div>
+
+    <script>
+        let variantCount = 1;
+
+        document.getElementById('addVariantBtn').addEventListener('click', function () {
+            const container = document.getElementById('variantsContainer');
+            const newVariant = document.querySelector('.variant-card').cloneNode(true);
+
+            // Update names for the new index
+            newVariant.setAttribute('data-index', variantCount);
+            newVariant.querySelectorAll('input, select').forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) input.setAttribute('name', name.replace(/\[\d+\]/, `[${variantCount}]`));
+                input.value = '';
+            });
+
+            container.appendChild(newVariant);
+            variantCount++;
+        });
+
+        function removeVariant(btn) {
+            const cards = document.querySelectorAll('.variant-card');
+            if (cards.length > 1) btn.closest('.variant-card').remove();
+            else alert("At least one variant is required.");
+        }
+
+        function previewImages(input) {
+            console.log(`${input.files.length} images selected for this variant`);
+        }
+    </script>
+
+</body>
+</html>
