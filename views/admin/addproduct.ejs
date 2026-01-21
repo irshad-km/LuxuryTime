@@ -5,166 +5,236 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Add New Product</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
         :root {
-            --bg-main: #050505;
-            --card-bg: #111111;
-            --input-bg: #1a1a1a;
-            --border-subtle: #262626;
-            --accent-blue: #2563eb;
+            --bg-main: #050505; --card-bg: #111111; --input-bg: #1a1a1a;
+            --border-subtle: #262626; --accent-blue: #2563eb;
         }
-        body {
-            background-color: var(--bg-main);
-            color: #ffffff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        body { background-color: var(--bg-main); color: #ffffff; font-family: 'Plus Jakarta Sans', sans-serif; }
         .admin-wrapper { display: flex; min-height: 100vh; }
         .main-content { flex-grow: 1; padding: 3rem; width: calc(100% - 260px); }
         .glass-card { background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; position: relative; }
-        .form-label { font-size: 13px; font-weight: 600; color: #a1a1aa; display: block; margin-bottom: 8px; }
-        .input-field { background: var(--input-bg); border: 1px solid var(--border-subtle); color: white; border-radius: 8px; padding: 12px 16px; width: 100%; font-size: 14px; transition: all 0.3s ease; }
-        .input-field:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
-        .remove-variant { position: absolute; top: 20px; right: 20px; color: #4b5563; cursor: pointer; transition: 0.2s; }
-        .remove-variant:hover { color: #ef4444; }
-        .image-upload-box { border: 2px dashed var(--border-subtle); border-radius: 12px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .form-label { font-size: 13px; font-weight: 600; color: #a1a1aa; margin-bottom: 8px; display: block; }
+        .input-field { background: var(--input-bg); border: 1px solid var(--border-subtle); color: white; border-radius: 8px; padding: 12px 16px; width: 100%; }
+        
+        .image-upload-box { 
+            border: 2px dashed var(--border-subtle); 
+            border-radius: 12px; 
+            height: 220px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            overflow: hidden; 
+            background: #0d0d0d;
+        }
         .image-upload-box:hover { border-color: var(--accent-blue); background: rgba(37, 99, 235, 0.05); }
+        .image-upload-box img { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        
+        #cropperModal { 
+            background: rgba(0,0,0,0.9); 
+            display: none; 
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            align-items: center; 
+            justify-content: center;
+        }
+        .modal-content-wrapper {
+            background: #111;
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            width: 90%;
+            max-width: 700px;
+        }
+        .cropper-container-box {
+            width: 100%;
+            height: 450px;
+            background: #000;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border-radius: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="admin-wrapper">
-        <%- include('../partials/admin/sidebar') %>
 
-        <main class="main-content max-w-5xl mx-auto">
-            <nav class="flex items-center gap-2 text-[11px] uppercase tracking-widest text-neutral-500 mb-4">
-                <span>Products</span> <i class="fas fa-chevron-right text-[8px]"></i>
-                <span>All Products</span> <i class="fas fa-chevron-right text-[8px]"></i>
-                <span class="text-white">Add New Product</span>
-            </nav>
+<div class="admin-wrapper">
+    <%- include('../partials/admin/sidebar') %>
 
-            <h1 class="text-3xl font-bold mb-8">Add New Product</h1>
+    <main class="main-content max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Add New Product</h1>
 
-            <form id="productForm" action="/admin/products/add" method="POST" enctype="multipart/form-data">
+        <form action="/admin/products/add" method="POST" enctype="multipart/form-data" id="productForm">
+            <div class="glass-card">
+                <label class="form-label">Product Name</label>
+                <input type="text" name="name" class="input-field" required>
 
-                <!-- Product Details -->
-                <div class="glass-card">
-                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-info-circle text-blue-500"></i> Product Details
-                    </h2>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="form-label">Product Name</label>
-                            <input type="text" name="name" id="name" class="input-field" placeholder="e.g. Air Runner Pro" required>
-                        </div>
-                        <div>
-                            <label class="form-label">Product Description</label>
-                            <textarea name="description" id="description" rows="4" class="input-field" placeholder="Describe the product details..." required></textarea>
-                        </div>
-                        <div>
-                            <label class="form-label">Category</label>
-                            <select name="category" id="category" class="input-field" required>
-                                <% categories.forEach(cat => { %>
-                                    <option value="<%= cat._id %>"><%= cat.name %></option>
-                                <% }) %>
-                            </select>
-                        </div>
+                <label class="form-label mt-6">Description</label>
+                <textarea name="description" rows="4" class="input-field" required></textarea>
+
+                <label class="form-label mt-6">Category</label>
+                <select name="category" class="input-field" required>
+                    <% categories.forEach(cat => { %>
+                        <option value="<%= cat._id %>"><%= cat.name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div id="variantsSection">
+                <div class="glass-card variant-card">
+                    <label class="form-label">Color</label>
+                    <select name="variants[0][color]" class="input-field" required>
+                        <option value="">Select</option>
+                        <option>Black</option><option>White</option><option>Red</option><option>Blue</option>
+                    </select>
+
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <input type="number" name="variants[0][regularPrice]" placeholder="Regular Price" class="input-field" required>
+                        <input type="number" name="variants[0][salePrice]" placeholder="Sale Price" class="input-field">
+                    </div>
+                    <input type="number" name="variants[0][quantity]" placeholder="Quantity" class="input-field mt-6" required>
+
+                    <label class="form-label mt-6 text-white">Product Images (4 views in one line)</label>
+                    <div class="grid grid-cols-4 gap-4 mt-2">
+                        <% for(let i = 0; i < 4; i++) { %>
+                            <div class="image-upload-box" onclick="document.getElementById('v0-input-<%= i %>').click()">
+                                <i class="fas fa-image text-neutral-600 text-xl"></i>
+                                <input type="file" id="v0-input-<%= i %>" name="variants[0][images]" class="hidden" accept="image/*" onchange="initCropper(event, 'v0-input-<%= i %>')">
+                            </div>
+                        <% } %>
                     </div>
                 </div>
+            </div>
 
-                <!-- Variants -->
-                <div id="variantsContainer">
-                    <h2 class="text-xl font-bold mb-4">Color Variants</h2>
+            <button type="button" onclick="addNewVariant()" class="w-full mb-8 py-3 border-2 border-dashed border-zinc-800 rounded-xl text-zinc-500 hover:text-white hover:border-blue-600 transition-all">
+                <i class="fas fa-plus mr-2"></i> Add New Color Variant
+            </button>
 
-                    <div class="glass-card variant-card" data-index="0">
-                        <div class="grid grid-cols-1 gap-6">
-                            <div>
-                                <label class="form-label">Color Name</label>
-                                <select name="variants[0][color]" class="input-field" required>
-                                    <option value="">Select Color</option>
-                                    <option value="Black">Black</option>
-                                    <option value="White">White</option>
-                                    <option value="Red">Red</option>
-                                    <option value="Blue">Blue</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="form-label">Regular Price</label>
-                                    <input type="number" name="variants[0][regularPrice]" class="input-field" placeholder="120" required>
-                                </div>
-                                <div>
-                                    <label class="form-label">Sale Price (Optional)</label>
-                                    <input type="number" name="variants[0][salePrice]" class="input-field" placeholder="99.99">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="form-label">Quantity</label>
-                                <input type="number" name="variants[0][quantity]" class="input-field w-32" placeholder="Qty" required>
-                            </div>
-                            <div>
-                                <label class="form-label">Product Images</label>
-                                <div class="grid grid-cols-4 gap-4">
-                                    <div class="image-upload-box" onclick="this.querySelector('input').click()">
-                                        <i class="fas fa-image text-neutral-600 text-xl"></i>
-                                        <input type="file" name="variants[0][images]" class="hidden" multiple accept="image/*" onchange="previewImages(this)" required>
-                                    </div>
-                                    <div class="image-upload-box opacity-30 bg-neutral-900"></div>
-                                    <div class="image-upload-box opacity-30 bg-neutral-900"></div>
-                                    <div class="image-upload-box opacity-30 bg-neutral-900"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <i class="fas fa-trash remove-variant" onclick="removeVariant(this)"></i>
-                    </div>
-                </div>
-
-                <button type="button" id="addVariantBtn" class="w-full py-4 border-2 border-dashed border-neutral-800 rounded-xl text-blue-500 font-semibold hover:bg-blue-500/5 transition mb-8">
-                    <i class="fas fa-plus-circle mr-2"></i> Add New Color Variant
+            <div class="flex items-center justify-end gap-4">
+                <a href="/admin/products" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold">
+                    Add Product
                 </button>
+            </div>
+        </form>
+    </main>
+</div>
 
-                <div class="flex justify-end gap-4">
-                    <button type="button" class="px-8 py-3 rounded-xl border border-neutral-800 text-sm font-bold hover:bg-neutral-900">Cancel</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold text-sm shadow-lg">
-                        Add Product
-                    </button>
-                </div>
-
-            </form>
-        </main>
+<div id="cropperModal">
+    <div class="modal-content-wrapper">
+        <h3 class="text-xl font-bold mb-4">Crop Watch Image</h3>
+        <div class="cropper-container-box">
+            <img id="cropperImage" src="" style="max-width: 100%;">
+        </div>
+        <div class="flex justify-end gap-4">
+            <button type="button" onclick="closeModal()" class="px-6 py-2 text-zinc-400 font-medium">Cancel</button>
+            <button type="button" onclick="cropImage()" class="px-8 py-2 bg-blue-600 rounded-lg font-bold">Crop & Save</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        let variantCount = 1;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-        document.getElementById('addVariantBtn').addEventListener('click', function () {
-            const container = document.getElementById('variantsContainer');
-            const newVariant = document.querySelector('.variant-card').cloneNode(true);
+<script>
+    let cropper;
+    let currentInputId;
+    let variantCount = 1; // Used for adding new variants
+    
+    function initCropper(event, id) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            currentInputId = id;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const modal = document.getElementById('cropperModal');
+                const image = document.getElementById('cropperImage');
+                image.src = e.target.result;
+                modal.style.display = 'flex';
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(image, {
+                    aspectRatio: 1, 
+                    viewMode: 1, 
+                    autoCropArea: 1, 
+                    background: false,
+                    responsive: true,
+                });
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 
-            // Update names for the new index
-            newVariant.setAttribute('data-index', variantCount);
-            newVariant.querySelectorAll('input, select').forEach(input => {
-                const name = input.getAttribute('name');
-                if (name) input.setAttribute('name', name.replace(/\[\d+\]/, `[${variantCount}]`));
-                input.value = '';
-            });
+    function closeModal() {
+        document.getElementById('cropperModal').style.display = 'none';
+        if (cropper) cropper.destroy();
+    }
 
-            container.appendChild(newVariant);
-            variantCount++;
-        });
+    function cropImage() {
+        const canvas = cropper.getCroppedCanvas({ width: 1000, height: 1000 });
+        const input = document.getElementById(currentInputId);
+        const box = input.parentElement;
 
-        function removeVariant(btn) {
-            const cards = document.querySelectorAll('.variant-card');
-            if (cards.length > 1) btn.closest('.variant-card').remove();
-            else alert("At least one variant is required.");
+        canvas.toBlob((blob) => {
+            const file = new File([blob], `watch-${Date.now()}.jpg`, { type: "image/jpeg" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            input.files = dataTransfer.files;
+
+            box.innerHTML = `<img src="${canvas.toDataURL('image/jpeg')}">`;
+            box.appendChild(input); 
+            closeModal();
+        }, 'image/jpeg', 0.9);
+    }
+
+    // Function to add a new variant card
+    function addNewVariant() {
+        const section = document.getElementById('variantsSection');
+        const variantDiv = document.createElement('div');
+        variantDiv.className = 'glass-card variant-card relative';
+        
+        let imagesHtml = '';
+        for(let i=0; i<4; i++) {
+            const inputId = `v${variantCount}-input-${i}`;
+            imagesHtml += `
+                <div class="image-upload-box" onclick="document.getElementById('${inputId}').click()">
+                    <i class="fas fa-image text-neutral-600 text-xl"></i>
+                    <input type="file" id="${inputId}" name="variants[${variantCount}][images]" class="hidden" accept="image/*" onchange="initCropper(event, '${inputId}')">
+                </div>`;
         }
 
-        function previewImages(input) {
-            console.log(`${input.files.length} images selected for this variant`);
-        }
-    </script>
+        variantDiv.innerHTML = `
+            <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-zinc-500 hover:text-red-500">
+                <i class="fas fa-times"></i>
+            </button>
+            <label class="form-label">Color</label>
+            <select name="variants[${variantCount}][color]" class="input-field" required>
+                <option value="">Select</option>
+                <option>Black</option><option>White</option><option>Red</option><option>Blue</option>
+            </select>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <input type="number" name="variants[${variantCount}][regularPrice]" placeholder="Regular Price" class="input-field" required>
+                <input type="number" name="variants[${variantCount}][salePrice]" placeholder="Sale Price" class="input-field">
+            </div>
+            <input type="number" name="variants[${variantCount}][quantity]" placeholder="Quantity" class="input-field mt-6" required>
+            <label class="form-label mt-6 text-white">Product Images (4 views)</label>
+            <div class="grid grid-cols-4 gap-4 mt-2">${imagesHtml}</div>
+        `;
+        
+        section.appendChild(variantDiv);
+        variantCount++;
+    }
+</script>
 
 </body>
 </html>

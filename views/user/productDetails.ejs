@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    <%= product.name %> | Luxury Time
+  </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      /* Pure Black Theme */
+      color: #ffffff;
+    }
+
+    .premium-dark {
+      background-color: #050505;
+    }
+
+    .border-subtle {
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Smooth Image Transitions */
+    #mainPicture {
+      transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .thumb-active {
+      border: 1.5px solid #f4bc1c !important;
+      opacity: 1 !important;
+    }
+
+    /* Remove scrollbar for clean look */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+
+  <%- include('../partials/user/header') %>
+
+    <% const variant=product.variants[0]; %>
+
+      <main class="max-w-7xl mx-auto px-8 py-10">
+        <nav class="text-[9px] text-gray-600 uppercase tracking-[0.3em] mb-12">
+          Home / Men's Watches / <span class="text-gray-300">
+            <%= product.name %>
+          </span>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+
+          <div class="flex flex-col items-center">
+            <div class="relative w-full aspect-square flex items-center justify-center group">
+              <div class="absolute w-2/3 h-2/3 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+              <img id="mainPicture" src="<%= variant.images[0] %>" class="max-h-[500px] w-auto object-contain z-10"
+                alt="Luxury Product">
+            </div>
+
+            <div class="flex gap-6 mt-12 justify-center">
+              <% variant.images.forEach((img, index)=> { %>
+                <div onclick="swapImage('<%= img %>', this)"
+                  class="thumb-box w-20 h-20 border border-subtle p-2 cursor-pointer transition-all duration-300 <%= index === 0 ? 'thumb-active' : 'opacity-30 hover:opacity-100' %>">
+                  <img src="<%= img %>" class="w-full h-full object-contain">
+                </div>
+                <% }) %>
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-[10px] font-bold uppercase tracking-[0.4em] text-yellow-600">Limited Edition</span>
+              <div class="flex items-center gap-1 text-[10px] text-yellow-500">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                  class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                <span class="text-gray-600 ml-2 tracking-widest">(124 REVIEWS)</span>
+              </div>
+            </div>
+
+            <h1 class="text-6xl font-light tracking-tight mb-4 text-white">
+              <%= product.name %>
+            </h1>
+            <p class="text-gray-500 text-sm font-light mb-10 tracking-wide">Swiss Engineering, Aviation Heritage.</p>
+
+            <div class="flex items-baseline gap-6 mb-12">
+              <span class="text-4xl font-light tracking-tighter">RS <%= (variant.salePrice ||
+                  variant.regularPrice).toLocaleString() %></span>
+              <% if(variant.salePrice) { %>
+                <span class="text-xl text-gray-700 line-through font-light tracking-tighter">RS <%=
+                    variant.regularPrice.toLocaleString() %></span>
+                <% } %>
+            </div>
+
+            <div class="mb-12">
+              <p class="text-[10px] uppercase tracking-[0.3em] text-gray-600 mb-5">Select Color: <span
+                  class="text-white ml-2">Jet Black</span></p>
+              <div class="flex gap-5">
+                <div
+                  class="w-7 h-7 rounded-full bg-black border border-white p-0.5 cursor-pointer ring-2 ring-white/10 ring-offset-4 ring-offset-black">
+                </div>
+                <div class="w-7 h-7 rounded-full bg-gray-400 opacity-20 hover:opacity-100 transition cursor-pointer">
+                </div>
+                <div class="w-7 h-7 rounded-full bg-[#D4AF37] opacity-20 hover:opacity-100 transition cursor-pointer">
+                </div>
+                <div class="w-7 h-7 rounded-full bg-blue-900 opacity-20 hover:opacity-100 transition cursor-pointer">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-4 mb-16">
+              <form action="/add-to-cart/<%= product._id %>" method="POST" class="flex-1">
+                <button
+                  class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all duration-300">
+                  Add to Bag
+                </button>
+              </form>
+              <button class="px-8 border border-subtle hover:bg-white hover:text-black transition-all duration-300">
+                <i class="fa-regular fa-heart"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 border-t border-subtle pt-10 text-center">
+              <div class="flex flex-col items-center group">
+                <i class="fa-solid fa-droplet text-gray-600 text-xl mb-3 group-hover:text-white transition"></i>
+                <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em] leading-relaxed">120M
+                  Water<br>Resistant</span>
+              </div>
+              <div class="flex flex-col items-center border-x border-subtle group">
+                <i class="fa-solid fa-gem text-gray-600 text-xl mb-3 group-hover:text-white transition"></i>
+                <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em] leading-relaxed">Sapphire
+                  Glass<br>Crystal</span>
+              </div>
+              <div class="flex flex-col items-center group">
+                <i class="fa-solid fa-clock text-gray-600 text-xl mb-3 group-hover:text-white transition"></i>
+                <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em] leading-relaxed">Swiss
+                  Made<br>Movement</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="mt-32 border-t border-subtle pt-12">
+          <div class="flex space-x-16 mb-16 text-[10px] uppercase tracking-[0.4em] text-gray-600">
+            <button class="text-white border-b border-white pb-5">Description</button>
+            <button class="hover:text-white pb-5 transition">Specifications</button>
+            <button class="hover:text-white pb-5 transition">Warranty</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-24">
+            <div>
+              <h3 class="text-xl font-light mb-8 tracking-tight text-gray-200">The pinnacle of horological achievement.
+              </h3>
+              <p class="text-gray-500 text-sm font-light leading-[1.8] tracking-wide">
+                <%= product.description %>
+              </p>
+            </div>
+            <div class="grid grid-cols-2 gap-y-12">
+              <div>
+                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-700 mb-2">Case Material</p>
+                <p class="text-sm font-light text-gray-300 tracking-tight">Grade 5 Titanium</p>
+              </div>
+              <div>
+                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-700 mb-2">Movement</p>
+                <p class="text-sm font-light text-gray-300 tracking-tight">Calibre L7-600 Auto</p>
+              </div>
+              <div>
+                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-700 mb-2">Power Reserve</p>
+                <p class="text-sm font-light text-gray-300 tracking-tight">48 Hours</p>
+              </div>
+              <div>
+                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-700 mb-2">Weight</p>
+                <p class="text-sm font-light text-gray-300 tracking-tight">85g Lightweight</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-40 pt-20 border-t border-subtle">
+          <h3 class="text-[10px] uppercase tracking-[0.5em] text-gray-700 mb-20 text-center font-bold">You May Also Like
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+            <% relatedProducts.forEach(item=> { %>
+              <a href="/product/<%= item._id %>" class="group block">
+                <div
+                  class="aspect-[4/5] flex items-center justify-center p-8 mb-8 transition-all duration-700 group-hover:scale-105">
+                  <img src="<%= item.variants[0].images[0] %>"
+                    class="max-h-full object-contain filter brightness-90 group-hover:brightness-110 transition">
+                </div>
+                <div class="text-center">
+                  <p
+                    class="text-[10px] uppercase tracking-[0.3em] text-gray-600 mb-3 group-hover:text-white transition">
+                    <%= item.name %>
+                  </p>
+                  <p class="text-sm font-light text-gray-400 tracking-tighter">RS <%=
+                      (item.variants[0].regularPrice).toLocaleString() %>
+                  </p>
+                </div>
+              </a>
+              <% }) %>
+          </div>
+        </section>
+      </main>
+
+      <footer class="mt-32 py-16 border-t border-subtle bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center opacity-40">
+          <div class="text-[9px] uppercase tracking-[0.5em]">
+            © 2026 Luxury Time — Horological Excellence.
+          </div>
+          <div class="flex gap-12 text-[8px] uppercase tracking-[0.3em] mt-6 md:mt-0">
+            <a href="#" class="hover:text-white transition">Privacy</a>
+            <a href="#" class="hover:text-white transition">Terms</a>
+            <a href="#" class="hover:text-white transition">Contact</a>
+          </div>
+        </div>
+      </footer>
+
+      <script>
+        function swapImage(imgUrl, element) {
+          const mainImg = document.getElementById('mainPicture');
+
+          // Smooth fade and slight zoom out during change
+          mainImg.style.opacity = '0';
+          mainImg.style.transform = 'scale(0.96)';
+
+          setTimeout(() => {
+            mainImg.src = imgUrl;
+            mainImg.style.opacity = '1';
+            mainImg.style.transform = 'scale(1)';
+          }, 250);
+
+          // Toggle active thumbnail styling
+          document.querySelectorAll('.thumb-box').forEach(box => {
+            box.classList.remove('thumb-active');
+            box.classList.add('opacity-30');
+          });
+          element.classList.add('thumb-active');
+          element.classList.remove('opacity-30');
+        }
+      </script>
+
+</body>
+
+</html>

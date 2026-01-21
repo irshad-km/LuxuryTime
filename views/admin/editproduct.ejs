@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Edit Product</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-main: #050505;
+            --card-bg: #111111;
+            --input-bg: #1a1a1a;
+            --border-subtle: #262626;
+            --accent-blue: #2563eb;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 3rem;
+            width: calc(100% - 260px);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-field {
+            background: var(--input-bg);
+            border: 1px solid var(--border-subtle);
+            color: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+        }
+
+        .image-upload-box {
+            border: 2px dashed var(--border-subtle);
+            border-radius: 12px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            overflow: hidden;
+            background: #0d0d0d;
+        }
+
+        .image-upload-box:hover {
+            border-color: var(--accent-blue);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .image-upload-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        #cropperModal {
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content-wrapper {
+            background: #111;
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            width: 90%;
+            max-width: 700px;
+        }
+
+        .cropper-container-box {
+            width: 100%;
+            height: 450px;
+            background: #000;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-wrapper">
+        <%- include('../partials/admin/sidebar') %>
+
+        <main class="main-content max-w-5xl mx-auto">
+            <h1 class="text-3xl font-bold mb-8">Edit Product</h1>
+
+            <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" id="productForm">
+                
+                <div class="glass-card">
+                    <label class="form-label">Product Name</label>
+                    <input type="text" name="name" class="input-field" value="<%= product.name %>" required>
+
+                    <label class="form-label mt-6">Description</label>
+                    <textarea name="description" rows="4" class="input-field" required><%= product.description %></textarea>
+
+                    <label class="form-label mt-6">Category</label>
+                    <select name="category" class="input-field" required>
+                        <% categories.forEach(cat => { %>
+                            <option value="<%= cat._id %>" <%= product.category.toString() === cat._id.toString() ? 'selected' : '' %>>
+                                <%= cat.name %>
+                            </option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div id="variantsSection">
+                    <% product.variants.forEach((variant, vIndex) => { %>
+                        <div class="glass-card variant-card relative">
+                            <label class="form-label">Color</label>
+                            <select name="variants[<%= vIndex %>][color]" class="input-field" required>
+                                <option value="Black" <%= variant.color === 'Black' ? 'selected' : '' %>>Black</option>
+                                <option value="White" <%= variant.color === 'White' ? 'selected' : '' %>>White</option>
+                                <option value="Red" <%= variant.color === 'Red' ? 'selected' : '' %>>Red</option>
+                                <option value="Blue" <%= variant.color === 'Blue' ? 'selected' : '' %>>Blue</option>
+                            </select>
+
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div>
+                                    <label class="form-label">Regular Price</label>
+                                    <input type="number" name="variants[<%= vIndex %>][regularPrice]" value="<%= variant.regularPrice %>" class="input-field" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Sale Price</label>
+                                    <input type="number" name="variants[<%= vIndex %>][salePrice]" value="<%= variant.salePrice %>" class="input-field">
+                                </div>
+                            </div>
+
+                            <label class="form-label mt-6">Stock Quantity</label>
+                            <input type="number" name="variants[<%= vIndex %>][quantity]" value="<%= variant.quantity %>" class="input-field" required>
+
+                            <label class="form-label mt-6 text-white">Product Images</label>
+                            <div class="grid grid-cols-4 gap-4 mt-2">
+                                <% for(let i=0; i < 4; i++) { %>
+                                    <div class="image-upload-box" onclick="document.getElementById('v<%= vIndex %>-input-<%= i %>').click()">
+                                        <% if (variant.images && variant.images[i]) { %>
+                                            <img src="<%= variant.images[i] %>" id="img-v<%= vIndex %>-input-<%= i %>">
+                                        <% } else { %>
+                                            <i class="fas fa-image text-neutral-600 text-xl" id="icon-v<%= vIndex %>-input-<%= i %>"></i>
+                                            <img src="" id="img-v<%= vIndex %>-input-<%= i %>" class="hidden">
+                                        <% } %>
+                                        <input type="file" id="v<%= vIndex %>-input-<%= i %>" name="variants[<%= vIndex %>][images]" class="hidden" accept="image/*" onchange="initCropper(event, 'v<%= vIndex %>-input-<%= i %>')">
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <% if (variant.images) { %>
+                                <% variant.images.forEach(img => { %>
+                                    <input type="hidden" name="variants[<%= vIndex %>][existingImages]" value="<%= img %>">
+                                <% }) %>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <button type="button" onclick="addNewVariant()" class="w-full mb-8 py-3 border-2 border-dashed border-zinc-800 rounded-xl text-zinc-500 hover:text-white hover:border-blue-600 transition-all">
+                    <i class="fas fa-plus mr-2"></i> Add New Color Variant
+                </button>
+
+                <div class="flex items-center justify-end gap-4 pb-10">
+                    <a href="/admin/products" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold">
+                        Edit Product
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <div id="cropperModal">
+        <div class="modal-content-wrapper">
+            <h3 class="text-xl font-bold mb-4">Crop Image</h3>
+            <div class="cropper-container-box">
+                <img id="cropperImage" src="" style="max-width: 100%;">
+            </div>
+            <div class="flex justify-end gap-4">
+                <button type="button" onclick="closeModal()" class="px-6 py-2 text-zinc-400 font-medium">Cancel</button>
+                <button type="button" onclick="cropImage()" class="px-8 py-2 bg-blue-600 rounded-lg font-bold">Crop & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        let cropper;
+        let currentInputId;
+        let variantCount = <%= product.variants.length %>;
+
+        function initCropper(event, id) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                currentInputId = id;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const modal = document.getElementById('cropperModal');
+                    const image = document.getElementById('cropperImage');
+                    image.src = e.target.result;
+                    modal.style.display = 'flex';
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(image, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 1,
+                    });
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('cropperModal').style.display = 'none';
+            if (cropper) cropper.destroy();
+        }
+
+        function cropImage() {
+            const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
+            const input = document.getElementById(currentInputId);
+            const imgElement = document.getElementById('img-' + currentInputId);
+            const iconElement = document.getElementById('icon-' + currentInputId);
+
+            canvas.toBlob((blob) => {
+                const file = new File([blob], `edit-${Date.now()}.jpg`, { type: "image/jpeg" });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+
+                if(imgElement) {
+                    imgElement.src = canvas.toDataURL('image/jpeg');
+                    imgElement.classList.remove('hidden');
+                }
+                if(iconElement) iconElement.classList.add('hidden');
+                
+                closeModal();
+            }, 'image/jpeg', 0.9);
+        }
+
+        function addNewVariant() {
+            const section = document.getElementById('variantsSection');
+            const variantDiv = document.createElement('div');
+            variantDiv.className = 'glass-card variant-card relative';
+
+            let imagesHtml = '';
+            for (let i = 0; i < 4; i++) {
+                const inputId = `v${variantCount}-input-${i}`;
+                imagesHtml += `
+                <div class="image-upload-box" onclick="document.getElementById('${inputId}').click()">
+                    <i class="fas fa-image text-neutral-600 text-xl" id="icon-${inputId}"></i>
+                    <img src="" id="img-${inputId}" class="hidden">
+                    <input type="file" id="${inputId}" name="variants[${variantCount}][images]" class="hidden" accept="image/*" onchange="initCropper(event, '${inputId}')">
+                </div>`;
+            }
+
+            variantDiv.innerHTML = `
+            <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-zinc-500 hover:text-red-500">
+                <i class="fas fa-times"></i>
+            </button>
+            <label class="form-label">Color</label>
+            <select name="variants[${variantCount}][color]" class="input-field" required>
+                <option value="">Select</option>
+                <option>Black</option><option>White</option><option>Red</option><option>Blue</option>
+            </select>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <input type="number" name="variants[${variantCount}][regularPrice]" placeholder="Regular Price" class="input-field" required>
+                <input type="number" name="variants[${variantCount}][salePrice]" placeholder="Sale Price" class="input-field">
+            </div>
+            <input type="number" name="variants[${variantCount}][quantity]" placeholder="Quantity" class="input-field mt-6" required>
+            <label class="form-label mt-6 text-white">Product Images</label>
+            <div class="grid grid-cols-4 gap-4 mt-2">${imagesHtml}</div>
+            `;
+            section.appendChild(variantDiv);
+            variantCount++;
+        }
+    </script>
+</body>
+</html>

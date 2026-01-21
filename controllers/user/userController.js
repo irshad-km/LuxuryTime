@@ -458,6 +458,7 @@ const loadshopepage = async (req, res) => {
 
       let mainVariant = p.variants[0] || {};
       return {
+        _id:p._id,
         name: p.name,
         description: p.description,
         price: mainVariant.regularPrice || 0,
@@ -475,6 +476,28 @@ const loadshopepage = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
+const loadProductDetails = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const product = await Product.findById(productId)
+      .populate("category")
+
+    if (!product) {
+      return res.redirect("/shope");
+    }
+
+    const relatedProducts = await Product.find({
+      _id: { $ne: product._id }
+    }).limit(4);
+
+    res.render("user/productDetails", { product, relatedProducts });
+  } catch (error) {
+    console.log(error);
+    res.redirect("/shope");
+  }
+}
 
 
 // EXPORTS
@@ -505,5 +528,6 @@ export {
   addAddress,
   updateAddress,
   deleteAddress,
-  loadshopepage
+  loadshopepage,
+  loadProductDetails
 };

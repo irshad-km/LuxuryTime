@@ -23,13 +23,21 @@ router.patch(
 
 router.get("/products", requireAdminLogin, adminController.loadproduct)
 router.get("/addproduct", requireAdminLogin, adminController.loadaddproduct)
+router.get("/products/edit/:id", requireAdminLogin, productController.loadEditproduct)
 router.post(
     "/products/add",
     requireAdminLogin,
     upload.any(),
     productController.
-    addProduct
+        addProduct
 );
+router.post(
+    "/products/edit/:id",
+    requireAdminLogin,
+    upload.any(),
+    productController.
+        updateProduct
+)
 
 router.get("/categories", requireAdminLogin, categoryController.loadCategories)
 router.post("/addCategory", requireAdminLogin, categoryController.addCategory)
