@@ -10,10 +10,11 @@ const router = express.Router();
 
 router.use(checkUserBlocked)
 
-// --- HOME ---
+// home
 router.get("/", noCache, userController.loadHomepage);
 
-// --- AUTH PAGES ---
+
+//load page
 router.get("/login", guestOnly, userController.loadLoginpage);
 router.get("/signUp", guestOnly, userController.loadSignup);
 router.get("/profile", requireLogin, userController.loadProfile);
@@ -21,38 +22,38 @@ router.get("/shop", requireLogin, userController.loadshopepage)
 router.get("/product/:id", requireLogin, userController.loadProductDetails)
 router.get("/newpass", userController.loadnewPassword);
 
-// --- SIGNUP FLOW ---
+// sign
 router.post("/signUp", userController.signUp);
 
-// --- OTP FLOW (Signup & Forgot) ---
+//OTP
 router.get("/verify-otp", userController.loadVerifyOtp);
 router.post("/verify-otp", userController.verifyOtp);
 router.post("/resend-otp", userController.resendotp);
 
-// --- LOGIN ---
+// Login
 router.post("/login", userController.login);
 
-// --- FORGOT PASSWORD ---
+// forgott
 router.get("/forgot-password", guestOnly, userController.loadForgotPassword);
 router.post("/forgot-password", userController.sendForgotOtp);
 
-// --- CHANGE PASSWORD ---
+// change pass
 router.get("/change-password", requireLogin, userController.loadChangePassword);
 router.post("/change-password", requireLogin, userController.updatePasswordProfile);
 
-// --- CHANGE EMAIL ---
+// change email
 router.get("/change-email", requireLogin, userController.loadChangeEmail);
 router.post("/change-email", requireLogin, userController.sendChangeEmailOtp);
 
-// --- SET NEW EMAIL ---
+// New email
 router.get("/change-new-email", requireLogin, userController.loadChangenewEmail);
 router.post("/change-new-email", requireLogin, userController.sendChangenewEmailOtp);
 
-// --- EDIT PROFILE ---
+//edit profile
 router.get("/edit-profile", requireLogin, userController.loadEditProfile);
 router.post("/edit-profile", requireLogin, userController.updateProfile);
 
-// --- ADDRESS MANAGEMENT ---
+// address manag
 router.get("/address", requireLogin, userController.loadAddress);
 router.post("/address/add", requireLogin, userController.addAddress);
 router.post("/address/edit", requireLogin, userController.updateAddress);
@@ -60,29 +61,29 @@ router.post("/address/delete/:id", requireLogin, userController.deleteAddress);
 
 router.post("/newpass", userController.updatePassword);
 
-// --- LOGOUT ---
+
+// logout
 router.post("/logout", requireLogin, userController.logout);
 
-// --- GOOGLE AUTH ---
+
+// google auth
 router.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"], prompt: "select_account" })
 );
 
-// --- GOOGLE AUTH CALLBACK ---
+// google
 
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
 
-    //  Blocked user
     if (req.user.isBlocked) {
       req.logout(() => { });
       return res.redirect("/login?error=blocked");
     }
 
-    //  VERY IMPORTANT (THIS WAS MISSING)
     req.session.user = {
       _id: req.user._id,
       email: req.user.email,

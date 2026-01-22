@@ -3,14 +3,36 @@ import Category from "../../models/categorySchema.js";
 
 const loadCategories = async (req, res) => {
     try {
-        const categories = await Category.find().sort({ createdAt: -1 });
-        res.render("admin/category", { categories });
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        const query = {
+            name: { $regex: search, $options: "i" }
+        };
+
+        const categories = await Category.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCategories = await Category.countDocuments(query);
+        const totalPages = Math.ceil(totalCategories / limit);
+
+        res.render("admin/category", {
+            categories,
+            currentPage: page,
+            totalPages,
+            search,
+            totalCategories
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).send("Server Error");
     }
 };
-
 
 const addCategory = async (req, res) => {
     try {
@@ -21,7 +43,7 @@ const addCategory = async (req, res) => {
             offerExpiry
         } = req.body;
 
-// name exist
+        
         const exist = await Category.findOne({ name });
         if (exist) {
             return res.redirect("/admin/categories");

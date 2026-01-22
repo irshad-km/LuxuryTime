@@ -9,7 +9,7 @@ import { error } from "console";
 
 dotenv.config();
 
-// PAGE LOADERS 
+// home page
 
 const loadHomepage = async (req, res) => {
   try {
@@ -91,7 +91,7 @@ const loadnewPassword = async (req, res) => {
   }
 };
 
-// HELPERS
+
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendVerificationEmail = async (email, otp) => {
@@ -186,7 +186,7 @@ const logout = (req, res) => {
 
 
 
-// FORGOT PASSWORD FLOW
+// Forgott pass
 const sendForgotOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -209,7 +209,7 @@ const sendForgotOtp = async (req, res) => {
   }
 };
 
-//  OTP LOGIC (VERIFY & RESEND)
+//  OTP logic
 const resendotp = async (req, res) => {
   try {
     const { otpType, userData, forgotEmail, lastOtpSent, changeNewEmail } = req.session;
@@ -244,7 +244,7 @@ const resendotp = async (req, res) => {
   }
 };
 
-//verifu OTP
+//verify OTP
 const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
@@ -288,7 +288,7 @@ const verifyOtp = async (req, res) => {
 };
 
 
-// PASSWORD UPDATES
+//password update
 const updatePassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body;
@@ -319,14 +319,16 @@ const updatePasswordProfile = async (req, res) => {
 
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
-    res.redirect("/profile");
+
+    delete req.session.user;
+    res.redirect("/login");
   } catch (error) {
     res.redirect("/profile");
   }
 }
 
 
-// EMAIL CHANGE
+// Change email
 const loadChangeEmail = async (req, res) => {
   try {
     const user = await User.findById(req.session.user._id);
@@ -388,9 +390,8 @@ const sendChangenewEmailOtp = async (req, res) => {
   }
 };
 
-/**
- * --- PROFILE MANAGEMENT ---
- */
+
+//profile
 const loadEditProfile = async (req, res) => {
   try {
     const user = await User.findById(req.session.user._id)
@@ -415,7 +416,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// ADDRESS 
+// address 
 
 const loadAddress = async (req, res) => {
   try {
@@ -479,8 +480,8 @@ const loadshopepage = async (req, res) => {
     const skip = (page - 1) * limit;
 
     let filter = {
-      isListed:true,
-      isDeleted:false
+      isListed: true,
+      isDeleted: false
     };
     let sortOption = { createdAt: -1 };
 
@@ -489,15 +490,15 @@ const loadshopepage = async (req, res) => {
       { _id: 1 }
     );
 
-    filter.category={
-      $in:listedCategories.map(cat=>cat._id)
+    filter.category = {
+      $in: listedCategories.map(cat => cat._id)
     };
 
     if (category && category !== "all") {
       const categoryDoc = await Category.findOne({
-         name: category ,
-         isListed:true
-        });
+        name: category,
+        isListed: true
+      });
 
       if (categoryDoc) {
         filter.category = categoryDoc._id;
@@ -529,7 +530,7 @@ const loadshopepage = async (req, res) => {
 
     const totalProducts = await Product.countDocuments(filter);
 
-    const products = await Product.find(filter,{isDeleted:false})
+    const products = await Product.find(filter, { isDeleted: false })
       .populate("category")
       .sort(sortOption)
       .skip(skip)
