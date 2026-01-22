@@ -21,6 +21,7 @@ const addCategory = async (req, res) => {
             offerExpiry
         } = req.body;
 
+// name exist
         const exist = await Category.findOne({ name });
         if (exist) {
             return res.redirect("/admin/categories");

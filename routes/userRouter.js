@@ -3,7 +3,7 @@ import * as userController from "../controllers/user/userController.js";
 import { requireLogin, guestOnly } from "../middlewares/auth.js";
 import passport from "passport";
 import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
-import  noCache  from "../middlewares/no-cache.js"
+import noCache from "../middlewares/no-cache.js"
 
 
 const router = express.Router();
@@ -17,8 +17,8 @@ router.get("/", noCache, userController.loadHomepage);
 router.get("/login", guestOnly, userController.loadLoginpage);
 router.get("/signUp", guestOnly, userController.loadSignup);
 router.get("/profile", requireLogin, userController.loadProfile);
-router.get("/shope",requireLogin,userController.loadshopepage)
-router.get("/product/:id",requireLogin,userController.loadProductDetails)
+router.get("/shop", requireLogin, userController.loadshopepage)
+router.get("/product/:id", requireLogin, userController.loadProductDetails)
 router.get("/newpass", userController.loadnewPassword);
 
 // --- SIGNUP FLOW ---

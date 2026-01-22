@@ -48,9 +48,13 @@ const productSchema = new mongoose.Schema(
       type: [variantSchema],
       required: true
     },
-    isBlocked: {
+    isListed: {
       type: Boolean,
-      default: false
+      default: true
+    },
+    isDeleted: {
+      type:Boolean,
+      default: false,
     }
   },
   { timestamps: true }

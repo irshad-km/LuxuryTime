@@ -27,16 +27,9 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        .admin-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
+        .admin-wrapper { display: flex; min-height: 100vh; }
 
-        .main-content {
-            flex-grow: 1;
-            padding: 3rem;
-            width: calc(100% - 260px);
-        }
+        .main-content { flex-grow: 1; padding: 3rem; width: calc(100% - 260px); }
 
         .glass-card {
             background: var(--card-bg);
@@ -47,13 +40,7 @@
             position: relative;
         }
 
-        .form-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #a1a1aa;
-            margin-bottom: 8px;
-            display: block;
-        }
+        .form-label { font-size: 13px; font-weight: 600; color: #a1a1aa; margin-bottom: 8px; display: block; }
 
         .input-field {
             background: var(--input-bg);
@@ -64,10 +51,13 @@
             width: 100%;
         }
 
+        /* Image Box Container */
+        .image-container { position: relative; width: 100%; }
+
         .image-upload-box {
             border: 2px dashed var(--border-subtle);
             border-radius: 12px;
-            height: 220px;
+            height: 180px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -77,16 +67,27 @@
             background: #0d0d0d;
         }
 
-        .image-upload-box:hover {
-            border-color: var(--accent-blue);
-            background: rgba(37, 99, 235, 0.05);
-        }
+        .image-upload-box:hover { border-color: var(--accent-blue); background: rgba(37, 99, 235, 0.05); }
 
-        .image-upload-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: #000;
+        .image-upload-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* Remove Image Button */
+        .remove-img-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            z-index: 20;
+            cursor: pointer;
+            border: 2px solid var(--card-bg);
         }
 
         #cropperModal {
@@ -103,18 +104,17 @@
             background: #111;
             padding: 24px;
             border-radius: 20px;
-            border: 1px solid #333;
             width: 90%;
-            max-width: 700px;
+            max-width: 600px;
         }
 
         .cropper-container-box {
             width: 100%;
-            height: 450px;
+            height: 400px;
             background: #000;
             margin-bottom: 20px;
-            overflow: hidden;
             border-radius: 10px;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -171,26 +171,28 @@
                             <label class="form-label mt-6">Stock Quantity</label>
                             <input type="number" name="variants[<%= vIndex %>][quantity]" value="<%= variant.quantity %>" class="input-field" required>
 
-                            <label class="form-label mt-6 text-white">Product Images</label>
+                            <label class="form-label mt-6 text-white">Product Images (Min 3-4 recommended)</label>
                             <div class="grid grid-cols-4 gap-4 mt-2">
                                 <% for(let i=0; i < 4; i++) { %>
-                                    <div class="image-upload-box" onclick="document.getElementById('v<%= vIndex %>-input-<%= i %>').click()">
-                                        <% if (variant.images && variant.images[i]) { %>
-                                            <img src="<%= variant.images[i] %>" id="img-v<%= vIndex %>-input-<%= i %>">
-                                        <% } else { %>
-                                            <i class="fas fa-image text-neutral-600 text-xl" id="icon-v<%= vIndex %>-input-<%= i %>"></i>
-                                            <img src="" id="img-v<%= vIndex %>-input-<%= i %>" class="hidden">
-                                        <% } %>
-                                        <input type="file" id="v<%= vIndex %>-input-<%= i %>" name="variants[<%= vIndex %>][images]" class="hidden" accept="image/*" onchange="initCropper(event, 'v<%= vIndex %>-input-<%= i %>')">
+                                    <div class="image-container" id="container-v<%= vIndex %>-input-<%= i %>">
+                                        <button type="button" class="remove-img-btn <%= (variant.images && variant.images[i]) ? '' : 'hidden' %>" 
+                                                onclick="removeImage('v<%= vIndex %>-input-<%= i %>')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+
+                                        <div class="image-upload-box" onclick="document.getElementById('v<%= vIndex %>-input-<%= i %>').click()">
+                                            <% if (variant.images && variant.images[i]) { %>
+                                                <img src="<%= variant.images[i] %>" id="img-v<%= vIndex %>-input-<%= i %>">
+                                                <input type="hidden" name="variants[<%= vIndex %>][existingImages][<%= i %>]" value="<%= variant.images[i] %>" id="existing-v<%= vIndex %>-input-<%= i %>">
+                                            <% } else { %>
+                                                <i class="fas fa-image text-neutral-600 text-xl" id="icon-v<%= vIndex %>-input-<%= i %>"></i>
+                                                <img src="" id="img-v<%= vIndex %>-input-<%= i %>" class="hidden">
+                                            <% } %>
+                                            <input type="file" id="v<%= vIndex %>-input-<%= i %>" name="variants[<%= vIndex %>][images]" class="hidden" accept="image/*" onchange="initCropper(event, 'v<%= vIndex %>-input-<%= i %>')">
+                                        </div>
                                     </div>
                                 <% } %>
                             </div>
-
-                            <% if (variant.images) { %>
-                                <% variant.images.forEach(img => { %>
-                                    <input type="hidden" name="variants[<%= vIndex %>][existingImages]" value="<%= img %>">
-                                <% }) %>
-                            <% } %>
                         </div>
                     <% }) %>
                 </div>
@@ -200,12 +202,8 @@
                 </button>
 
                 <div class="flex items-center justify-end gap-4 pb-10">
-                    <a href="/admin/products" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold">
-                        Cancel
-                    </a>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold">
-                        Edit Product
-                    </button>
+                    <a href="/admin/products" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold">Cancel</a>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold">Update Product</button>
                 </div>
             </form>
         </main>
@@ -213,13 +211,13 @@
 
     <div id="cropperModal">
         <div class="modal-content-wrapper">
-            <h3 class="text-xl font-bold mb-4">Crop Image</h3>
+            <h3 class="text-xl font-bold mb-4 text-white">Crop Image</h3>
             <div class="cropper-container-box">
-                <img id="cropperImage" src="" style="max-width: 100%;">
+                <img id="cropperImage" src="">
             </div>
             <div class="flex justify-end gap-4">
                 <button type="button" onclick="closeModal()" class="px-6 py-2 text-zinc-400 font-medium">Cancel</button>
-                <button type="button" onclick="cropImage()" class="px-8 py-2 bg-blue-600 rounded-lg font-bold">Crop & Save</button>
+                <button type="button" onclick="cropImage()" class="px-8 py-2 bg-blue-600 text-white rounded-lg font-bold">Save Crop</button>
             </div>
         </div>
     </div>
@@ -245,7 +243,7 @@
                     cropper = new Cropper(image, {
                         aspectRatio: 1,
                         viewMode: 1,
-                        autoCropArea: 1,
+                        background: false
                     });
                 };
                 reader.readAsDataURL(input.files[0]);
@@ -258,25 +256,49 @@
         }
 
         function cropImage() {
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
+            const canvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
             const input = document.getElementById(currentInputId);
             const imgElement = document.getElementById('img-' + currentInputId);
             const iconElement = document.getElementById('icon-' + currentInputId);
+            const container = document.getElementById('container-' + currentInputId);
+            const removeBtn = container.querySelector('.remove-img-btn');
 
             canvas.toBlob((blob) => {
-                const file = new File([blob], `edit-${Date.now()}.jpg`, { type: "image/jpeg" });
+                const file = new File([blob], `product-${Date.now()}.jpg`, { type: "image/jpeg" });
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 input.files = dataTransfer.files;
 
-                if(imgElement) {
-                    imgElement.src = canvas.toDataURL('image/jpeg');
-                    imgElement.classList.remove('hidden');
-                }
+                imgElement.src = canvas.toDataURL('image/jpeg');
+                imgElement.classList.remove('hidden');
                 if(iconElement) iconElement.classList.add('hidden');
-                
+                removeBtn.classList.remove('hidden'); // Show delete button
+
+                // If user crops a NEW image, we should remove the 'existingImage' reference
+                const existingInput = document.getElementById('existing-' + currentInputId);
+                if(existingInput) existingInput.remove();
+
                 closeModal();
             }, 'image/jpeg', 0.9);
+        }
+
+        function removeImage(inputId) {
+            const input = document.getElementById(inputId);
+            const imgElement = document.getElementById('img-' + inputId);
+            const iconElement = document.getElementById('icon-' + inputId);
+            const container = document.getElementById('container-' + inputId);
+            const removeBtn = container.querySelector('.remove-img-btn');
+            const existingInput = document.getElementById('existing-' + inputId);
+
+            input.value = ""; // Clear file input
+            imgElement.src = "";
+            imgElement.classList.add('hidden');
+            
+            if(iconElement) iconElement.classList.remove('hidden');
+            removeBtn.classList.add('hidden'); // Hide delete button
+
+            // If it was an existing server image, remove its hidden field so it's deleted on save
+            if(existingInput) existingInput.remove();
         }
 
         function addNewVariant() {
@@ -288,29 +310,30 @@
             for (let i = 0; i < 4; i++) {
                 const inputId = `v${variantCount}-input-${i}`;
                 imagesHtml += `
-                <div class="image-upload-box" onclick="document.getElementById('${inputId}').click()">
-                    <i class="fas fa-image text-neutral-600 text-xl" id="icon-${inputId}"></i>
-                    <img src="" id="img-${inputId}" class="hidden">
-                    <input type="file" id="${inputId}" name="variants[${variantCount}][images]" class="hidden" accept="image/*" onchange="initCropper(event, '${inputId}')">
+                <div class="image-container" id="container-${inputId}">
+                    <button type="button" class="remove-img-btn hidden" onclick="removeImage('${inputId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="image-upload-box" onclick="document.getElementById('${inputId}').click()">
+                        <i class="fas fa-image text-neutral-600 text-xl" id="icon-${inputId}"></i>
+                        <img src="" id="img-${inputId}" class="hidden">
+                        <input type="file" id="${inputId}" name="variants[${variantCount}][images]" class="hidden" accept="image/*" onchange="initCropper(event, '${inputId}')">
+                    </div>
                 </div>`;
             }
 
             variantDiv.innerHTML = `
-            <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-zinc-500 hover:text-red-500">
-                <i class="fas fa-times"></i>
-            </button>
+            <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-zinc-500 hover:text-red-500"><i class="fas fa-times"></i></button>
             <label class="form-label">Color</label>
             <select name="variants[${variantCount}][color]" class="input-field" required>
-                <option value="">Select</option>
-                <option>Black</option><option>White</option><option>Red</option><option>Blue</option>
+                <option value="Black">Black</option><option value="White">White</option><option value="Red">Red</option><option value="Blue">Blue</option>
             </select>
             <div class="grid grid-cols-2 gap-4 mt-6">
                 <input type="number" name="variants[${variantCount}][regularPrice]" placeholder="Regular Price" class="input-field" required>
                 <input type="number" name="variants[${variantCount}][salePrice]" placeholder="Sale Price" class="input-field">
             </div>
             <input type="number" name="variants[${variantCount}][quantity]" placeholder="Quantity" class="input-field mt-6" required>
-            <label class="form-label mt-6 text-white">Product Images</label>
-            <div class="grid grid-cols-4 gap-4 mt-2">${imagesHtml}</div>
+            <div class="grid grid-cols-4 gap-4 mt-6">${imagesHtml}</div>
             `;
             section.appendChild(variantDiv);
             variantCount++;

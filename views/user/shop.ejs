@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Time | Exclusive Collection</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+
+        :root {
+            --bg-pure-black: #000;
+            --accent-blue: #0066ff;
+            --accent-red: #ff3b30;
+        }
+
+        body {
+            background: var(--bg-pure-black);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .search-wrapper {
+            border-bottom: 1px solid rgba(255, 255, 255, .1);
+            padding-bottom: 12px;
+            transition: .4s;
+        }
+
+        .search-wrapper:focus-within {
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .sidebar-container {
+            background: #0a0a0a;
+            border-right: 1px solid rgba(255, 255, 255, .05);
+        }
+
+        .product-item {
+            transition: .5s cubic-bezier(.2, 1, .3, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-image {
+            transition: transform .8s cubic-bezier(.16, 1, .3, 1), filter .4s;
+            filter: brightness(.8);
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .product-item:hover .product-image {
+            transform: scale(1.05);
+            filter: brightness(1.15);
+        }
+
+        /* Curved Pill Buttons */
+        .btn-pill-blue {
+            background: var(--accent-blue);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 9999px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-pill-blue:hover {
+            background: #0052cc;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-pill-red {
+            background: var(--accent-red);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 9999px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-pill-red:hover {
+            background: #d32f2f;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+        }
+
+        .pg-btn {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .pg-btn:hover:not(.disabled) {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .pg-active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <%- include('../partials/user/header') %>
+
+        <% const cat=category || 'all' ; const s=sort || '' ; const priceArr=[].concat(price || []); const
+            currPage=parseInt(currentPage) || 1; const totalPgs=parseInt(totalPages) || 1; function buildQuery(newPage)
+            { let q=`?page=${newPage}&category=${cat}&sort=${s}&search=${search || '' }`; priceArr.forEach(p=> q +=
+            `&price=${p}`);
+            return q;
+            }
+
+            function buildClearSearchQuery() {
+            let q = `?page=1&category=${cat}&sort=${s}&search=`;
+            priceArr.forEach(p => q += `&price=${p}`);
+            return q;
+            }
+            %>
+
+            <div class="flex flex-col lg:flex-row min-h-screen">
+
+                <aside class="w-full lg:w-72 sidebar-container p-8 sticky top-0 h-screen overflow-y-auto">
+                    <form action="/shop" method="GET">
+                        <input type="hidden" name="search" value="<%= search || '' %>">
+
+                        <div class="flex justify-between items-center mb-10">
+                            <h2 class="text-lg tracking-tight">Filters</h2>
+                            <a href="/shop"
+                                class="text-[10px] text-blue-500 uppercase tracking-widest font-bold">Reset</a>
+                        </div>
+
+                        <div class="mb-12">
+                            <h4 class="mb-6 text-xs tracking-[0.4em] uppercase text-neutral-500">Category</h4>
+                            <% ['all','men','women','unisex'].forEach(c=> { %>
+                                <label class="flex gap-3 mb-4 cursor-pointer group">
+                                    <input type="radio" name="category" value="<%= c %>" <%=cat===c ? 'checked' : '' %>>
+                                    <span class="text-sm text-neutral-400 group-hover:text-white transition">
+                                        <%= c.toUpperCase() %>
+                                    </span>
+                                </label>
+                                <% }) %>
+                        </div>
+
+                        <div class="mb-12">
+                            <h4 class="mb-6 text-xs tracking-[0.4em] uppercase text-neutral-500">Price Range</h4>
+                            <label class="flex gap-3 mb-4 cursor-pointer">
+                                <input type="checkbox" name="price" value="under1000" <%=priceArr.includes('under1000')
+                                    ? 'checked' : '' %>>
+                                <span class="text-sm text-neutral-400">Below ₹1,000</span>
+                            </label>
+                            <label class="flex gap-3 mb-4 cursor-pointer">
+                                <input type="checkbox" name="price" value="1000-5000" <%=priceArr.includes('1000-5000')
+                                    ? 'checked' : '' %>>
+                                <span class="text-sm text-neutral-400">₹1,000 – ₹5,000</span>
+                            </label>
+                            <label class="flex gap-3 cursor-pointer">
+                                <input type="checkbox" name="price" value="above5000" <%=priceArr.includes('above5000')
+                                    ? 'checked' : '' %>>
+                                <span class="text-sm text-neutral-400">Above ₹5,000</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-12">
+                            <h4 class="mb-6 text-xs tracking-[0.4em] uppercase text-neutral-500">Sort By</h4>
+                            <label class="flex gap-3 mb-4 cursor-pointer">
+                                <input type="radio" name="sort" value="priceLow" <%=s==='priceLow' ? 'checked' : '' %>>
+                                <span class="text-sm text-neutral-400">Price: Low → High</span>
+                            </label>
+                            <label class="flex gap-3 mb-4 cursor-pointer">
+                                <input type="radio" name="sort" value="priceHigh" <%=s==='priceHigh' ? 'checked' : ''
+                                    %>>
+                                <span class="text-sm text-neutral-400">Price: High → Low</span>
+                            </label>
+                            <label class="flex gap-3 cursor-pointer">
+                                <input type="radio" name="sort" value="new" <%=s==='new' ? 'checked' : '' %>>
+                                <span class="text-sm text-neutral-400">New Arrivals</span>
+                            </label>
+                        </div>
+
+                        <button
+                            class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl text-xs uppercase tracking-widest transition-all duration-300 shadow-lg shadow-blue-900/20">
+                            Apply Filters
+                        </button>
+                    </form>
+                </aside>
+
+                <main class="flex-1 p-8 lg:p-16 flex flex-col items-center">
+
+                    <form action="/shop" method="GET" class="max-w-2xl w-full mb-24">
+                        <input type="hidden" name="category" value="<%= cat %>">
+                        <input type="hidden" name="sort" value="<%= s %>">
+                        <% priceArr.forEach(p=> { %>
+                            <input type="hidden" name="price" value="<%= p %>">
+                            <% }) %>
+
+                                <div class="search-wrapper flex items-center gap-6">
+                                    <input type="text" name="search" value="<%= search || '' %>"
+                                        placeholder="Search our collection..."
+                                        class="bg-transparent flex-1 text-[12px] tracking-[0.2em] uppercase focus:outline-none placeholder:text-neutral-800">
+
+                                    <div class="flex items-center gap-3">
+                                        <button type="submit" class="btn-pill-blue">
+                                            <i class="fas fa-search"></i>
+                                            Search
+                                        </button>
+
+                                        <% if(search && search.length> 0) { %>
+                                            <a href="<%= buildClearSearchQuery() %>" class="btn-pill-red">
+                                                <i class="fas fa-times"></i>
+                                                Clear
+                                            </a>
+                                            <% } %>
+                                    </div>
+                                </div>
+                    </form>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-32 gap-x-12 w-full flex-grow">
+                        <% if(products.length===0){ %>
+                            <div class="col-span-full text-center py-20">
+                                <p class="text-neutral-600 uppercase tracking-[0.4em] text-[10px]">No results discovered
+                                </p>
+                            </div>
+                            <% } %>
+
+                                <% products.forEach(product=> { %>
+                                    <div class="product-item">
+                                        <a href="/product/<%= product._id %>" class="block group w-full">
+                                            <div
+                                                class="aspect-square flex items-center justify-center mb-10 overflow-hidden px-4">
+                                                <img src="<%= product.image %>" class="product-image w-full h-full"
+                                                    alt="<%= product.name %>">
+                                            </div>
+                                            <div class="text-center space-y-4 px-2">
+                                                <h3
+                                                    class="text-[12px] tracking-[0.3em] uppercase text-neutral-400 group-hover:text-white transition-colors duration-500">
+                                                    <%= product.name %>
+                                                </h3>
+                                                <p
+                                                    class="text-[9px] text-neutral-700 tracking-[0.2em] uppercase leading-relaxed max-w-[200px] mx-auto">
+                                                    <%= product.description || 'Timeless Craftsmanship' %>
+                                                </p>
+                                                <div class="pt-2">
+                                                    <span class="text-lg font-light tracking-tighter">₹<%=
+                                                            product.price.toLocaleString() %></span>
+                                                    <% if(product.oldPrice){ %>
+                                                        <span class="text-[10px] line-through text-neutral-800 ml-3">₹
+                                                            <%= product.oldPrice.toLocaleString() %></span>
+                                                        <% } %>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <% }) %>
+                    </div>
+
+                    <% if(totalPgs> 1) { %>
+                        <div class="mt-40 mb-10 flex justify-center items-center gap-2">
+                            <a href="<%= currPage > 1 ? buildQuery(currPage - 1) : '#' %>"
+                                class="pg-btn w-12 h-12 flex items-center justify-center rounded-full <%= currPage === 1 ? 'opacity-20 cursor-default disabled' : '' %>">
+                                <i class="fas fa-chevron-left text-[10px]"></i>
+                            </a>
+
+                            <div class="flex gap-2 mx-4">
+                                <% for(let i=1; i <=totalPgs; i++) { %>
+                                    <a href="<%= buildQuery(i) %>"
+                                        class="pg-btn w-11 h-11 flex items-center justify-center rounded-full text-[10px] tracking-tighter <%= currPage === i ? 'pg-active' : '' %>">
+                                        <%= i < 10 ? '0' + i : i %>
+                                    </a>
+                                    <% } %>
+                            </div>
+
+                            <a href="<%= currPage < totalPgs ? buildQuery(currPage + 1) : '#' %>"
+                                class="pg-btn w-12 h-12 flex items-center justify-center rounded-full <%= currPage === totalPgs ? 'opacity-20 cursor-default disabled' : '' %>">
+                                <i class="fas fa-chevron-right text-[10px]"></i>
+                            </a>
+                        </div>
+                        <% } %>
+
+                </main>
+            </div>
+
+</body>
+
+</html>

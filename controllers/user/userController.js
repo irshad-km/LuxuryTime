@@ -1,5 +1,6 @@
 import User from "../../models/userSchema.js";
 import Product from "../../models/productSchema.js";
+import Category from "../../models/categorySchema.js";
 import Address from "../../models/userAddress.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -11,20 +12,42 @@ dotenv.config();
 // PAGE LOADERS 
 
 const loadHomepage = async (req, res) => {
-  if (req.session.user) {
-    const user = await User.findById(req.session.user._id);
+  try {
+    if (req.session.user) {
+      const user = await User.findById(req.session.user._id);
 
-    if (!user || user.isBlocked) {
-      delete req.session.user;
-
-      res.clearCookie("LuxuryTime.user.sid")
-
-      return res.redirect("/login");
+      if (!user || user.isBlocked) {
+        delete req.session.user;
+        res.clearCookie("LuxuryTime.user.sid");
+        return res.redirect("/login");
+      }
     }
-  }
 
-  res.render("user/home");
+    const products = await Product.find({})
+      .sort({ createdAt: -1 })
+      .limit(8);
+
+    const latestProducts = products.map(p => {
+      const mainVariant = p.variants[0] || {};
+
+      return {
+        _id: p._id,
+        name: p.name,
+        price: mainVariant.regularPrice || 0,
+        image: mainVariant.images?.[0] || "/images/products/default.png"
+      };
+    });
+
+    res.render("user/home", {
+      latestProducts
+    });
+
+  } catch (error) {
+    console.error("Load home page error:", error);
+    res.status(500).send("Server error");
+  }
 };
+
 
 const loadSignup = (req, res) => res.render("user/signUp");
 
@@ -449,28 +472,94 @@ const deleteAddress = async (req, res) => {
 
 const loadshopepage = async (req, res) => {
   try {
-    const products = await Product.find({})
-      .populate("category")
-      .sort({ createdAt: -1 });
+    const { category, price, sort, search } = req.query;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = 4;
+    const skip = (page - 1) * limit;
+
+    let filter = {
+      isListed:true,
+      isDeleted:false
+    };
+    let sortOption = { createdAt: -1 };
+
+    const listedCategories = await Category.find(
+      { isListed: true },
+      { _id: 1 }
+    );
+
+    filter.category={
+      $in:listedCategories.map(cat=>cat._id)
+    };
+
+    if (category && category !== "all") {
+      const categoryDoc = await Category.findOne({
+         name: category ,
+         isListed:true
+        });
+
+      if (categoryDoc) {
+        filter.category = categoryDoc._id;
+      }
+    }
+
+    if (search && search.trim() !== "") {
+      filter.name = { $regex: search, $options: "i" };
+    }
+
+    if (price) {
+      if (price === "under1000") {
+        filter["variants.regularPrice"] = { $lt: 1000 };
+      } else if (price === "1000-5000") {
+        filter["variants.regularPrice"] = { $gte: 1000, $lte: 5000 };
+      } else if (price === "above5000") {
+        filter["variants.regularPrice"] = { $gt: 5000 };
+      }
+    }
+
+    //sort
+    if (sort === "priceLow") {
+      sortOption = { "variants.regularPrice": 1 };
+    } else if (sort === "priceHigh") {
+      sortOption = { "variants.regularPrice": -1 };
+    } else if (sort === "new") {
+      sortOption = { createdAt: -1 };
+    }
+
+    const totalProducts = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter,{isDeleted:false})
+      .populate("category")
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit);
 
     const formattedProducts = products.map(p => {
-
-      let mainVariant = p.variants[0] || {};
+      const mainVariant = p.variants[0] || {};
       return {
-        _id:p._id,
+        _id: p._id,
         name: p.name,
         description: p.description,
         price: mainVariant.regularPrice || 0,
         oldPrice: mainVariant.salePrice || null,
-        image: mainVariant.images && mainVariant.images[0]
-          ? mainVariant.images[0]
-          : "/images/products/default.png",
+        image: mainVariant.images?.[0] || "/images/products/default.png",
         tag: mainVariant.salePrice ? "SALE" : "NEW"
       };
     });
 
-    res.render("user/shope", { products: formattedProducts });
+    res.render("user/shop", {
+      products: formattedProducts,
+
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+
+      category,
+      price,
+      sort,
+      search
+    });
+
   } catch (error) {
     console.error("Load shop page error:", error);
     res.status(500).send("Server error");
@@ -485,7 +574,7 @@ const loadProductDetails = async (req, res) => {
       .populate("category")
 
     if (!product) {
-      return res.redirect("/shope");
+      return res.redirect("/shop");
     }
 
     const relatedProducts = await Product.find({
@@ -495,7 +584,7 @@ const loadProductDetails = async (req, res) => {
     res.render("user/productDetails", { product, relatedProducts });
   } catch (error) {
     console.log(error);
-    res.redirect("/shope");
+    res.redirect("/shop");
   }
 }
 

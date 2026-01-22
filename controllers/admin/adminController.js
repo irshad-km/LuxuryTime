@@ -153,13 +153,41 @@ const toggleUserStatus = async (req, res) => {
 
 const loadproduct = async (req, res) => {
     try {
-        const products = await Product.find()
-            .populate("category")
-            .sort({ createdAt: -1 });
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
+        const skip = (page - 1) * limit;
+        const sort = req.query.sort || "new";
 
-        res.render("admin/product", { products });
+        let filter = { isDeleted: false };
+        let sortOption = { createdAt: -1 };
+
+        if (search.trim() !== "") {
+            filter.name = { $regex: search, $options: "i" };
+        }
+
+        if (sort === "old") {
+            sortOption = { createdAt: 1 };
+        }
+
+        const totalProducts = await Product.countDocuments(filter);
+
+        const products = await Product.find(filter)
+            .populate("category")
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit);
+
+        res.render("admin/product", {
+            products,
+            currentPage: page,
+            totalPages: Math.ceil(totalProducts / limit),
+            search,
+            sort
+        });
+
     } catch (error) {
-        console.error(error);
+        console.error("Admin product load error:", error);
         res.status(500).send("Server error");
     }
 };
@@ -185,4 +213,5 @@ export {
     toggleUserStatus,
     loadproduct,
     loadaddproduct
+
 };

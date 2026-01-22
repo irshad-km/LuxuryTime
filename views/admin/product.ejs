@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | Product Management</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
@@ -23,21 +24,10 @@
       background-color: var(--bg-main);
       color: #ffffff;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      letter-spacing: -0.01em;
-      margin: 0;
-      overflow-x: hidden;
     }
 
-    .admin-wrapper {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    .main-content {
-      flex-grow: 1;
-      padding: 2rem;
-      width: calc(100% - 260px);
-    }
+    .admin-wrapper { display: flex; min-height: 100vh; }
+    .main-content { flex-grow: 1; padding: 2rem; width: calc(100% - 260px); }
 
     .glass-panel {
       background: rgba(17, 17, 17, 0.6);
@@ -49,7 +39,7 @@
     .custom-table th {
       font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: .1em;
       color: #555;
       padding: 20px 24px;
       border-bottom: 1px solid var(--border-subtle);
@@ -57,12 +47,11 @@
 
     .custom-table td {
       padding: 16px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      vertical-align: middle;
+      border-bottom: 1px solid rgba(255,255,255,.03);
     }
 
     .status-active {
-      background: rgba(16, 185, 129, 0.1);
+      background: rgba(16,185,129,.1);
       color: #10b981;
       font-size: 10px;
       padding: 4px 10px;
@@ -71,7 +60,7 @@
     }
 
     .status-inactive {
-      background: rgba(107, 114, 128, 0.1);
+      background: rgba(107,114,128,.1);
       color: #9ca3af;
       font-size: 10px;
       padding: 4px 10px;
@@ -79,162 +68,167 @@
       font-weight: 700;
     }
 
-    .search-container {
-      background: #111;
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-    }
-
     .btn-action {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.03);
-      transition: all 0.2s;
+      background: rgba(255,255,255,.03);
+      transition: .2s;
     }
 
-    .btn-edit:hover {
-      color: #3b82f6;
-      background: rgba(59, 130, 246, 0.1);
-    }
+    .btn-edit:hover { color: #3b82f6; background: rgba(59,130,246,.1); }
+    .btn-delete:hover { color: #ef4444; background: rgba(239,68,68,.1); }
 
-    .btn-delete:hover {
-      color: #ef4444;
-      background: rgba(239, 68, 68, 0.1);
+    /* TOGGLE */
+    .switch { position: relative; width: 36px; height: 18px; }
+    .switch input { opacity: 0; }
+    .slider {
+      position: absolute; inset: 0;
+      background: #333; border-radius: 999px;
+      cursor: pointer; transition: .3s;
     }
-
-    .offer-badge {
-      background: rgba(37, 99, 235, 0.1);
-      color: #3b82f6;
-      border: 1px solid rgba(37, 99, 235, 0.2);
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 4px;
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 14px; height: 14px;
+      left: 2px; bottom: 2px;
+      background: white;
+      border-radius: 50%;
+      transition: .3s;
     }
+    input:checked + .slider { background: #10b981; }
+    input:checked + .slider:before { transform: translateX(18px); }
   </style>
 </head>
 
 <body>
 
-  <div class="admin-wrapper">
-    <aside>
-      <%- include('../partials/admin/sidebar') %>
-    </aside>
+<div class="admin-wrapper">
+  <aside>
+    <%- include('../partials/admin/sidebar') %>
+  </aside>
 
-    <main class="main-content">
+  <main class="main-content">
 
-      <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div>
-          <h1 class="text-3xl font-bold mb-1 tracking-tight">Product Management</h1>
-          <p class="text-neutral-500 text-sm">Manage your luxury watch inventory and pricing</p>
-        </div>
-
-        <div class="flex items-center gap-4 w-full md:w-auto">
-          <div class="search-container flex items-center px-4 py-2 w-full md:w-80 border border-neutral-800">
-            <i class="fas fa-search text-neutral-600 mr-3"></i>
-            <input type="text" placeholder="Search by product name..."
-              class="bg-transparent border-none outline-none text-sm w-full text-white">
-            <button class="bg-neutral-800 text-xs px-2 py-1 rounded text-neutral-400 hover:text-white transition">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-          <a href="/admin/addproduct">
-            <button
-              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition shadow-lg shadow-blue-900/20 whitespace-nowrap">
-              <i class="fas fa-plus text-xs"></i>
-              Add Product
-            </button>
-          </a>
-        </div>
-      </header>
-
-      <div class="glass-panel overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left custom-table border-collapse">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th>Regular Price (₹)</th>
-                <th>Sale Price (₹)</th>
-                <th>Qty</th>
-                <th>Status</th>
-                <th class="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="text-sm">
-              <% products.forEach(product=> { %>
-                <tr class="hover:bg-white/[0.02] transition">
-                  <td>
-                    <div
-                      class="w-12 h-12 bg-neutral-900 rounded-full border border-neutral-800 flex items-center justify-center overflow-hidden p-2">
-                      <img src="<%= product.variants[0]?.images[0] || 'https://via.placeholder.com/40' %>" alt="Watch"
-                        class="w-full h-full object-contain opacity-80">
-                    </div>
-                  </td>
-                  <td>
-                    <div class="font-semibold text-neutral-100">
-                      <%= product.name %>
-                    </div>
-                  </td>
-                  <td class="text-neutral-400">
-                    <%= product.category?.name || 'Uncategorized' %>
-                  </td>
-                  <td class="text-neutral-300 font-medium">₹ <%= product.variants[0]?.regularPrice?.toLocaleString() ||
-                      0 %>
-                  </td>
-                  <td class="text-neutral-100 font-bold">
-                    <%= product.variants[0]?.salePrice ? '₹ ' + product.variants[0].salePrice.toLocaleString() : '-' %>
-                  </td>
-                  <td class="text-neutral-300">
-                    <%= product.variants[0]?.quantity || 0 %>
-                  </td>
-                  <td>
-                    <span class="<%= product.isListed ? 'status-inactive' : 'status-active' %>">
-                      <%= product.isListed ? 'INACTIVE' : 'ACTIVE' %>
-                    </span>
-                  </td>
-                  <td class="text-right">
-                    <div class="flex justify-end gap-2">
-                      <a href="/admin/products/edit/<%= product._id %>">
-                        <button class="btn-action btn-edit" title="Edit">
-                          <i class="fas fa-pencil-alt text-xs"></i>
-                        </button>
-                      </a>
-
-                      <button class="btn-action btn-delete" title="Delete">
-                        <i class="fas fa-trash-alt text-xs"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <% }) %>
-            </tbody>
-          </table>
-        </div>
-
-        <div
-          class="p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-t border-neutral-900/50 bg-neutral-900/20">
-          <p class="text-xs text-neutral-500">Showing <span class="text-neutral-300 font-bold">1-5</span> of
-            <span class="text-neutral-300 font-bold">
-              <%= products.length %>
-            </span> results
-          </p>
-
-          <div class="flex gap-2">
-            <button
-              class="px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-xs font-bold text-neutral-500 hover:text-white transition disabled:opacity-50">Previous</button>
-            <button
-              class="px-5 py-2 bg-blue-600 rounded-lg text-xs font-bold text-white shadow-lg shadow-blue-900/40">Next</button>
-          </div>
-        </div>
+    <header class="flex justify-between mb-10">
+      <div>
+        <h1 class="text-3xl font-bold">Product Management</h1>
+        <p class="text-neutral-500 text-sm">Manage your luxury watch inventory</p>
       </div>
-    </main>
-  </div>
-</body>
 
+      <a href="/admin/addproduct"
+         class="bg-blue-600 hover:bg-blue-700 px-6 py-2.5 rounded-xl font-semibold text-sm">
+        + Add Product
+      </a>
+    </header>
+
+    <div class="glass-panel overflow-hidden">
+      <table class="w-full custom-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Regular</th>
+            <th>Sale</th>
+            <th>Qty</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% products.forEach(product => { %>
+          <tr>
+
+            <td>
+              <img src="<%= product.variants[0]?.images[0] || 'https://via.placeholder.com/40' %>"
+                   class="w-12 h-12 object-contain bg-neutral-900 rounded-full p-2">
+            </td>
+
+            <td class="font-semibold"><%= product.name %></td>
+            <td class="text-neutral-400"><%= product.category?.name || 'N/A' %></td>
+            <td>₹ <%= product.variants[0]?.regularPrice || 0 %></td>
+            <td><%= product.variants[0]?.salePrice ? '₹ ' + product.variants[0].salePrice : '-' %></td>
+            <td><%= product.variants[0]?.quantity || 0 %></td>
+
+            <td>
+              <span class="<%= product.isListed ? 'status-active' : 'status-inactive' %>">
+                <%= product.isListed ? 'ACTIVE' : 'INACTIVE' %>
+              </span>
+            </td>
+
+            <!-- ACTIONS -->
+            <td class="text-right">
+              <div class="flex justify-end items-center gap-3">
+
+                <!-- TOGGLE -->
+                <label class="switch">
+                  <input type="checkbox"
+                    <%= product.isListed ? 'checked' : '' %>
+                    onchange="toggleProduct('<%= product._id %>', this)">
+                  <span class="slider"></span>
+                </label>
+
+                <!-- EDIT -->
+                <a href="/admin/products/edit/<%= product._id %>"
+                   class="btn-action btn-edit">
+                  <i class="fas fa-pencil-alt text-xs"></i>
+                </a>
+
+                <!-- SOFT DELETE -->
+                <button onclick="softDelete('<%= product._id %>')"
+                        class="btn-action btn-delete">
+                  <i class="fas fa-trash-alt text-xs"></i>
+                </button>
+
+              </div>
+            </td>
+
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+  async function toggleProduct(id, checkbox) {
+    const state = checkbox.checked;
+    checkbox.checked = !state;
+
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to ${state ? 'List' : 'Unlist'} this product?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb'
+    });
+
+    if (result.isConfirmed) {
+      await fetch(`/admin/toggleProduct/${id}`, { method: 'PATCH' });
+      location.reload();
+    }
+  }
+
+  async function softDelete(id) {
+    const result = await Swal.fire({
+      title: 'Delete product?',
+      text: 'This will hide the product',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444'
+    });
+
+    if (result.isConfirmed) {
+      await fetch(`/admin/softDeleteProduct/${id}`, { method: 'PATCH' });
+      location.reload();
+    }
+  }
+</script>
+
+</body>
 </html>

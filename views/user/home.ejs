@@ -1,147 +1,156 @@
 <%- include('../partials/user/header') %>
 
-    <main class="bg-black text-white">
+<main class="bg-black text-white">
 
-       
-        <section class="relative w-full h-[95vh] overflow-hidden">
+    <!-- ================= HERO SECTION ================= -->
+    <section class="relative w-full h-[95vh] overflow-hidden">
 
-            <!-- Banner Image -->
-            <div class="absolute inset-0">
-                <img src="/images/banner1.png" class="w-full h-full object-cover" alt="Banner">
-            </div>
+        <div class="absolute inset-0">
+            <img src="/images/banner1.png" class="w-full h-full object-cover" alt="Banner">
+        </div>
 
-            <!-- Dark Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
 
-            <!-- Hero Content -->
-            <div class="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center px-6 lg:px-8">
+        <div class="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center px-6 lg:px-8">
+            <span class="mb-6 text-xs uppercase tracking-[0.35em] text-gray-400">
+                Swiss Engineering
+            </span>
 
-                <span class="mb-6 text-xs uppercase tracking-[0.35em] text-gray-400">
-                    Swiss Engineering
+            <h1 class="max-w-xl text-5xl sm:text-7xl font-extrabold uppercase leading-tight">
+                Timeless <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">
+                    Luxury
                 </span>
+            </h1>
 
-                <h1 class="max-w-xl text-5xl sm:text-7xl font-extrabold uppercase leading-tight">
-                    Timeless <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">
-                        Luxury
-                    </span>
-                </h1>
+            <p class="mt-6 max-w-md text-gray-300 leading-relaxed">
+                Experience the pinnacle of craftsmanship. Designed for those who value every second.
+            </p>
 
-                <p class="mt-6 max-w-md text-gray-300 leading-relaxed">
-                    Experience the pinnacle of craftsmanship. Designed for those who value every second.
-                </p>
+            <div class="mt-10">
+                <a href="/shop"
+                   class="inline-flex items-center gap-3 border-b border-white pb-2 text-sm uppercase tracking-widest hover:text-gray-300 transition">
+                    Shop the Collection →
+                </a>
+            </div>
+        </div>
+    </section>
 
-                <!-- Buttons -->
-                <div class="mt-10 flex items-center gap-8">
+    <!-- ================= SHOP BY CATEGORY ================= -->
+    <section class="py-28 bg-black">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
 
-                    <a href="/shop"
-                        class="inline-flex items-center gap-3 border-b border-white pb-2 text-sm uppercase tracking-widest hover:text-gray-300 transition">
-                        Shop the Collection
-                        <span class="material-symbols-outlined">arrow_forward</span>
-                    </a>
+            <div class="mb-16 text-center">
+                <h3 class="text-xs uppercase tracking-[0.4em] text-gray-400">
+                    Shop by Category
+                </h3>
+            </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <a href="/shop?category=men" class="group relative overflow-hidden rounded-xl">
+                    <img src="/images/categori1.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition">
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <h4 class="uppercase text-sm tracking-widest">Men Watches</h4>
+                    </div>
+                </a>
 
+                <a href="/shop?category=women" class="group relative overflow-hidden rounded-xl">
+                    <img src="/images/categori2.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition">
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <h4 class="uppercase text-sm tracking-widest">Women Watches</h4>
+                    </div>
+                </a>
 
-                </div>
+                <a href="/shop?category=unisex" class="group relative overflow-hidden rounded-xl">
+                    <img src="/images/categori3.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition">
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <h4 class="uppercase text-sm tracking-widest">Unisex Watches</h4>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= LATEST PRODUCTS ================= -->
+    <section class="py-28 bg-[#0b0b0b]">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+
+            <div class="mb-14 flex justify-between items-center">
+                <h3 class="uppercase tracking-widest text-sm">
+                    Latest Collection
+                </h3>
+
+                <a href="/shop"
+                   class="text-xs uppercase tracking-widest text-gray-400 hover:text-white transition">
+                    View All
+                </a>
+            </div>
+
+            <!-- PRODUCTS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+
+                <% if (latestProducts && latestProducts.length > 0) { %>
+                    <% latestProducts.forEach(product => { %>
+
+                        <a href="/product/<%= product._id %>" class="group bg-black rounded-xl p-4">
+                            <div class="h-56 flex items-center justify-center overflow-hidden rounded-lg mb-4">
+                                <img src="<%= product.image %>"
+                                     class="h-full object-contain group-hover:scale-110 transition">
+                            </div>
+
+                            <h4 class="text-sm uppercase tracking-wide">
+                                <%= product.name %>
+                            </h4>
+
+                            <p class="text-gray-400 text-sm mt-1">
+                                ₹<%= product.price.toLocaleString() %>
+                            </p>
+                        </a>
+
+                    <% }) %>
+                <% } else { %>
+                    <p class="col-span-4 text-center text-gray-500">
+                        No products available
+                    </p>
+                <% } %>
 
             </div>
-        </section>
 
-        <!-- SHOP BY CATEGORY -->
-        <section class="py-28 bg-black">
-            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+            <!-- ================= PAGINATION ================= -->
+            <% if (typeof totalPages !== "undefined" && totalPages > 1) { %>
+                <div class="mt-16 flex justify-center gap-2">
 
-                <div class="mb-16 text-center">
-                    <h3 class="text-xs uppercase tracking-[0.4em] text-gray-400">
-                        Shop by Category
-                    </h3>
-                </div>
+                    <% if (currentPage > 1) { %>
+                        <a href="/?page=<%= currentPage - 1 %>"
+                           class="px-4 py-2 border border-gray-700 text-gray-400 hover:text-white">
+                            Prev
+                        </a>
+                    <% } %>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="/?page=<%= i %>"
+                           class="px-4 py-2 border 
+                           <%= i === currentPage ? 'border-white text-white' : 'border-gray-700 text-gray-400 hover:text-white' %>">
+                            <%= i %>
+                        </a>
+                    <% } %>
 
-                    <!-- Category 1 -->
-                    <a href="/shop" class="group relative overflow-hidden rounded-xl">
-                        <img src="/images/categori1.png"
-                            class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-black/40"></div>
-                        <div class="absolute bottom-6 left-6">
-                            <h4 class="uppercase text-sm tracking-widest">Men Watches</h4>
-                        </div>
-                    </a>
-
-                    <!-- Category 2 -->
-                    <a href="/shop" class="group relative overflow-hidden rounded-xl">
-                        <img src="/images/categori2.png"
-                            class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-black/40"></div>
-                        <div class="absolute bottom-6 left-6">
-                            <h4 class="uppercase text-sm tracking-widest">Women Watches</h4>
-                        </div>
-                    </a>
-
-                    <!-- Category 3 -->
-                    <a href="/shop" class="group relative overflow-hidden rounded-xl">
-                        <img src="/images/categori3.png"
-                            class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-black/40"></div>
-                        <div class="absolute bottom-6 left-6">
-                            <h4 class="uppercase text-sm tracking-widest">UNISEX WATCHES</h4>
-                        </div>
-                    </a>
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/?page=<%= currentPage + 1 %>"
+                           class="px-4 py-2 border border-gray-700 text-gray-400 hover:text-white">
+                            Next
+                        </a>
+                    <% } %>
 
                 </div>
-            </div>
-        </section>
+            <% } %>
 
-        <!-- FEATURED COLLECTION -->
-        <section class="py-28 bg-[#0b0b0b]">
-            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        </div>
+    </section>
 
-                <div class="mb-14 flex justify-between items-center">
-                    <h3 class="uppercase tracking-widest text-sm">
-                        Featured Collection
-                    </h3>
-                    <div class="flex gap-3 text-gray-400">
-                    </div>
-                </div>
+</main>
 
-                <!-- Carousel -->
-                <div class="flex gap-6 overflow-x-auto scrollbar-hide">
-
-                    <div class="min-w-[260px] bg-black rounded-xl p-4">
-                        <img src="/images/products/product1.png" class="h-56 w-full object-cover rounded-lg mb-4">
-                        <h4 class="text-sm uppercase">Classic Black</h4>
-                        <p class="text-gray-400 text-sm">₹14,999</p>
-                    </div>
-
-                    <div class="min-w-[260px] bg-black rounded-xl p-4">
-                        <img src="/images/products/product2.png" class="h-56 w-full object-cover rounded-lg mb-4">
-                        <h4 class="text-sm uppercase">Rose Gold</h4>
-                        <p class="text-gray-400 text-sm">₹18,499</p>
-                    </div>
-
-                    <div class="min-w-[260px] bg-black rounded-xl p-4">
-                        <img src="/images/products/product3 (1).png" class="h-56 w-full object-cover rounded-lg mb-4">
-                        <h4 class="text-sm uppercase">Silver Chrono</h4>
-                        <p class="text-gray-400 text-sm">₹21,999</p>
-                    </div>
-
-                    <div class="min-w-[260px] bg-black rounded-xl p-4 flex flex-col">
-                        <div class="bg-white rounded-lg flex items-center justify-center h-56 mb-4 overflow-hidden">
-                            <img src="/images/products/product4.png" class="max-h-full object-contain"
-                                alt="Leather Classic Watch">
-                        </div>
-
-                        <h4 class="text-sm uppercase tracking-wide">Leather Classic</h4>
-                        <p class="text-gray-400 text-sm mt-1">₹16,799</p>
-                    </div>
-
-
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-
-    <%- include('../partials/user/footer') %>
+<%- include('../partials/user/footer') %>

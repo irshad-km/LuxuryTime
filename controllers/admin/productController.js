@@ -5,6 +5,7 @@ import Category from "../../models/categorySchema.js"
 const addProduct = async (req, res) => {
     try {
         const { name, description, category } = req.body;
+
         const variants = [];
 
         if (req.body.variants) {
@@ -20,6 +21,8 @@ const addProduct = async (req, res) => {
                         .filter(file => file.fieldname === `variants[${index}][images]`)
                         .map(file => "/uploads/" + file.filename);
                 }
+
+
 
                 variants.push({
                     color: v.color,
@@ -124,8 +127,59 @@ const updateProduct = async (req, res) => {
     }
 }
 
+
+const toggleProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        product.isListed = !product.isListed;
+        await product.save();
+
+        res.status(200).json({
+            success: true,
+            isListed: product.isListed
+        });
+
+    } catch (error) {
+        console.error("Toggle product error:", error);
+        res.status(500).json({ success: false });
+    }
+};
+
+
+const softDeleteProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const product = await Product.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ success: false });
+        }
+
+        product.isDeleted = true;
+        product.isListed = false;
+
+        await product.save();
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error("Soft delete error:", error);
+        res.status(500).json({ success: false });
+    }
+}
+
+
 export {
     addProduct,
     loadEditproduct,
-    updateProduct
+    updateProduct,
+    toggleProduct,
+    softDeleteProduct
 }
