@@ -35,6 +35,7 @@ const checkUserBlocked = async (req, res, next) => {
         }
 
         next();
+
     } catch (error) {
         console.log("checkUserBlocked error:", error);
         res.redirect("/login");
@@ -57,4 +58,10 @@ const guestOnly = (req, res, next) => {
     next();
 };
 
-export {requireAdminLogin, guestOnly, requireAdminLoginSimple, checkUserBlocked };
+
+export {
+    requireAdminLogin,
+    guestOnly,
+    requireAdminLoginSimple,
+    checkUserBlocked,
+};

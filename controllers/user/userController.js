@@ -10,7 +10,6 @@ import { error } from "console";
 dotenv.config();
 
 // home page
-
 const loadHomepage = async (req, res) => {
   try {
     if (req.session.user) {
@@ -38,6 +37,8 @@ const loadHomepage = async (req, res) => {
       };
     });
 
+
+
     res.render("user/home", {
       latestProducts
     });
@@ -47,6 +48,8 @@ const loadHomepage = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
+
 
 
 const loadSignup = (req, res) => res.render("user/signUp");
@@ -70,6 +73,7 @@ const loadProfile = (req, res) => res.render("user/profile");
 const loadForgotPassword = (req, res) => res.render("user/forgotPass");
 const loadChangePassword = (req, res) => res.render("user/resetPass")
 
+
 const loadVerifyOtp = (req, res) => {
   if (!req.session.otpType || !req.session.otpExpiresAt) {
     return res.redirect("/login");
@@ -91,7 +95,7 @@ const loadnewPassword = async (req, res) => {
   }
 };
 
-
+//genarat OTP
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendVerificationEmail = async (email, otp) => {
@@ -103,6 +107,7 @@ const sendVerificationEmail = async (email, otp) => {
         pass: process.env.NODEMAILER_PASSWORD
       },
     });
+
     const info = await transporter.sendMail({
       from: process.env.NODEMAILER_EMAIL,
       to: email,
@@ -116,9 +121,11 @@ const sendVerificationEmail = async (email, otp) => {
   }
 };
 
+//bcrypt pass
 const securePassword = async (password) => bcrypt.hash(password, 10);
 
 
+//signup
 const signUp = async (req, res) => {
   try {
     const { fullname, email, phone, password, confirmPassword } = req.body;
@@ -133,9 +140,11 @@ const signUp = async (req, res) => {
 
     const otp = generateOtp();
     const emailSent = await sendVerificationEmail(email, otp);
+
     if (!emailSent) {
       return res.render("user/signUp", { message: "OTP sending failed" });
     }
+
 
     req.session.userOtp = otp;
     req.session.userData = { fullname, email, phone, password };
@@ -158,12 +167,15 @@ const login = async (req, res) => {
     const user = await User.findOne({ email, isAdmin: false });
 
     if (!user) return res.render("user/login", { error: "User not found" });
+
     if (!user.isVerified) return res.render("user/login", { error: "Verify your email" });
+
     if (user.isBlocked) {
       return res.render("user/login", { error: "Your account has been blocked by admin" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) return res.render("user/login", { error: "Incorrect password" });
 
     req.session.user = {
@@ -178,6 +190,7 @@ const login = async (req, res) => {
   }
 };
 
+//logout
 const logout = (req, res) => {
   delete req.session.user
   res.clearCookie("LuxuryTime.user.sid");
@@ -191,10 +204,12 @@ const sendForgotOtp = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
+
     if (!user) return res.render("user/forgotPass", { error: "Email not registered" });
 
     const otp = generateOtp();
     const emailSent = await sendVerificationEmail(email, otp);
+
     if (!emailSent) return res.render("user/forgotPass", { error: "OTP sending failed" });
 
     req.session.forgotOtp = otp;
@@ -243,6 +258,7 @@ const resendotp = async (req, res) => {
     return res.json({ success: false, message: "Server error" });
   }
 };
+
 
 //verify OTP
 const verifyOtp = async (req, res) => {
@@ -299,7 +315,7 @@ const updatePassword = async (req, res) => {
 
     const hashedPassword = await securePassword(password);
     await User.findOneAndUpdate({ email }, { password: hashedPassword });
-    req.session.destroy();
+    delete req.session.user
     res.redirect("/login");
   } catch (error) {
     res.render("user/newPass", { message: "Failed to update password. Try again." });
@@ -308,15 +324,39 @@ const updatePassword = async (req, res) => {
 
 const updatePasswordProfile = async (req, res) => {
   try {
+
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+
     const userId = req.session.user._id
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (newPassword !== confirmPassword) return res.render("user/resetPass", { error: "New passwords do not match" });
-
+    if (newPassword !== confirmPassword) {
+      return res.render("user/resetPass", {
+        message: "New passwords do not match"
+      });
+    }
     const user = await User.findById(userId);
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) return res.render("user/resetPass", { error: "Current password is incorrect" });
+    if (!user) {
+      return res.render("user/resetPass", {
+        message: "User not found"
+      });
+    }
 
+    if (user.googleId && !user.password) {
+      return res.render("user/resetPass", {
+        message: "Google login users must set a password first"
+      });
+    }
+
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.render("user/resetPass", {
+        message: "Current password is incorrect"
+      });
+    }
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
@@ -394,22 +434,39 @@ const sendChangenewEmailOtp = async (req, res) => {
 //profile
 const loadEditProfile = async (req, res) => {
   try {
+    console.log("ho");
     const user = await User.findById(req.session.user._id)
-    res.render("user/editProfile", { user })
+
+    res.render("user/editProfile", {
+      user,
+      error: null
+    })
   } catch (error) {
+    console.log(error);
     res.redirect("/profile");
   }
 }
 
 const updateProfile = async (req, res) => {
   try {
-    const { fullname, phone, gender, dob } = req.body;
+    const { fullname, phone } = req.body;
+    const updateData = {
+      fullname,
+      phone,
+    };
+
+    if (req.file) {
+      updateData.profileImage = `/uploads/profile/${req.file.filename}`;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.session.user._id,
-      { fullname, phone, gender, dob },
+      updateData,
       { new: true }
     );
+
     req.session.user = updatedUser;
+
     return res.redirect("/profile");
   } catch (error) {
     res.redirect("/edit-profile");
@@ -476,18 +533,19 @@ const loadshopepage = async (req, res) => {
     const { category, price, sort, search } = req.query;
 
     const page = parseInt(req.query.page) || 1;
-    const limit = 4;
+    const limit = 3;
     const skip = (page - 1) * limit;
 
     let filter = {
       isListed: true,
       isDeleted: false
     };
+
     let sortOption = { createdAt: -1 };
 
     const listedCategories = await Category.find(
       { isListed: true },
-      { _id: 1 }
+      { _id: 1, name: 1 }
     );
 
     filter.category = {
@@ -500,6 +558,7 @@ const loadshopepage = async (req, res) => {
         isListed: true
       });
 
+      //set id
       if (categoryDoc) {
         filter.category = categoryDoc._id;
       }
@@ -538,6 +597,7 @@ const loadshopepage = async (req, res) => {
 
     const formattedProducts = products.map(p => {
       const mainVariant = p.variants[0] || {};
+
       return {
         _id: p._id,
         name: p.name,
@@ -551,14 +611,15 @@ const loadshopepage = async (req, res) => {
 
     res.render("user/shop", {
       products: formattedProducts,
+      categories: listedCategories,
 
       currentPage: page,
       totalPages: Math.ceil(totalProducts / limit),
 
-      category,
-      price,
-      sort,
-      search
+      category: category || "all",
+      price: price || [],
+      sort: sort || "",
+      search: search || "",
     });
 
   } catch (error) {
@@ -567,11 +628,13 @@ const loadshopepage = async (req, res) => {
   }
 };
 
+
+//load details page
 const loadProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    const product = await Product.findById(productId)
+    const product = await Product.findOne({ _id: productId, isListed: true })
       .populate("category")
 
     if (!product) {

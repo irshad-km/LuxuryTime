@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,8 +37,19 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        .logo { font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-size: 18px; }
-        .nav-links { display: flex; gap: 30px; font-size: 14px; color: var(--text-gray); }
+        .logo {
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+            color: var(--text-gray);
+        }
 
         /* Main Container */
         .main-container {
@@ -83,14 +95,38 @@
             border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
-        .icon-circle i { color: var(--primary-purple); font-size: 24px; }
+        .icon-circle i {
+            color: var(--primary-purple);
+            font-size: 24px;
+        }
 
-        h2 { font-size: 26px; margin-bottom: 12px; font-weight: 600; }
-        .subtitle { font-size: 14px; color: var(--text-gray); margin-bottom: 35px; line-height: 1.6; }
+        h2 {
+            font-size: 26px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-bottom: 35px;
+            line-height: 1.6;
+        }
 
         /* Form Styling */
-        .form-group { text-align: left; margin-bottom: 25px; }
-        label { display: block; font-size: 11px; color: var(--text-gray); letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600; }
+        .form-group {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-gray);
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
 
         .input-box {
             position: relative;
@@ -98,8 +134,19 @@
             align-items: center;
         }
 
-        .input-box i.prefix-icon { position: absolute; left: 16px; color: #444; font-size: 16px; }
-        .input-box i.suffix-icon { position: absolute; right: 16px; color: #444; font-size: 16px; }
+        .input-box i.prefix-icon {
+            position: absolute;
+            left: 16px;
+            color: #444;
+            font-size: 16px;
+        }
+
+        .input-box i.suffix-icon {
+            position: absolute;
+            right: 16px;
+            color: #444;
+            font-size: 16px;
+        }
 
         input {
             width: 100%;
@@ -113,7 +160,10 @@
             transition: all 0.3s ease;
         }
 
-        input:focus { border-color: var(--primary-purple); background: #252525; }
+        input:focus {
+            border-color: var(--primary-purple);
+            background: #252525;
+        }
 
         /* Button Styling */
         .btn-send {
@@ -134,16 +184,39 @@
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
-        .btn-send:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
 
         /* Footer links */
-        .footer-note { font-size: 12px; color: #555; margin-top: 25px; padding-top: 20px; border-top: 1px solid #1a1a1a; }
-        .resend-text { margin-top: 20px; font-size: 13px; color: var(--text-gray); }
-        .resend-text span { color: #555; font-weight: 600; }
+        .footer-note {
+            font-size: 12px;
+            color: #555;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #1a1a1a;
+        }
 
-        .error-msg { color: #f87171; font-size: 13px; margin-bottom: 15px; }
+        .resend-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+
+        .resend-text span {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .error-msg {
+            color: #f87171;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -153,7 +226,7 @@
             <a href="/shop" style="color: white;">Shop</a>
             <a href="/about" style="color: white;">About</a>
         </div>
-       
+
     </header>
 
     <div class="main-container">
@@ -165,36 +238,41 @@
             </div>
 
             <h2>Verify Your Current Email</h2>
-            <p class="subtitle">We need to confirm your identity. An OTP will be sent to your registered email address.</p>
+            <p class="subtitle">We need to confirm your identity. An OTP will be sent to your registered email address.
+            </p>
 
             <% if (locals.error) { %>
-                <div class="error-msg"><%= error %></div>
-            <% } %>
-
-            <form action="/change-email" method="POST">
-                <div class="form-group">
-                    <label>CURRENT EMAIL ADDRESS</label>
-                    <div class="input-box">
-                        <i class="fa-regular fa-envelope prefix-icon"></i>
-                        <input type="email" name="newEmail" value="<%= userEmail %>" readonly placeholder="email@example.com">
-                        <i class="fa-solid fa-lock suffix-icon"></i>
-                    </div>
+                <div class="error-msg">
+                    <%= error %>
                 </div>
+                <% } %>
 
-                <button type="submit" class="btn-send">
-                    Send OTP <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </form>
+                    <form action="/change-email" method="POST">
+                        <div class="form-group">
+                            <label>CURRENT EMAIL ADDRESS</label>
+                            <div class="input-box">
+                                <i class="fa-regular fa-envelope prefix-icon"></i>
+                                <input type="email" name="newEmail" value="<%= userEmail %>" readonly
+                                    placeholder="email@example.com">
+                                <i class="fa-solid fa-lock suffix-icon"></i>
+                            </div>
+                        </div>
 
-            <div class="footer-note">
-                Secure verification powered by LuxTime Auth
-            </div>
+                        <button type="submit" class="btn-send">
+                            Send OTP <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
 
-            <div class="resend-text">
-                Didn't receive OTP? <span>Resend (00:30)</span>
-            </div>
+                    <div class="footer-note">
+                        Secure verification powered by LuxTime Auth
+                    </div>
+
+                    <div class="resend-text">
+                        Didn't receive OTP? <span>Resend (00:30)</span>
+                    </div>
         </div>
     </div>
 
 </body>
+
 </html>

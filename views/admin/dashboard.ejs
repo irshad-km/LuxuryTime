@@ -36,115 +36,115 @@
     <%- include('../partials/admin/sidebar') %>
 
 
-    <main class="flex-1 p-8 overflow-y-auto">
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h2 class="text-3xl font-bold">Dashboard</h2>
-                <p class="text-gray-400">Welcome back, here's what's happening with your store today.</p>
-            </div>
-            <button class="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-lg flex items-center gap-2">
-                <i class="fa-regular fa-calendar"></i> Last 30 Days
-            </button>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="card p-6 rounded-2xl">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-gray-400 text-sm">Total Revenue</span>
-                    <i class="fa-solid fa-dollar-sign text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+        <main class="flex-1 p-8 overflow-y-auto">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold">Dashboard</h2>
+                    <p class="text-gray-400">Welcome back, here's what's happening with your store today.</p>
                 </div>
-                <h3 class="text-2xl font-bold">₹45,231.89</h3>
-                <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 12% vs last month</p>
-            </div>
+                <button class="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i class="fa-regular fa-calendar"></i> Last 30 Days
+                </button>
+            </header>
 
-            <div class="card p-6 rounded-2xl">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-gray-400 text-sm">Total Sales</span>
-                    <i class="fa-solid fa-bag-shopping text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-gray-400 text-sm">Total Revenue</span>
+                        <i class="fa-solid fa-dollar-sign text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">₹45,231.89</h3>
+                    <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 12% vs last month</p>
                 </div>
-                <h3 class="text-2xl font-bold">1,204</h3>
-                <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 5% vs last month</p>
-            </div>
 
-            <div class="card p-6 rounded-2xl">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-gray-400 text-sm">New Customers</span>
-                    <i class="fa-solid fa-user-plus text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+                <div class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-gray-400 text-sm">Total Sales</span>
+                        <i class="fa-solid fa-bag-shopping text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">1,204</h3>
+                    <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 5% vs last month</p>
                 </div>
-                <h3 class="text-2xl font-bold">342</h3>
-                <p class="text-red-500 text-sm mt-2"><i class="fa-solid fa-arrow-down"></i> 2% vs last month</p>
-            </div>
 
-            <div class="card p-6 rounded-2xl">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-gray-400 text-sm">Total Orders</span>
-                    <i class="fa-solid fa-box-open text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+                <div class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-gray-400 text-sm">New Customers</span>
+                        <i class="fa-solid fa-user-plus text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">342</h3>
+                    <p class="text-red-500 text-sm mt-2"><i class="fa-solid fa-arrow-down"></i> 2% vs last month</p>
                 </div>
-                <h3 class="text-2xl font-bold">450</h3>
-                <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 8% vs last month</p>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="card p-6 rounded-2xl lg:col-span-2">
-                <h4 class="font-bold mb-6">Sales Over Time</h4>
-                <canvas id="salesChart" height="150"></canvas>
+                <div class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-gray-400 text-sm">Total Orders</span>
+                        <i class="fa-solid fa-box-open text-blue-500 bg-blue-500/10 p-2 rounded"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">450</h3>
+                    <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 8% vs last month</p>
+                </div>
             </div>
-            <div class="card p-6 rounded-2xl">
-                <h4 class="font-bold mb-6">Order Status</h4>
-                <canvas id="orderStatusChart"></canvas>
-            </div>
-        </div>
-    </main>
 
-    <script>
-        // Sales Chart
-        const ctx1 = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'line',
-            data: {
-                labels: ['Jan 01', 'Jan 05', 'Jan 10', 'Jan 15', 'Jan 20', 'Jan 25', 'Jan 30'],
-                datasets: [{
-                    label: 'Sales',
-                    data: [200000, 250000, 300000, 450000, 800000, 950000, 1100000],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: '#1f1f1f' }, ticks: { color: '#666' } },
-                    x: { grid: { display: false }, ticks: { color: '#666' } }
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card p-6 rounded-2xl lg:col-span-2">
+                    <h4 class="font-bold mb-6">Sales Over Time</h4>
+                    <canvas id="salesChart" height="150"></canvas>
+                </div>
+                <div class="card p-6 rounded-2xl">
+                    <h4 class="font-bold mb-6">Order Status</h4>
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            // Sales Chart
+            const ctx1 = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Jan 01', 'Jan 05', 'Jan 10', 'Jan 15', 'Jan 20', 'Jan 25', 'Jan 30'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [200000, 250000, 300000, 450000, 800000, 950000, 1100000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#1f1f1f' }, ticks: { color: '#666' } },
+                        x: { grid: { display: false }, ticks: { color: '#666' } }
+                    }
                 }
-            }
-        });
+            });
 
-        // Donut Chart
-        const ctx2 = document.getElementById('orderStatusChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Shipped', 'Delivered', 'Processing'],
-                datasets: [{
-                    data: [45, 30, 25],
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#fff', padding: 20 } }
+            // Donut Chart
+            const ctx2 = document.getElementById('orderStatusChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Shipped', 'Delivered', 'Processing'],
+                    datasets: [{
+                        data: [45, 30, 25],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#fff', padding: 20 } }
+                    }
                 }
-            }
-        });
-    </script>
+            });
+        </script>
 </body>
 
 </html>

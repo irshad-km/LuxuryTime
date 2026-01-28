@@ -84,26 +84,24 @@ const loadUsers = async (req, res) => {
             return res.redirect("/admin");
         }
 
+        const search = req.query.search || ""; // search query from frontend
         const page = parseInt(req.query.page) || 1;
-        const limit = 5;
+        const limit = 2;
         const skip = (page - 1) * limit;
-        const searchQuery = req.query.search || "";
 
+        // Simple search by fullname or email (like your categories search)
         const query = {
             isAdmin: false,
-            $or: [
-                { fullname: { $regex: searchQuery, $options: "i" } },
-                { email: { $regex: searchQuery, $options: "i" } },
-                { phone: { $regex: searchQuery, $options: "i" } },
-            ],
+            fullname: { $regex: search, $options: "i" } // search by name
         };
 
+        // Fetch users and total count in parallel
         const [users, totalUsers] = await Promise.all([
             User.find(query)
+                .sort({ createdAt: -1 })
                 .skip(skip)
-                .limit(limit)
-                .sort({ createdAt: -1 }),
-            User.countDocuments(query),
+                .limit(limit),
+            User.countDocuments(query)
         ]);
 
         const totalPages = Math.ceil(totalUsers / limit);
@@ -114,14 +112,16 @@ const loadUsers = async (req, res) => {
             currentPage: page,
             totalPages,
             totalUsers,
-            search: searchQuery,
+            search,
             activePage: "customers",
         });
+
     } catch (error) {
         console.error("Load Users Error:", error);
         res.status(500).send("Server Error");
     }
 };
+
 
 
 const toggleUserStatus = async (req, res) => {
@@ -155,7 +155,8 @@ const loadproduct = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = 4;
+        
+        const limit = 3;
         const skip = (page - 1) * limit;
         const sort = req.query.sort || "new";
 
@@ -196,7 +197,7 @@ const loadproduct = async (req, res) => {
 const loadaddproduct = async (req, res) => {
     try {
         const categories = await Category.find({ isListed: true });
-        res.render("admin/addproduct", { categories });
+        res.render("admin/addproduct", { categories, error: null });
     } catch (error) {
         console.error(error);
         res.status(500).send("Server error");

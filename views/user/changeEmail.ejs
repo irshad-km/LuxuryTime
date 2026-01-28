@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +36,10 @@
             box-sizing: border-box;
         }
 
-        .logo { font-weight: bold; letter-spacing: 1px; }
+        .logo {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
 
         /* Main Card */
         .container {
@@ -48,8 +52,11 @@
             text-align: left;
         }
 
-        h1 { font-size: 24px; margin-bottom: 10px; }
-        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
         .description {
             color: var(--text-dim);
             font-size: 14px;
@@ -57,7 +64,9 @@
             line-height: 1.5;
         }
 
-        .form-group { margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
         label {
             display: block;
@@ -103,7 +112,9 @@
             margin-top: 10px;
         }
 
-        .btn-continue:hover { opacity: 0.9; }
+        .btn-continue:hover {
+            opacity: 0.9;
+        }
 
         .btn-cancel {
             display: block;
@@ -115,6 +126,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <nav>
@@ -129,7 +141,8 @@
         <h1>Change Your Email</h1>
         <p class="description">
             Enter your new email address below. We'll send a verification code to it.<br>
-            <strong>Current Email:</strong> <%= user.maskedEmail %>
+            <strong>Current Email:</strong>
+            <%= user.maskedEmail %>
         </p>
 
         <form id="emailChangeForm" action="/change-new-email" method="POST" novalidate>
@@ -179,11 +192,12 @@
         };
 
         // Real-time error removal
-        emailInput.addEventListener('input', function() {
+        emailInput.addEventListener('input', function () {
             this.classList.remove('invalid');
             emailError.textContent = "";
         });
     </script>
 
 </body>
+
 </html>

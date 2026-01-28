@@ -1,11 +1,12 @@
 import Category from "../../models/categorySchema.js";
 
 
+//load category
 const loadCategories = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = 5;
+        const limit = 2;
         const skip = (page - 1) * limit;
 
         const query = {
@@ -18,14 +19,19 @@ const loadCategories = async (req, res) => {
             .limit(limit);
 
         const totalCategories = await Category.countDocuments(query);
+
         const totalPages = Math.ceil(totalCategories / limit);
+
+        const error = req.query.error || null
+
 
         res.render("admin/category", {
             categories,
             currentPage: page,
             totalPages,
             search,
-            totalCategories
+            totalCategories,
+            error
         });
 
     } catch (err) {
@@ -34,6 +40,8 @@ const loadCategories = async (req, res) => {
     }
 };
 
+
+//add category
 const addCategory = async (req, res) => {
     try {
         const {
@@ -43,10 +51,10 @@ const addCategory = async (req, res) => {
             offerExpiry
         } = req.body;
 
-        
+
         const exist = await Category.findOne({ name });
         if (exist) {
-            return res.redirect("/admin/categories");
+            return res.redirect("/admin/categories?error=Category already exists");
         }
 
         const category = new Category({
@@ -66,6 +74,7 @@ const addCategory = async (req, res) => {
     }
 }
 
+//edit catrgory
 const editCategory = async (req, res) => {
     try {
         const { id } = req.params;
@@ -80,6 +89,7 @@ const editCategory = async (req, res) => {
             name: name.trim(),
             _id: { $ne: id }
         })
+
         if (existing) {
             return res.redirect("/admin/categories?error=Category already exists")
         }
@@ -98,6 +108,7 @@ const editCategory = async (req, res) => {
     }
 }
 
+//listing ? true :false
 const toggleCategory = async (req, res) => {
     try {
         const { id } = req.params;
@@ -116,6 +127,8 @@ const toggleCategory = async (req, res) => {
     }
 }
 
+
+//export
 export {
     loadCategories,
     addCategory,

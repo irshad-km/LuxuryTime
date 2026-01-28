@@ -2,9 +2,23 @@ import Product from "../../models/productSchema.js";
 import Category from "../../models/categorySchema.js"
 
 
+//add product
 const addProduct = async (req, res) => {
     try {
         const { name, description, category } = req.body;
+        const categories = await Category.find({ isListed: true });
+
+        const existingProduct = await Product.findOne({
+            name: { $regex: `^${name}$`, $options: "i" }
+        });
+
+
+        if (existingProduct) {
+            return res.render("admin/addproduct", {
+                categories,
+                error: "Product name already exists"
+            });
+        }
 
         const variants = [];
 
@@ -13,7 +27,20 @@ const addProduct = async (req, res) => {
                 ? req.body.variants
                 : Object.values(req.body.variants);
 
-            variantArray.forEach((v, index) => {
+            for (let index = 0; index < variantArray.length; index++) {
+                const v = variantArray[index];
+
+                const regularPrice = Number(v.regularPrice);
+                const salePrice = v.salePrice ? Number(v.salePrice) : null;
+                const quantity = Number(v.quantity);
+
+                if (salePrice !== null && salePrice >= regularPrice) {
+                    return res.render("admin/addproduct", {
+                        categories,
+                        error: "Salse prise is greaterdhan regularPrice"
+                    });
+                }
+
                 let images = [];
 
                 if (req.files && req.files.length > 0) {
@@ -24,14 +51,22 @@ const addProduct = async (req, res) => {
 
 
 
+                if (images.length < 3) {
+                    return res.render("admin/addproduct", {
+                        categories,
+                        error: "Maximum 3 images allowed per variant"
+                    });
+                }
+
+
                 variants.push({
                     color: v.color,
-                    regularPrice: Number(v.regularPrice),
-                    salePrice: v.salePrice ? Number(v.salePrice) : null,
-                    quantity: Number(v.quantity),
-                    images: images
+                    regularPrice,
+                    salePrice,
+                    quantity,
+                    images,
                 });
-            });
+            };
         }
 
         const newProduct = new Product({
@@ -42,14 +77,21 @@ const addProduct = async (req, res) => {
         });
 
         await newProduct.save();
+
         res.redirect("/admin/products");
 
     } catch (error) {
         console.error("Add product error:", error);
-        res.status(500).send("Something went wrong");
+        const categories = await Category.find({ isListed: true });
+        res.render("admin/addproduct", {
+            categories,
+            error: "Something went wrong. Please try again."
+        });
     }
 };
 
+
+//load edit page
 const loadEditproduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
@@ -61,7 +103,8 @@ const loadEditproduct = async (req, res) => {
 
         res.render("admin/editproduct", {
             product,
-            categories
+            categories,
+            error: null
         });
 
     } catch (error) {
@@ -71,14 +114,31 @@ const loadEditproduct = async (req, res) => {
 };
 
 
+//update product
 const updateProduct = async (req, res) => {
     try {
+
         const productId = req.params.id;
         const { name, description, category } = req.body;
 
         const product = await Product.findById(productId);
+        const categories = await Category.find({ isListed: true });
+
+
         if (!product) {
             return res.render("admin/editproduct");
+        }
+        const existingProduct = await Product.findOne({
+            _id: { $ne: productId },
+            name: { $regex: `^${name}$`, $options: "i" }
+        });
+
+        if (existingProduct) {
+            return res.render("admin/editproduct", {
+                product,
+                categories,
+                error: "Product name already exists"
+            });
         }
 
         const updatedVariants = [];
@@ -87,7 +147,9 @@ const updateProduct = async (req, res) => {
             ? req.body.variants
             : Object.values(req.body.variants);
 
-        variantArray.forEach((variant, index) => {
+        for (let index = 0; index < variantArray.length; index++) {
+            const variant = variantArray[index];
+
             let existingImages = [];
 
             if (variant.existingImages) {
@@ -103,14 +165,35 @@ const updateProduct = async (req, res) => {
                     .map(file => "/uploads/" + file.filename);
             }
 
+            const totalImages = [...existingImages, ...newImages];
+
+            if (totalImages.length < 3) {
+                return res.render("admin/editproduct", {
+                    product,
+                    categories,
+                    error: "Each variant must have at least 3 images"
+                });
+            }
+
+            const regularPrice = Number(variant.regularPrice);
+            const salePrice = variant.salePrice ? Number(variant.salePrice) : null;
+
+            if (salePrice !== null && salePrice >= regularPrice) {
+                return res.render("admin/editproduct", {
+                    product,
+                    categories,
+                    error: "Salse prise is greaterdhan regularPrice",
+                })
+            }
+
             updatedVariants.push({
                 color: variant.color,
-                regularPrice: Number(variant.regularPrice),
-                salePrice: variant.salePrice ? Number(variant.salePrice) : null,
+                regularPrice,
+                salePrice,
                 quantity: Number(variant.quantity),
-                images: [...existingImages, ...newImages]
+                images: totalImages
             });
-        });
+        };
 
         product.name = name;
         product.description = description;
@@ -123,11 +206,20 @@ const updateProduct = async (req, res) => {
 
     } catch (error) {
         console.error("Update product error:", error);
-        res.status(500).send("Something went wrong");
+        const categories = await Category.find({ isListed: true });
+        const product = await Product.findById(req.params.id);
+
+        res.render("admin/editproduct", {
+            product,
+            categories,
+            error: "Something went wrong. Please try again."
+        });
     }
 }
 
 
+
+//listed & unlist
 const toggleProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -152,6 +244,7 @@ const toggleProduct = async (req, res) => {
 };
 
 
+//soft delete
 const softDeleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -176,6 +269,7 @@ const softDeleteProduct = async (req, res) => {
 }
 
 
+//export
 export {
     addProduct,
     loadEditproduct,

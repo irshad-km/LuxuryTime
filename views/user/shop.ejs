@@ -158,15 +158,26 @@
 
                         <div class="mb-12">
                             <h4 class="mb-6 text-xs tracking-[0.4em] uppercase text-neutral-500">Category</h4>
-                            <% ['all','men','women','unisex'].forEach(c=> { %>
+
+                            <label class="flex gap-3 mb-4 cursor-pointer group">
+                                <input type="radio" name="category" value="all" <%=cat==='all' ? 'checked' : '' %>>
+                                <span class="text-sm text-neutral-400 group-hover:text-white transition">
+                                    ALL
+                                </span>
+                            </label>
+
+                            <% categories.forEach(c=> { %>
                                 <label class="flex gap-3 mb-4 cursor-pointer group">
-                                    <input type="radio" name="category" value="<%= c %>" <%=cat===c ? 'checked' : '' %>>
+                                    <input type="radio" name="category" value="<%= c.name %>" <%=cat===c.name
+                                        ? 'checked' : '' %>
+                                    >
                                     <span class="text-sm text-neutral-400 group-hover:text-white transition">
-                                        <%= c.toUpperCase() %>
+                                        <%= c.name.toUpperCase() %>
                                     </span>
                                 </label>
                                 <% }) %>
                         </div>
+
 
                         <div class="mb-12">
                             <h4 class="mb-6 text-xs tracking-[0.4em] uppercase text-neutral-500">Price Range</h4>
@@ -267,12 +278,9 @@
                                                     <%= product.description || 'Timeless Craftsmanship' %>
                                                 </p>
                                                 <div class="pt-2">
-                                                    <span class="text-lg font-light tracking-tighter">₹<%=
-                                                            product.price.toLocaleString() %></span>
-                                                    <% if(product.oldPrice){ %>
-                                                        <span class="text-[10px] line-through text-neutral-800 ml-3">₹
-                                                            <%= product.oldPrice.toLocaleString() %></span>
-                                                        <% } %>
+                                                    <span class="text-base font-normal tracking-wide text-white">
+                                                        ₹<%= product.price.toLocaleString() %>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </a>

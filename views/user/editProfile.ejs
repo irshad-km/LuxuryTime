@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile | Luxury Watches</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -15,6 +17,7 @@
             --text-gray: #a0a0a0;
             --white: #ffffff;
             --border-color: #2a2a2a;
+            --error-red: #ff4d4d;
         }
 
         body {
@@ -28,7 +31,6 @@
             min-height: 100vh;
         }
 
-        /* Navbar Styling */
         nav {
             width: 100%;
             padding: 20px 60px;
@@ -58,26 +60,11 @@
             color: var(--text-gray);
         }
 
-        /* Main Container */
         .wrapper {
             width: 100%;
             max-width: 500px;
             margin-top: 40px;
             padding: 20px;
-        }
-
-        .back-link {
-            color: var(--text-gray);
-            text-decoration: none;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            transition: color 0.2s;
-        }
-
-        .back-link:hover {
-            color: var(--white);
         }
 
         .card {
@@ -89,7 +76,6 @@
             border: 1px solid #222;
         }
 
-        /* Profile Image Section */
         .profile-pic-container {
             position: relative;
             width: 100px;
@@ -128,10 +114,10 @@
             font-weight: 600;
         }
 
-        /* Form Styling */
         .form-group {
             text-align: left;
             margin-bottom: 20px;
+            position: relative;
         }
 
         label {
@@ -159,16 +145,36 @@
             border-color: var(--accent-purple);
         }
 
-        /* Button Layout */
-        .button-stack {
+        /* Fixed Placeholder Color */
+        input::placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        .error-text {
+            color: var(--error-red);
+            font-size: 11px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        form.was-validated input:invalid {
+            border-color: var(--error-red);
+        }
+
+        form.was-validated input:invalid ~ .error-text {
+            display: block;
+        }
+
+        /* CORRECTED ALIGNMENT: Side-by-Side Buttons */
+        .button-group {
             display: flex;
-            flex-direction: column;
             gap: 12px;
             margin-top: 10px;
         }
 
         .btn-primary {
-            width: 100%;
+            flex: 2; /* Save changes takes more space */
             padding: 14px;
             background-color: var(--accent-purple);
             color: white;
@@ -176,16 +182,12 @@
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 15px;
-            transition: opacity 0.2s, transform 0.2s;
+            font-size: 14px;
+            transition: 0.3s;
         }
 
         .btn-secondary {
-            width: 100%;
+            flex: 1; /* Back button is smaller */
             padding: 14px;
             background-color: transparent;
             color: var(--white);
@@ -193,30 +195,24 @@
             border-radius: 10px;
             font-weight: 500;
             cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-size: 15px;
-            transition: background-color 0.2s;
+            gap: 6px;
+            transition: 0.3s;
         }
 
         .btn-secondary:hover {
             background-color: rgba(255, 255, 255, 0.05);
-            border-color: var(--text-gray);
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
         }
 
         footer {
-            margin-top: 50px;
+            margin-top: auto;
             color: #444;
             font-size: 11px;
-            padding-bottom: 30px;
+            padding: 30px 0;
         }
     </style>
 </head>
@@ -238,11 +234,9 @@
     </nav>
 
     <div class="wrapper">
-
-
         <div class="card">
             <div class="profile-pic-container">
-                <img src="<%= user.avatar || '/default-avatar.png' %>" alt="Profile" class="profile-pic">
+                <img id="profilePreview" src="<%= user.avatar || '/default-avatar.png' %>" alt="Profile" class="profile-pic">
                 <label for="file-upload" class="edit-badge">
                     <i class="fa-solid fa-pen"></i>
                 </label>
@@ -250,37 +244,57 @@
 
             <h1>Edit Profile</h1>
 
-            <form action="/edit-profile" method="POST">
-                <input id="file-upload" type="file" name="avatar" style="display:none;">
+            <form action="/edit-profile" method="POST" enctype="multipart/form-data" id="editProfileForm" novalidate>
+                <input id="file-upload" type="file" name="avatar" accept="image/*" hidden>
 
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="fullname" value="<%= user.fullname %>" placeholder="Alexander Pierce"
-                        required>
+                    <input type="text" name="fullname" value="<%= user.fullname %>" placeholder="Alexander Pierce" required minlength="3">
+                    <div class="error-text">Min 3 characters required.</div>
                 </div>
 
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="text" name="phone" value="<%= user.phone %>" placeholder="+1 (555) 012-3456">
+                    <input type="tel" name="phone" value="<%= user.phone %>" placeholder="10-digit number" required pattern="[0-9]{10}">
+                    <div class="error-text">Enter a valid 10-digit number.</div>
                 </div>
 
-                <div class="button-stack">
+                <div class="button-group">
                     <button type="submit" class="btn-primary">
                         Save Changes <i class="fa-solid fa-check"></i>
                     </button>
-
-                    <a href="/profile" class="btn-secondary"style=" margin-left: -18px;">
-                        <i class="fa-solid fa-user"></i> Back to Profile
+                    <a href="/profile" class="btn-secondary">
+                        Back
                     </a>
                 </div>
             </form>
-
         </div>
     </div>
 
     <footer>
         © 2026 Luxe Watches Inc. All rights reserved.
     </footer>
+
+    <script>
+        const fileInput = document.getElementById("file-upload");
+        const previewImg = document.getElementById("profilePreview");
+        const form = document.getElementById("editProfileForm");
+
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files[0];
+            if (file) {
+                previewImg.src = URL.createObjectURL(file);
+            }
+        });
+
+        form.addEventListener("submit", (e) => {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add("was-validated");
+        });
+    </script>
 
 </body>
 

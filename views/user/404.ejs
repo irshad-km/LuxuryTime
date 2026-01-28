@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,8 +45,13 @@
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Glass Card Effect */
@@ -85,10 +91,11 @@
 
         .btn-outline:hover {
             border-color: #666;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
+
 <body>
 
     <header class="absolute top-0 w-full p-8 flex justify-center lg:justify-start">
@@ -99,16 +106,16 @@
     </header>
 
     <main class="relative h-screen flex items-center justify-center">
-        
+
         <div class="clock-circle"></div>
 
         <div class="content-box">
             <h1 class="error-code">404</h1>
-            
+
             <h2 class="text-3xl font-light mb-4">Time has stopped here.</h2>
-            
+
             <p class="text-neutral-500 max-w-md mx-auto mb-10 leading-relaxed">
-                The page you are looking for does not exist or has been moved. 
+                The page you are looking for does not exist or has been moved.
                 Let's get you back on track to find your perfect timepiece.
             </p>
 
@@ -116,7 +123,7 @@
                 <a href="/" class="btn-primary px-8 py-3 rounded-full font-semibold flex items-center gap-2">
                     Go to Home <i class="ph ph-arrow-right"></i>
                 </a>
-                
+
                 <a href="/shop" class="btn-outline px-8 py-3 rounded-full font-semibold flex items-center gap-2">
                     Explore Watches <i class="ph ph-clock"></i>
                 </a>
@@ -124,7 +131,8 @@
         </div>
     </main>
 
-    <footer class="absolute bottom-0 w-full p-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-neutral-600 uppercase tracking-widest">
+    <footer
+        class="absolute bottom-0 w-full p-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-neutral-600 uppercase tracking-widest">
         <div>&copy; 2026 Luxury Timepieces. All Rights Reserved.</div>
         <div class="flex gap-6">
             <a href="#" class="hover:text-white">Privacy Policy</a>
@@ -134,4 +142,5 @@
     </footer>
 
 </body>
+
 </html>

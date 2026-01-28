@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,8 +27,16 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .admin-wrapper { display: flex; min-height: 100vh; }
-    .main-content { flex-grow: 1; padding: 2rem; width: calc(100% - 260px); }
+    .admin-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      width: calc(100% - 260px);
+    }
 
     .glass-panel {
       background: rgba(17, 17, 17, 0.6);
@@ -48,11 +57,11 @@
 
     .custom-table td {
       padding: 16px 24px;
-      border-bottom: 1px solid rgba(255,255,255,.03);
+      border-bottom: 1px solid rgba(255, 255, 255, .03);
     }
 
     .status-active {
-      background: rgba(16,185,129,.1);
+      background: rgba(16, 185, 129, .1);
       color: #10b981;
       font-size: 10px;
       padding: 4px 10px;
@@ -61,7 +70,7 @@
     }
 
     .status-inactive {
-      background: rgba(107,114,128,.1);
+      background: rgba(107, 114, 128, .1);
       color: #9ca3af;
       font-size: 10px;
       padding: 4px 10px;
@@ -70,177 +79,240 @@
     }
 
     .btn-action {
-      width: 32px; height: 32px;
+      width: 32px;
+      height: 32px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      background: rgba(255,255,255,.03);
+      background: rgba(255, 255, 255, .03);
       transition: .2s;
     }
 
-    .btn-edit:hover { color: #3b82f6; background: rgba(59,130,246,.1); }
-    .btn-delete:hover { color: #ef4444; background: rgba(239,68,68,.1); }
+    .btn-edit:hover {
+      color: #3b82f6;
+      background: rgba(59, 130, 246, .1);
+    }
+
+    .btn-delete:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, .1);
+    }
 
     /* TOGGLE */
-    .switch { position: relative; width: 36px; height: 18px; display: inline-block; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; inset: 0;
-      background: #333; border-radius: 999px;
-      cursor: pointer; transition: .3s;
+    .switch {
+      position: relative;
+      width: 36px;
+      height: 18px;
+      display: inline-block;
     }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: .3s;
+    }
+
     .slider:before {
       content: "";
       position: absolute;
-      width: 14px; height: 14px;
-      left: 2px; bottom: 2px;
+      width: 14px;
+      height: 14px;
+      left: 2px;
+      bottom: 2px;
       background: white;
       border-radius: 50%;
       transition: .3s;
     }
-    input:checked + .slider { background: #10b981; }
-    input:checked + .slider:before { transform: translateX(18px); }
+
+    input:checked+.slider {
+      background: #10b981;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(18px);
+    }
   </style>
 </head>
 
 <body>
 
-<div class="admin-wrapper">
-  <aside>
-    <%- include('../partials/admin/sidebar') %>
-  </aside>
+  <div class="admin-wrapper">
+    <aside>
+      <%- include('../partials/admin/sidebar') %>
+    </aside>
 
-  <main class="main-content">
-    <header class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
-      <h1 class="text-2xl font-bold">Products</h1>
-      
-      <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-        <div class="flex items-center gap-2">
-          <form method="GET" action="/admin/products" class="relative">
-            <input
-              type="text"
-              name="search"
-              value="<%= search || '' %>"
-              placeholder="Search product..."
-              class="bg-neutral-900 border border-neutral-800 px-4 py-2 pr-10 rounded-lg text-sm w-64 focus:outline-none focus:border-neutral-700"
-            >
-            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors">
-              <i class="fas fa-search text-xs"></i>
-            </button>
-          </form>
+    <main class="main-content">
+      <header class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+        <h1 class="text-2xl font-bold">Products</h1>
 
-          <% if (search && search.length > 0) { %>
-            <a href="/admin/products" 
-               class="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
-              <i class="fas fa-times"></i> Clear
-            </a>
-          <% } %>
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div class="flex items-center gap-2">
+            <form method="GET" action="/admin/products" class="relative">
+              <input type="text" name="search" value="<%= search || '' %>" placeholder="Search product..."
+                class="bg-neutral-900 border border-neutral-800 px-4 py-2 pr-10 rounded-lg text-sm w-64 focus:outline-none focus:border-neutral-700">
+              <button type="submit"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors">
+                <i class="fas fa-search text-xs"></i>
+              </button>
+            </form>
+
+            <% if (search && search.length> 0) { %>
+              <a href="/admin/products"
+                class="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                <i class="fas fa-times"></i> Clear
+              </a>
+              <% } %>
+          </div>
+
+          <a href="/admin/addproduct"
+            class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
+            <i class="fas fa-plus text-xs"></i> Add Product
+          </a>
         </div>
+      </header>
 
-        <a href="/admin/addproduct"
-           class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
-          <i class="fas fa-plus text-xs"></i> Add Product
-        </a>
+      <div class="glass-panel overflow-hidden">
+        <table class="w-full custom-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Regular</th>
+              <th>Sale</th>
+              <th>Qty</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% products.forEach(product=> { %>
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td>
+                  <img src="<%= product.variants[0]?.images[0] || 'https://via.placeholder.com/40' %>"
+                    class="w-12 h-12 object-contain bg-neutral-900 rounded-full p-2">
+                </td>
+
+                <td class="font-semibold">
+                  <%= product.name %>
+                </td>
+                <td class="text-neutral-400">
+                  <%= product.category?.name || 'N/A' %>
+                </td>
+                <td>₹ <%= product.variants[0]?.regularPrice || 0 %>
+                </td>
+                <td>
+                  <%= product.variants[0]?.salePrice ? '₹ ' + product.variants[0].salePrice : '-' %>
+                </td>
+                <td>
+                  <%= product.variants[0]?.quantity || 0 %>
+                </td>
+
+                <td>
+                  <span class="<%= product.isListed ? 'status-active' : 'status-inactive' %>">
+                    <%= product.isListed ? 'ACTIVE' : 'INACTIVE' %>
+                  </span>
+                </td>
+
+                <td class="text-right">
+                  <div class="flex justify-end items-center gap-3">
+                    <label class="switch">
+                      <input type="checkbox" <%=product.isListed ? 'checked' : '' %>
+                      onchange="toggleProduct('<%= product._id %>', this)">
+                        <span class="slider"></span>
+                    </label>
+
+                    <a href="/admin/products/edit/<%= product._id %>" class="btn-action btn-edit">
+                      <i class="fas fa-pencil-alt text-xs"></i>
+                    </a>
+
+                    <button onclick="softDelete('<%= product._id %>')" class="btn-action btn-delete">
+                      <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+          </tbody>
+        </table>
+
+        <div class="px-6 py-4 border-t border-neutral-800 flex items-center justify-between bg-black/20">
+          <p class="text-xs text-neutral-500">
+            Showing Page <%= currentPage %> of <%= totalPages %>
+          </p>
+          <div class="flex items-center gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %>&search=<%= search %>" 
+                 class="btn-action hover:text-blue-500">
+                <i class="fas fa-chevron-left text-xs"></i>
+              </a>
+            <% } %>
+
+            <% for(let i = 1; i <= totalPages; i++) { %>
+              <a href="?page=<%= i %>&search=<%= search %>" 
+                 class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all <%= i === currentPage ? 'bg-blue-600 text-white' : 'bg-neutral-900 text-neutral-500 hover:bg-neutral-800' %>">
+                <%= i %>
+              </a>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %>&search=<%= search %>" 
+                 class="btn-action hover:text-blue-500">
+                <i class="fas fa-chevron-right text-xs"></i>
+              </a>
+            <% } %>
+          </div>
+        </div>
       </div>
-    </header>
+    </main>
+  </div>
 
-    <div class="glass-panel overflow-hidden">
-      <table class="w-full custom-table">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Regular</th>
-            <th>Sale</th>
-            <th>Qty</th>
-            <th>Status</th>
-            <th class="text-right">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <% products.forEach(product => { %>
-          <tr class="hover:bg-white/[0.02] transition-colors">
-            <td>
-              <img src="<%= product.variants[0]?.images[0] || 'https://via.placeholder.com/40' %>"
-                   class="w-12 h-12 object-contain bg-neutral-900 rounded-full p-2">
-            </td>
-
-            <td class="font-semibold"><%= product.name %></td>
-            <td class="text-neutral-400"><%= product.category?.name || 'N/A' %></td>
-            <td>₹ <%= product.variants[0]?.regularPrice || 0 %></td>
-            <td><%= product.variants[0]?.salePrice ? '₹ ' + product.variants[0].salePrice : '-' %></td>
-            <td><%= product.variants[0]?.quantity || 0 %></td>
-
-            <td>
-              <span class="<%= product.isListed ? 'status-active' : 'status-inactive' %>">
-                <%= product.isListed ? 'ACTIVE' : 'INACTIVE' %>
-              </span>
-            </td>
-
-            <td class="text-right">
-              <div class="flex justify-end items-center gap-3">
-                <label class="switch">
-                  <input type="checkbox"
-                    <%= product.isListed ? 'checked' : '' %>
-                    onchange="toggleProduct('<%= product._id %>', this)">
-                  <span class="slider"></span>
-                </label>
-
-                <a href="/admin/products/edit/<%= product._id %>" class="btn-action btn-edit">
-                  <i class="fas fa-pencil-alt text-xs"></i>
-                </a>
-
-                <button onclick="softDelete('<%= product._id %>')" class="btn-action btn-delete">
-                  <i class="fas fa-trash-alt text-xs"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
-  </main>
-</div>
-
-<script>
-  async function toggleProduct(id, checkbox) {
-    const state = checkbox.checked;
-    checkbox.checked = !state;
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: `Do you want to ${state ? 'List' : 'Unlist'} this product?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#2563eb',
-      background: '#111',
-      color: '#fff'
-    });
-    if (result.isConfirmed) {
-      await fetch(`/admin/toggleProduct/${id}`, { method: 'PATCH' });
-      location.reload();
+  <script>
+    async function toggleProduct(id, checkbox) {
+      const state = checkbox.checked;
+      checkbox.checked = !state;
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to ${state ? 'List' : 'Unlist'} this product?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        background: '#111',
+        color: '#fff'
+      });
+      if (result.isConfirmed) {
+        await fetch(`/admin/toggleProduct/${id}`, { method: 'PATCH' });
+        location.reload();
+      }
     }
-  }
 
-  async function softDelete(id) {
-    const result = await Swal.fire({
-      title: 'Delete product?',
-      text: 'This will hide the product',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      background: '#111',
-      color: '#fff'
-    });
-    if (result.isConfirmed) {
-      await fetch(`/admin/softDeleteProduct/${id}`, { method: 'PATCH' });
-      location.reload();
+    async function softDelete(id) {
+      const result = await Swal.fire({
+        title: 'Delete product?',
+        text: 'This will hide the product',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        background: '#111',
+        color: '#fff'
+      });
+      if (result.isConfirmed) {
+        await fetch(`/admin/softDeleteProduct/${id}`, { method: 'PATCH' });
+        location.reload();
+      }
     }
-  }
-</script>
+  </script>
 
 </body>
 </html>

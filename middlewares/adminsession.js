@@ -15,13 +15,13 @@ const adminSession = session({
 
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    collectionName: "adminSessions", 
+    collectionName: "adminSessions",
   }),
 
   cookie: {
-    httpOnly: true, 
-    secure: false, 
-    maxAge: 1000 * 60 * 60 * 24, 
+    httpOnly: true,
+    secure: false,
+    maxAge: 1000 * 60 * 60 * 24,
   },
 });
 

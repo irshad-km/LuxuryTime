@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    avatar: {
+      type: String,
+      default: "/default-avatar.png"
+    },
     isVerified: {
       type: Boolean,
       default: false,

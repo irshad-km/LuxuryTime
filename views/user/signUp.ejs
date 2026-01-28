@@ -1,187 +1,198 @@
 <%- include('../partials/user/header') %>
 
-<div class="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-6 bg-black overflow-hidden">
+  <div class="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-6 bg-black overflow-hidden">
 
-  <div class="absolute inset-0 z-0">
-    <div class="w-full h-full bg-cover bg-center opacity-20" style="background-image: url('/images/back.png');"></div>
-  </div>
-
-  <div class="absolute inset-0 bg-black/60 z-0"></div>
-
-  <div class="relative z-10 w-full max-w-[460px] bg-charcoal/80 backdrop-blur-2xl border border-white/5 rounded-2xl p-8 shadow-2xl">
-
-    <header class="text-center mb-6">
-      <h1 class="text-2xl font-bold text-white mb-1">Create Your Account</h1>
-      <p class="text-slate-400 text-xs">Join us and find your perfect watch</p>
-    </header>
-
-    <a href="/auth/google" class="flex items-center justify-center gap-3 w-full bg-white text-black text-sm font-semibold py-3 rounded-lg hover:bg-gray-100 transition">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
-      Sign up with Google
-    </a>
-
-    <div class="flex items-center my-5">
-      <div class="flex-grow h-px bg-white/10"></div>
-      <span class="px-3 text-xs text-slate-400">or</span>
-      <div class="flex-grow h-px bg-white/10"></div>
+    <div class="absolute inset-0 z-0">
+      <div class="w-full h-full bg-cover bg-center opacity-20" style="background-image: url('/images/back.png');"></div>
     </div>
 
-    <form id="signupForm" action="/signup" method="POST" class="space-y-4" novalidate>
+    <div class="absolute inset-0 bg-black/60 z-0"></div>
 
-      <div>
-        <label class="text-[10px] uppercase font-bold text-slate-500">Full Name</label>
-        <input id="fullname" name="fullname" type="text" placeholder="John Doe" class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-        <p id="fullnameError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+    <div
+      class="relative z-10 w-full max-w-[460px] bg-charcoal/80 backdrop-blur-2xl border border-white/5 rounded-2xl p-8 shadow-2xl">
+
+      <header class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-white mb-1">Create Your Account</h1>
+        <p class="text-slate-400 text-xs">Join us and find your perfect watch</p>
+      </header>
+
+      <a href="/auth/google"
+        class="flex items-center justify-center gap-3 w-full bg-white text-black text-sm font-semibold py-3 rounded-lg hover:bg-gray-100 transition">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
+        Sign up with Google
+      </a>
+
+      <div class="flex items-center my-5">
+        <div class="flex-grow h-px bg-white/10"></div>
+        <span class="px-3 text-xs text-slate-400">or</span>
+        <div class="flex-grow h-px bg-white/10"></div>
       </div>
 
-      <div>
-        <label class="text-[10px] uppercase font-bold text-slate-500">Email Address</label>
-        <input id="email" name="email" type="email" placeholder="john@example.com" class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-        <p id="emailError" class="text-red-500 text-[11px] mt-1 h-3"></p>
-      </div>
+      <form id="signupForm" action="/signup" method="POST" class="space-y-4" novalidate>
 
-      <div>
-        <label class="text-[10px] uppercase font-bold text-slate-500">Phone Number</label>
-        <input id="phone" name="phone" type="tel" placeholder="9XXXXXXXXX" class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition" maxlength="10">
-        <p id="phoneError" class="text-red-500 text-[11px] mt-1 h-3"></p>
-      </div>
-
-      <div>
-        <label class="text-[10px] uppercase font-bold text-slate-500">Referral Code (optional)</label>
-        <input id="referral" name="referral" type="text" placeholder="REF123" class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-        <p id="referralError" class="text-red-500 text-[11px] mt-1 h-3"></p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
         <div>
-          <input id="password" name="password" type="password" placeholder="Password" class="w-full bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-          <p id="passwordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+          <label class="text-[10px] uppercase font-bold text-slate-500">Full Name</label>
+          <input id="fullname" name="fullname" type="text" placeholder="John Doe"
+            class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+          <p id="fullnameError" class="text-red-500 text-[11px] mt-1 h-3"></p>
         </div>
 
         <div>
-          <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm" class="w-full bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-          <p id="confirmPasswordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+          <label class="text-[10px] uppercase font-bold text-slate-500">Email Address</label>
+          <input id="email" name="email" type="email" placeholder="john@example.com"
+            class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+          <p id="emailError" class="text-red-500 text-[11px] mt-1 h-3"></p>
         </div>
-      </div>
 
-      <button type="submit" class="w-full mt-2 rounded-lg px-3 py-3.5 text-sm font-bold text-white shadow-lg transition-all active:scale-95" style="background:#3e3efa;">
-        Create Account →
-      </button>
+        <div>
+          <label class="text-[10px] uppercase font-bold text-slate-500">Phone Number</label>
+          <input id="phone" name="phone" type="tel" placeholder="9XXXXXXXXX"
+            class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition"
+            maxlength="10">
+          <p id="phoneError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+        </div>
 
-    </form>
+        <div>
+          <label class="text-[10px] uppercase font-bold text-slate-500">Referral Code (optional)</label>
+          <input id="referral" name="referral" type="text" placeholder="REF123"
+            class="w-full mt-1 bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+          <p id="referralError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+        </div>
 
-    <footer class="mt-6 text-center">
-      <p class="text-xs text-slate-400">
-        Already have an account?
-        <a href="/login" class="text-[#3e3efa] font-semibold">Login</a>
-      </p>
-    </footer>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <input id="password" name="password" type="password" placeholder="Password"
+              class="w-full bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+            <p id="passwordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+          </div>
 
+          <div>
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm"
+              class="w-full bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+            <p id="confirmPasswordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full mt-2 rounded-lg px-3 py-3.5 text-sm font-bold text-white shadow-lg transition-all active:scale-95"
+          style="background:#3e3efa;">
+          Create Account →
+        </button>
+
+      </form>
+
+      <footer class="mt-6 text-center">
+        <p class="text-xs text-slate-400">
+          Already have an account?
+          <a href="/login" class="text-[#3e3efa] font-semibold">Login</a>
+        </p>
+      </footer>
+
+    </div>
   </div>
-</div>
 
-<script>
-  const form = document.getElementById("signupForm");
-  
-  // Input elements
-  const inputs = {
-    fullname: document.getElementById("fullname"),
-    email: document.getElementById("email"),
-    phone: document.getElementById("phone"),
-    referral: document.getElementById("referral"),
-    password: document.getElementById("password"),
-    confirmPassword: document.getElementById("confirmPassword")
-  };
+  <script>
+    const form = document.getElementById("signupForm");
 
-  // Error elements
-  const errors = {
-    fullname: document.getElementById("fullnameError"),
-    email: document.getElementById("emailError"),
-    phone: document.getElementById("phoneError"),
-    referral: document.getElementById("referralError"),
-    password: document.getElementById("passwordError"),
-    confirmPassword: document.getElementById("confirmPasswordError")
-  };
+    // Input elements
+    const inputs = {
+      fullname: document.getElementById("fullname"),
+      email: document.getElementById("email"),
+      phone: document.getElementById("phone"),
+      referral: document.getElementById("referral"),
+      password: document.getElementById("password"),
+      confirmPassword: document.getElementById("confirmPassword")
+    };
 
-  const validateEmail = (email) => {
-    return String(email).toLowerCase().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-  };
+    // Error elements
+    const errors = {
+      fullname: document.getElementById("fullnameError"),
+      email: document.getElementById("emailError"),
+      phone: document.getElementById("phoneError"),
+      referral: document.getElementById("referralError"),
+      password: document.getElementById("passwordError"),
+      confirmPassword: document.getElementById("confirmPasswordError")
+    };
 
-  const validatePhone = (phone) => {
-    return /^[6-9]\d{9}$/.test(phone);
-  };
+    const validateEmail = (email) => {
+      return String(email).toLowerCase().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+    };
 
-  function checkValidity() {
-    let isValid = true;
+    const validatePhone = (phone) => {
+      return /^[6-9]\d{9}$/.test(phone);
+    };
 
-    // Fullname Validation
-    if (inputs.fullname.value.trim().length < 3) {
-      errors.fullname.textContent = "Name must be at least 3 characters";
-      isValid = false;
-    } else if (/[^a-zA-Z\s]/.test(inputs.fullname.value)) {
-      errors.fullname.textContent = "Name should only contain letters";
-      isValid = false;
-    } else {
-      errors.fullname.textContent = "";
+    function checkValidity() {
+      let isValid = true;
+
+      // Fullname Validation
+      if (inputs.fullname.value.trim().length < 3) {
+        errors.fullname.textContent = "Name must be at least 3 characters";
+        isValid = false;
+      } else if (/[^a-zA-Z\s]/.test(inputs.fullname.value)) {
+        errors.fullname.textContent = "Name should only contain letters";
+        isValid = false;
+      } else {
+        errors.fullname.textContent = "";
+      }
+
+      // Email Validation
+      if (!validateEmail(inputs.email.value)) {
+        errors.email.textContent = "Please enter a valid email address";
+        isValid = false;
+      } else {
+        errors.email.textContent = "";
+      }
+
+      // Phone Validation
+      if (!validatePhone(inputs.phone.value)) {
+        errors.phone.textContent = "Enter a valid 10-digit phone number";
+        isValid = false;
+      } else {
+        errors.phone.textContent = "";
+      }
+
+      // Password Validation
+      if (inputs.password.value.length < 6) {
+        errors.password.textContent = "Minimum 6 characters required";
+        isValid = false;
+      } else {
+        errors.password.textContent = "";
+      }
+
+      // Confirm Password Validation
+      if (inputs.confirmPassword.value !== inputs.password.value) {
+        errors.confirmPassword.textContent = "Passwords do not match";
+        isValid = false;
+      } else if (inputs.confirmPassword.value === "") {
+        errors.confirmPassword.textContent = "Please confirm your password";
+        isValid = false;
+      } else {
+        errors.confirmPassword.textContent = "";
+      }
+
+      // Referral (Optional but if entered, check format)
+      if (inputs.referral.value && !/^[A-Z0-9]{3,10}$/i.test(inputs.referral.value)) {
+        errors.referral.textContent = "Invalid referral format";
+        isValid = false;
+      } else {
+        errors.referral.textContent = "";
+      }
+
+      return isValid;
     }
 
-    // Email Validation
-    if (!validateEmail(inputs.email.value)) {
-      errors.email.textContent = "Please enter a valid email address";
-      isValid = false;
-    } else {
-      errors.email.textContent = "";
-    }
-
-    // Phone Validation
-    if (!validatePhone(inputs.phone.value)) {
-      errors.phone.textContent = "Enter a valid 10-digit phone number";
-      isValid = false;
-    } else {
-      errors.phone.textContent = "";
-    }
-
-    // Password Validation
-    if (inputs.password.value.length < 6) {
-      errors.password.textContent = "Minimum 6 characters required";
-      isValid = false;
-    } else {
-      errors.password.textContent = "";
-    }
-
-    // Confirm Password Validation
-    if (inputs.confirmPassword.value !== inputs.password.value) {
-      errors.confirmPassword.textContent = "Passwords do not match";
-      isValid = false;
-    } else if (inputs.confirmPassword.value === "") {
-      errors.confirmPassword.textContent = "Please confirm your password";
-      isValid = false;
-    } else {
-      errors.confirmPassword.textContent = "";
-    }
-
-    // Referral (Optional but if entered, check format)
-    if (inputs.referral.value && !/^[A-Z0-9]{3,10}$/i.test(inputs.referral.value)) {
-      errors.referral.textContent = "Invalid referral format";
-      isValid = false;
-    } else {
-      errors.referral.textContent = "";
-    }
-
-    return isValid;
-  }
-
-  // Real-time validation on input
-  Object.values(inputs).forEach(input => {
-    input.addEventListener("input", () => {
-      checkValidity();
+    // Real-time validation on input
+    Object.values(inputs).forEach(input => {
+      input.addEventListener("input", () => {
+        checkValidity();
+      });
     });
-  });
 
-  // Final validation on submit
-  form.addEventListener("submit", function (e) {
-    if (!checkValidity()) {
-      e.preventDefault();
-    }
-  });
-</script>
+    // Final validation on submit
+    form.addEventListener("submit", function (e) {
+      if (!checkValidity()) {
+        e.preventDefault();
+      }
+    });
+  </script>

@@ -1,28 +1,34 @@
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 
-const uploadPath = "public/uploads";
-
-//check
-if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true })
-}
-
-//store
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, uploadPath)
+        cb(null, "public/uploads");
     },
-
-//file name uniq    
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + "-" + file.originalname;
-        cb(null, uniqueName);
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
 
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|webp/;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = allowedTypes.test(file.mimetype);
+
+    if (ext && mime) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only images are allowed"));
+    }
+};
+
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter
+});
 
 export default upload;

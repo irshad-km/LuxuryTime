@@ -1,156 +1,173 @@
 <%- include('../partials/user/header') %>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
 <main class="bg-black text-white">
 
-    <!-- ================= HERO SECTION ================= -->
     <section class="relative w-full h-[95vh] overflow-hidden">
-
         <div class="absolute inset-0">
             <img src="/images/banner1.png" class="w-full h-full object-cover" alt="Banner">
         </div>
-
         <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
-
         <div class="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center px-6 lg:px-8">
-            <span class="mb-6 text-xs uppercase tracking-[0.35em] text-gray-400">
-                Swiss Engineering
-            </span>
-
+            <span class="mb-6 text-xs uppercase tracking-[0.35em] text-gray-400">Swiss Engineering</span>
             <h1 class="max-w-xl text-5xl sm:text-7xl font-extrabold uppercase leading-tight">
                 Timeless <br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">
-                    Luxury
-                </span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Luxury</span>
             </h1>
-
             <p class="mt-6 max-w-md text-gray-300 leading-relaxed">
                 Experience the pinnacle of craftsmanship. Designed for those who value every second.
             </p>
-
             <div class="mt-10">
-                <a href="/shop"
-                   class="inline-flex items-center gap-3 border-b border-white pb-2 text-sm uppercase tracking-widest hover:text-gray-300 transition">
+                <a href="/shop" class="inline-flex items-center gap-3 border-b border-white pb-2 text-sm uppercase tracking-widest hover:text-gray-300 transition">
                     Shop the Collection →
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- ================= SHOP BY CATEGORY ================= -->
     <section class="py-28 bg-black">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
-
             <div class="mb-16 text-center">
-                <h3 class="text-xs uppercase tracking-[0.4em] text-gray-400">
-                    Shop by Category
-                </h3>
+                <h3 class="text-xs uppercase tracking-[0.4em] text-gray-400">Shop by Category</h3>
             </div>
-
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <a href="/shop?category=men" class="group relative overflow-hidden rounded-xl">
-                    <img src="/images/categori1.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition">
+                    <img src="/images/categori1.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-black/40"></div>
                     <div class="absolute bottom-6 left-6">
-                        <h4 class="uppercase text-sm tracking-widest">Men Watches</h4>
+                        <h4 class="uppercase text-sm tracking-widest text-white">Men Watches</h4>
                     </div>
                 </a>
-
                 <a href="/shop?category=women" class="group relative overflow-hidden rounded-xl">
-                    <img src="/images/categori2.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition">
+                    <img src="/images/categori2.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-black/40"></div>
                     <div class="absolute bottom-6 left-6">
-                        <h4 class="uppercase text-sm tracking-widest">Women Watches</h4>
+                        <h4 class="uppercase text-sm tracking-widest text-white">Women Watches</h4>
                     </div>
                 </a>
-
                 <a href="/shop?category=unisex" class="group relative overflow-hidden rounded-xl">
-                    <img src="/images/categori3.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition">
+                    <img src="/images/categori3.png" class="h-[420px] w-full object-cover group-hover:scale-110 transition duration-500">
                     <div class="absolute inset-0 bg-black/40"></div>
                     <div class="absolute bottom-6 left-6">
-                        <h4 class="uppercase text-sm tracking-widest">Unisex Watches</h4>
+                        <h4 class="uppercase text-sm tracking-widest text-white">Unisex Watches</h4>
                     </div>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- ================= LATEST PRODUCTS ================= -->
     <section class="py-28 bg-[#0b0b0b]">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
 
-            <div class="mb-14 flex justify-between items-center">
-                <h3 class="uppercase tracking-widest text-sm">
-                    Latest Collection
-                </h3>
+            <div class="mb-14 flex justify-between items-end">
+                <div>
+                    <h3 class="uppercase tracking-widest text-sm text-gray-400">Latest Collection</h3>
+                    <h2 class="text-3xl font-bold mt-2">New Arrivals</h2>
+                </div>
 
-                <a href="/shop"
-                   class="text-xs uppercase tracking-widest text-gray-400 hover:text-white transition">
-                    View All
+                <div class="flex gap-3 mb-1">
+                    <button class="swiper-prev-btn p-3 border border-gray-800 rounded-full hover:border-white transition-all group">
+                        <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <button class="swiper-next-btn p-3 border border-gray-800 rounded-full hover:border-white transition-all group">
+                        <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="swiper productSwiper overflow-visible">
+                <div class="swiper-wrapper">
+                    <% if (latestProducts && latestProducts.length > 0) { %>
+                        <% latestProducts.forEach(product => { %>
+                            <div class="swiper-slide h-auto">
+                                <a href="/product/<%= product._id %>" class="group block h-full bg-black border border-gray-900 rounded-xl p-5 hover:border-gray-700 transition duration-300">
+                                    <div class="h-64 flex items-center justify-center overflow-hidden rounded-lg mb-6 bg-[#111]">
+                                        <img src="<%= product.image %>" 
+                                             class="h-full w-full object-contain group-hover:scale-110 transition duration-500"
+                                             alt="<%= product.name %>">
+                                    </div>
+                                    <h4 class="text-sm uppercase tracking-wider font-semibold truncate">
+                                        <%= product.name %>
+                                    </h4>
+                                    <p class="text-gray-500 text-sm mt-2 font-medium">
+                                        ₹<%= product.price.toLocaleString() %>
+                                    </p>
+                                    <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span class="text-[10px] uppercase tracking-[0.2em] text-white border-b border-white">View Details</span>
+                                    </div>
+                                </a>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="w-full py-20 text-center">
+                            <p class="text-gray-500">No products available at the moment.</p>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="swiper-pagination !-bottom-12"></div>
+            </div>
+
+            <div class="mt-20 text-center">
+                <a href="/shop" class="text-xs uppercase tracking-[0.3em] text-gray-500 hover:text-white transition border-b border-transparent hover:border-white pb-1">
+                    Explore Full Catalog
                 </a>
             </div>
-
-            <!-- PRODUCTS -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-
-                <% if (latestProducts && latestProducts.length > 0) { %>
-                    <% latestProducts.forEach(product => { %>
-
-                        <a href="/product/<%= product._id %>" class="group bg-black rounded-xl p-4">
-                            <div class="h-56 flex items-center justify-center overflow-hidden rounded-lg mb-4">
-                                <img src="<%= product.image %>"
-                                     class="h-full object-contain group-hover:scale-110 transition">
-                            </div>
-
-                            <h4 class="text-sm uppercase tracking-wide">
-                                <%= product.name %>
-                            </h4>
-
-                            <p class="text-gray-400 text-sm mt-1">
-                                ₹<%= product.price.toLocaleString() %>
-                            </p>
-                        </a>
-
-                    <% }) %>
-                <% } else { %>
-                    <p class="col-span-4 text-center text-gray-500">
-                        No products available
-                    </p>
-                <% } %>
-
-            </div>
-
-            <!-- ================= PAGINATION ================= -->
-            <% if (typeof totalPages !== "undefined" && totalPages > 1) { %>
-                <div class="mt-16 flex justify-center gap-2">
-
-                    <% if (currentPage > 1) { %>
-                        <a href="/?page=<%= currentPage - 1 %>"
-                           class="px-4 py-2 border border-gray-700 text-gray-400 hover:text-white">
-                            Prev
-                        </a>
-                    <% } %>
-
-                    <% for (let i = 1; i <= totalPages; i++) { %>
-                        <a href="/?page=<%= i %>"
-                           class="px-4 py-2 border 
-                           <%= i === currentPage ? 'border-white text-white' : 'border-gray-700 text-gray-400 hover:text-white' %>">
-                            <%= i %>
-                        </a>
-                    <% } %>
-
-                    <% if (currentPage < totalPages) { %>
-                        <a href="/?page=<%= currentPage + 1 %>"
-                           class="px-4 py-2 border border-gray-700 text-gray-400 hover:text-white">
-                            Next
-                        </a>
-                    <% } %>
-
-                </div>
-            <% } %>
-
         </div>
     </section>
 
 </main>
 
 <%- include('../partials/user/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const swiper = new Swiper('.productSwiper', {
+            slidesPerView: 1,
+            spaceBetween: 24,
+            grabCursor: true,
+            loop: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            navigation: {
+                nextEl: '.swiper-next-btn',
+                prevEl: '.swiper-prev-btn',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                dynamicBullets: true,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+                1280: {
+                    slidesPerView: 4,
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    /* Styling Swiper Pagination */
+    .swiper-pagination-bullet {
+        background: #333 !important;
+        opacity: 1 !important;
+    }
+    .swiper-pagination-bullet-active {
+        background: #fff !important;
+        width: 20px !important;
+        border-radius: 4px !important;
+    }
+    .productSwiper {
+        padding-bottom: 20px;
+    }
+</style>

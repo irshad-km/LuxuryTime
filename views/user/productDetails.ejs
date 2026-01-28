@@ -4,9 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>
-    <%= product.name %> | Luxury Time
-  </title>
+  <title><%= product.name %> | Luxury Time</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
@@ -19,27 +17,45 @@
       overflow-x: hidden;
     }
 
-    .border-subtle {
-      border-color: rgba(255, 255, 255, 0.05);
-    }
+    .border-subtle { border-color: rgba(255, 255, 255, 0.05); }
 
-    /* Thumbnail active state */
     .thumb-active {
       border: 1.5px solid #f4bc1c !important;
       opacity: 1 !important;
     }
 
-    /* --- ZOOM LENS CSS --- */
+    .color-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .color-active {
+      border-color: #f4bc1c !important;
+      transform: scale(1.1);
+    }
+
+    .swatch-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
     .zoom-container {
       position: relative;
-      cursor: none; /* Hide real cursor to use the lens as pointer */
+      cursor: none;
     }
 
     .zoom-lens {
       position: absolute;
-      border: 1px solid #f4bc1c; /* Gold border */
-      border-radius: 50%; /* Circular shape */
-      width: 160px; /* Lens size */
+      border: 1px solid #f4bc1c;
+      border-radius: 50%;
+      width: 160px;
       height: 160px;
       visibility: hidden;
       pointer-events: none;
@@ -48,15 +64,7 @@
       background-repeat: no-repeat;
     }
 
-    /* Smooth Image Transitions */
-    #mainPicture {
-      transition: opacity 0.3s ease;
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #000; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    #mainPicture { transition: opacity 0.3s ease; }
   </style>
 </head>
 
@@ -64,167 +72,187 @@
 
   <%- include('../partials/user/header') %>
 
-    <% const variant=product.variants[0]; %>
+  <script>
+    const variants = <%- JSON.stringify(product.variants) %>;
+  </script>
 
-      <main class="max-w-7xl mx-auto px-8 py-10">
-        <nav class="text-[9px] text-gray-600 uppercase tracking-[0.3em] mb-12">
-          Home / Men's Watches / <span class="text-gray-300">
-            <%= product.name %>
-          </span>
-        </nav>
+  <% const variant = product.variants[0]; %>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+  <main class="max-w-7xl mx-auto px-8 py-10">
+    <nav class="text-[9px] text-gray-600 uppercase tracking-[0.3em] mb-12">
+      Home / Watches / <span class="text-gray-300"><%= product.name %></span>
+    </nav>
 
-          <div class="flex flex-col items-center">
-            <div id="imageWrapper" class="zoom-container relative w-full aspect-square flex items-center justify-center group">
-              <div class="absolute w-2/3 h-2/3 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      <div class="flex flex-col items-center">
+        <div id="imageWrapper" class="zoom-container relative w-full aspect-square flex items-center justify-center">
+          <div class="absolute w-2/3 h-2/3 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
+          <div id="zoomLens" class="zoom-lens"></div>
+          <img id="mainPicture" src="<%= variant.images[0] %>" class="max-h-[500px] w-auto object-contain z-10">
+        </div>
 
-              <div id="zoomLens" class="zoom-lens"></div>
-
-              <img id="mainPicture" src="<%= variant.images[0] %>" 
-                   class="max-h-[500px] w-auto object-contain z-10"
-                   alt="<%= product.name %>">
-            </div>
-
-            <div class="flex gap-6 mt-12 justify-center">
-              <% variant.images.forEach((img, index)=> { %>
-                <div onclick="swapImage('<%= img %>', this)"
-                  class="thumb-box w-20 h-20 border border-subtle p-2 cursor-pointer transition-all duration-300 <%= index === 0 ? 'thumb-active' : 'opacity-30 hover:opacity-100' %>">
-                  <img src="<%= img %>" class="w-full h-full object-contain">
-                </div>
-                <% }) %>
-            </div>
+        <div id="thumbnailContainer" class="flex gap-6 mt-12 justify-center">
+          <% variant.images.forEach((img, index) => { %>
+          <div onclick="swapImage('<%= img %>', this)" 
+               class="thumb-box w-20 h-20 border border-subtle p-2 cursor-pointer transition-all duration-300 <%= index === 0 ? 'thumb-active' : 'opacity-30 hover:opacity-100' %>">
+            <img src="<%= img %>" class="w-full h-full object-contain">
           </div>
+          <% }) %>
+        </div>
+      </div>
 
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-              <span class="text-[10px] font-bold uppercase tracking-[0.4em] text-yellow-600">Limited Edition</span>
-              <div class="flex items-center gap-1 text-[10px] text-yellow-500">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                  class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                <span class="text-gray-600 ml-2 tracking-widest">(124 REVIEWS)</span>
-              </div>
-            </div>
-
-            <h1 class="text-6xl font-light tracking-tight mb-4 text-white">
-              <%= product.name %>
-            </h1>
-            <p class="text-gray-500 text-sm font-light mb-10 tracking-wide">Swiss Engineering, Aviation Heritage.</p>
-
-            <div class="flex items-baseline gap-6 mb-12">
-              <span class="text-4xl font-light tracking-tighter">RS <%= (variant.salePrice ||
-                  variant.regularPrice).toLocaleString() %></span>
-              <% if(variant.salePrice) { %>
-                <span class="text-xl text-gray-700 line-through font-light tracking-tighter">RS <%=
-                    variant.regularPrice.toLocaleString() %></span>
-                <% } %>
-            </div>
-
-            <div class="flex gap-4 mb-16">
-              <form action="/add-to-cart/<%= product._id %>" method="POST" class="flex-1">
-                <button
-                  class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all duration-300">
-                  Add to Bag
-                </button>
-              </form>
-              <button class="px-8 border border-subtle hover:bg-white hover:text-black transition-all duration-300">
-                <i class="fa-regular fa-heart"></i>
-              </button>
-            </div>
-
-            <div class="grid grid-cols-3 gap-4 border-t border-subtle pt-10 text-center">
-              <div class="flex flex-col items-center group">
-                <i class="fa-solid fa-droplet text-gray-600 text-xl mb-3 group-hover:text-white transition"></i>
-                <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em] leading-relaxed">120M Water<br>Resistant</span>
-              </div>
-              <div class="flex flex-col items-center border-x border-subtle group">
-                <i class="fa-solid fa-gem text-gray-600 text-xl mb-3 group-hover:text-white transition"></i>
-                <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em] leading-relaxed">Sapphire Glass<br>Crystal</span>
-              </div>
-              <div class="flex flex-col items-center group">
-                <i class="fa-solid fa-clock text-gray-600 text-xl mb-3 group-hover:text-white transition"></i>
-                <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em] leading-relaxed">Swiss Made<br>Movement</span>
-              </div>
-            </div>
+      <div class="flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-[10px] font-bold uppercase tracking-[0.4em] text-yellow-600">Luxury Collection</span>
+          <div class="flex items-center gap-1 text-[10px] text-yellow-500">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <span class="text-gray-600 ml-2 tracking-widest">(124 REVIEWS)</span>
           </div>
         </div>
 
-        <section class="mt-32 border-t border-subtle pt-12">
-          <div class="flex space-x-16 mb-16 text-[10px] uppercase tracking-[0.4em] text-gray-600">
-            <button class="text-white border-b border-white pb-5">Description</button>
-            <button class="hover:text-white pb-5 transition">Specifications</button>
-          </div>
+        <h1 class="text-6xl font-light tracking-tight mb-4 text-white"><%= product.name %></h1>
+        <p class="text-gray-500 text-sm font-light mb-8 tracking-wide">Swiss Craftsmanship & Timeless Design.</p>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-24">
-            <div>
-              <h3 class="text-xl font-light mb-8 tracking-tight text-gray-200">The pinnacle of horological achievement.</h3>
-              <p class="text-gray-500 text-sm font-light leading-[1.8] tracking-wide">
-                <%= product.description %>
-              </p>
+        <div class="flex items-baseline gap-6 mb-10">
+          <span id="salePrice" class="text-4xl font-light tracking-tighter">
+            ₹ <%= (variant.salePrice || variant.regularPrice).toLocaleString() %>
+          </span>
+          <div id="priceWrapper">
+             <% if(variant.salePrice) { %>
+                <span id="regularPrice" class="text-xl text-gray-700 line-through font-light tracking-tighter">
+                  ₹ <%= variant.regularPrice.toLocaleString() %>
+                </span>
+             <% } %>
+          </div>
+        </div>
+
+        <div class="mb-12">
+          <p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4">Select Edition</p>
+          <div class="flex flex-wrap gap-5">
+            <% product.variants.forEach((v, i) => { %>
+            <div class="flex flex-col items-center gap-2">
+              <button onclick="changeVariant(<%= i %>)" 
+                      class="variant-btn color-swatch p-0.5 <%= i === 0 ? 'color-active' : '' %>" 
+                      title="<%= v.color %>">
+                <div class="swatch-inner" style="background-color: <%= v.color.toLowerCase() %>;"></div>
+              </button>
+              <span class="text-[8px] uppercase tracking-tighter text-gray-600"><%= v.color %></span>
             </div>
+            <% }) %>
           </div>
-        </section>
-      </main>
+        </div>
 
-      <script>
-        const mainImg = document.getElementById('mainPicture');
-        const lens = document.getElementById('zoomLens');
-        const wrapper = document.getElementById('imageWrapper');
+        <div class="flex gap-4 mb-16">
+          <form action="/add-to-cart/<%= product._id %>" method="POST" class="flex-1">
+            <input type="hidden" name="variantIndex" id="variantIndex" value="0">
+            <button class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all">
+              Add to Bag
+            </button>
+          </form>
+          <button class="px-8 border border-subtle hover:bg-white hover:text-black transition-all">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+        </div>
 
-        // Initialize Zoom Functionality
-        function initZoom() {
-          // ZOOM LEVEL KURACHITTUNDU (Ippo 1.5 aakki)
-          const zoomLevel = 1.5; 
+        <div class="grid grid-cols-3 gap-4 border-t border-subtle pt-10 text-center">
+          <div class="flex flex-col items-center">
+            <i class="fa-solid fa-droplet text-gray-600 text-xl mb-3"></i>
+            <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em]">Water Resistant</span>
+          </div>
+          <div class="flex flex-col items-center border-x border-subtle">
+            <i class="fa-solid fa-gem text-gray-600 text-xl mb-3"></i>
+            <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em]">Sapphire Glass</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <i class="fa-solid fa-clock text-gray-600 text-xl mb-3"></i>
+            <span class="text-[8px] text-gray-500 uppercase tracking-[0.2em]">Swiss Movement</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 
-          wrapper.addEventListener('mousemove', (e) => {
-            const rect = mainImg.getBoundingClientRect();
-            
-            let x = e.clientX - rect.left;
-            let y = e.clientY - rect.top;
+  <script>
+    const mainImg = document.getElementById('mainPicture');
+    const lens = document.getElementById('zoomLens');
+    const wrapper = document.getElementById('imageWrapper');
+    const thumbContainer = document.getElementById("thumbnailContainer");
+    const salePriceEl = document.getElementById("salePrice");
+    const priceWrapper = document.getElementById("priceWrapper");
+    const variantIndexInput = document.getElementById("variantIndex");
 
-            // Imaginte bounds check
-            if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
-              lens.style.visibility = 'hidden';
-              return;
-            }
+    function updateZoom() {
+      const zoomLevel = 1.5;
+      wrapper.onmousemove = (e) => {
+        const rect = mainImg.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
 
-            lens.style.visibility = 'visible';
-            lens.style.left = (x - lens.offsetWidth / 2) + 'px';
-            lens.style.top = (y - lens.offsetHeight / 2) + 'px';
-
-            lens.style.backgroundImage = `url('${mainImg.src}')`;
-            lens.style.backgroundSize = (rect.width * zoomLevel) + 'px ' + (rect.height * zoomLevel) + 'px';
-            
-            const posX = (x * zoomLevel) - (lens.offsetWidth / 2);
-            const posY = (y * zoomLevel) - (lens.offsetHeight / 2);
-            lens.style.backgroundPosition = `-${posX}px -${posY}px`;
-          });
-
-          wrapper.addEventListener('mouseleave', () => {
-            lens.style.visibility = 'hidden';
-          });
+        if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+          lens.style.visibility = 'hidden';
+          return;
         }
 
-        // Image Swap Function
-        function swapImage(imgUrl, element) {
-          mainImg.style.opacity = '0';
+        lens.style.visibility = 'visible';
+        lens.style.left = (x - lens.offsetWidth / 2) + 'px';
+        lens.style.top = (y - lens.offsetHeight / 2) + 'px';
+        lens.style.backgroundImage = `url('${mainImg.src}')`;
+        lens.style.backgroundSize = (rect.width * zoomLevel) + 'px ' + (rect.height * zoomLevel) + 'px';
+        lens.style.backgroundPosition = `-${(x * zoomLevel) - lens.offsetWidth / 2}px -${(y * zoomLevel) - lens.offsetHeight / 2}px`;
+      };
+      wrapper.onmouseleave = () => lens.style.visibility = 'hidden';
+    }
 
-          setTimeout(() => {
-            mainImg.src = imgUrl;
-            mainImg.style.opacity = '1';
-          }, 250);
+    function swapImage(imgUrl, element) {
+      mainImg.style.opacity = '0';
+      setTimeout(() => {
+        mainImg.src = imgUrl;
+        mainImg.style.opacity = '1';
+      }, 250);
 
-          document.querySelectorAll('.thumb-box').forEach(box => {
-            box.classList.remove('thumb-active');
-            box.classList.add('opacity-30');
-          });
-          element.classList.add('thumb-active');
-          element.classList.remove('opacity-30');
-        }
+      document.querySelectorAll('.thumb-box').forEach(box => {
+        box.classList.remove('thumb-active');
+        box.classList.add('opacity-30');
+      });
+      element.classList.add('thumb-active');
+      element.classList.remove('opacity-30');
+    }
 
-        initZoom();
-      </script>
+    // FIXED changeVariant logic
+    function changeVariant(index) {
+      const v = variants[index];
+      if (!v) return;
+
+      variantIndexInput.value = index;
+
+      // Update Prices
+      salePriceEl.innerText = "₹ " + (v.salePrice || v.regularPrice).toLocaleString();
+      if (v.salePrice) {
+        priceWrapper.innerHTML = `<span id="regularPrice" class="text-xl text-gray-700 line-through font-light tracking-tighter">₹ ${v.regularPrice.toLocaleString()}</span>`;
+      } else {
+        priceWrapper.innerHTML = "";
+      }
+
+      // Update Main Image
+      mainImg.src = v.images[0];
+
+      // Rebuild Thumbnails
+      thumbContainer.innerHTML = "";
+      v.images.forEach((img, i) => {
+        const div = document.createElement("div");
+        div.className = `thumb-box w-20 h-20 border border-subtle p-2 cursor-pointer transition-all duration-300 ${i === 0 ? 'thumb-active' : 'opacity-30 hover:opacity-100'}`;
+        div.onclick = () => swapImage(img, div);
+        div.innerHTML = `<img src="${img}" class="w-full h-full object-contain">`;
+        thumbContainer.appendChild(div);
+      });
+
+      // Update Active State on Buttons
+      document.querySelectorAll(".variant-btn").forEach(btn => btn.classList.remove("color-active"));
+      document.querySelectorAll(".variant-btn")[index].classList.add("color-active");
+    }
+
+    updateZoom();
+  </script>
 
 </body>
-
 </html>

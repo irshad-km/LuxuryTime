@@ -4,6 +4,7 @@ import { requireLogin, guestOnly } from "../middlewares/auth.js";
 import passport from "passport";
 import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
 import noCache from "../middlewares/no-cache.js"
+import upload from "../middlewares/multer.js";
 
 
 const router = express.Router();
@@ -18,8 +19,11 @@ router.get("/", noCache, userController.loadHomepage);
 router.get("/login", guestOnly, userController.loadLoginpage);
 router.get("/signUp", guestOnly, userController.loadSignup);
 router.get("/profile", requireLogin, userController.loadProfile);
-router.get("/shop", requireLogin, userController.loadshopepage)
-router.get("/product/:id", requireLogin, userController.loadProductDetails)
+
+
+
+router.get("/shop", userController.loadshopepage)
+router.get("/product/:id", userController.loadProductDetails)
 router.get("/newpass", userController.loadnewPassword);
 
 // sign
@@ -51,7 +55,13 @@ router.post("/change-new-email", requireLogin, userController.sendChangenewEmail
 
 //edit profile
 router.get("/edit-profile", requireLogin, userController.loadEditProfile);
-router.post("/edit-profile", requireLogin, userController.updateProfile);
+router.post(
+  "/edit-profile",
+  requireLogin,
+  upload.single("avatar"),
+  userController.
+    updateProfile
+);
 
 // address manag
 router.get("/address", requireLogin, userController.loadAddress);
@@ -89,7 +99,7 @@ router.get(
       email: req.user.email,
       fullname: req.user.fullname,
     };
-
+    
     return res.redirect("/");
   }
 );

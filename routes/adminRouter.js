@@ -24,8 +24,8 @@ router.patch(
 router.get("/products", requireAdminLogin, adminController.loadproduct)
 router.get("/addproduct", requireAdminLogin, adminController.loadaddproduct)
 router.get("/products/edit/:id", requireAdminLogin, productController.loadEditproduct)
-router.patch("/toggleProduct/:id",requireAdminLogin,productController.toggleProduct);
-router.patch("/softDeleteProduct/:id",requireAdminLogin,productController.softDeleteProduct)
+router.patch("/toggleProduct/:id", requireAdminLogin, productController.toggleProduct);
+router.patch("/softDeleteProduct/:id", requireAdminLogin, productController.softDeleteProduct)
 router.post(
     "/products/add",
     requireAdminLogin,

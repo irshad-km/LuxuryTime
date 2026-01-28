@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
@@ -25,7 +25,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        /* Premium Glass Table */
         .table-container {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -39,17 +38,29 @@
             border-collapse: collapse;
         }
 
-        /* Fixed Alignment Proportions */
-        .premium-table th, .premium-table td {
+        .premium-table th,
+        .premium-table td {
             padding: 1.25rem 2rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
 
-        .col-name { width: 30%; }
-        .col-email { width: 35%; }
-        .col-status { width: 20%; }
-        .col-action { width: 15%; text-align: right !important; }
+        .col-name {
+            width: 30%;
+        }
+
+        .col-email {
+            width: 35%;
+        }
+
+        .col-status {
+            width: 20%;
+        }
+
+        .col-action {
+            width: 15%;
+            text-align: right !important;
+        }
 
         .premium-table thead th {
             background: #0d0d0d;
@@ -69,7 +80,6 @@
             transform: scale(1.002);
         }
 
-        /* High-Tech Status Badges */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -94,7 +104,6 @@
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        /* Neumorphic Toggle */
         .switch {
             position: relative;
             display: inline-block;
@@ -102,7 +111,11 @@
             height: 24px;
         }
 
-        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
         .slider {
             position: absolute;
@@ -124,24 +137,23 @@
             background-color: #fff;
             transition: .4s;
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
-        input:checked + .slider {
+        input:checked+.slider {
             background-color: var(--accent);
             border-color: #60a5fa;
         }
 
-        input:checked + .slider:before {
+        input:checked+.slider:before {
             transform: translateX(20px);
         }
 
-        /* Search Input Tech Feel */
         .search-wrapper input {
             background: #0f0f0f;
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 14px 16px 14px 48px;
+            padding: 14px 48px;
             transition: all 0.3s;
         }
 
@@ -151,7 +163,18 @@
             outline: none;
         }
 
-        /* SweetAlert Premium Customization */
+        /* Red Clear Button Styles */
+        #clearSearch {
+            display: <%=search && search.length > 0 ? 'flex': 'none' %>;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #clearSearch:hover {
+            color: #ef4444;
+            transform: translateY(-50%) scale(1.1);
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+        }
+
         .swal2-popup.tech-popup {
             background: #0f0f0f !important;
             border: 1px solid #222 !important;
@@ -163,103 +186,113 @@
 
 <body class="antialiased">
     <div class="flex min-h-screen">
-        
         <%- include('../partials/admin/sidebar') %>
+            <main class="flex-1 p-8 lg:p-16">
+                <div class="max-w-7xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                        <div>
+                            <h1 class="text-4xl font-extrabold tracking-tight text-white">Customers</h1>
+                            <p class="text-neutral-500 mt-2 font-medium">Manage user authority and security access
+                                levels.</p>
+                        </div>
+                        <div class="relative search-wrapper w-full md:w-96 group">
+                            <i
+                                class="ph ph-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-neutral-500 text-xl"></i>
 
-        <main class="flex-1 p-8 lg:p-16">
-            <div class="max-w-7xl mx-auto">
-                
-                <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
-                    <div>
-                        <h1 class="text-4xl font-extrabold tracking-tight text-white">Customers</h1>
-                        <p class="text-neutral-500 mt-2 font-medium">Manage user authority and security access levels.</p>
+                            <input id="searchInput" name="search" type="text" placeholder="Filter by name or email..."
+                                value="<%= search || '' %>" class="w-full text-sm text-white">
+
+                            <button id="clearSearch" onclick="clearSearch()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500">
+                                <i class="ph ph-x-circle text-2xl"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="relative search-wrapper w-full md:w-96 group">
-                        <i class="ph ph-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-neutral-500 text-xl transition-colors group-focus-within:text-blue-500"></i>
-                        <input id="searchInput" type="text" placeholder="Filter by name or email..." class="w-full text-sm text-white">
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="premium-table">
-                        <thead>
-                            <tr>
-                                <th class="col-name">Full Name</th>
-                                <th class="col-email">Email Address</th>
-                                <th class="col-status">Status</th>
-                                <th class="col-action">Manage</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody">
-                            <% users.forEach(user => { %>
-                                <tr class="group">
-                                    <td class="col-name">
-                                        <span class="font-bold text-neutral-200 group-hover:text-white transition-colors">
-                                            <%= user.fullname %>
-                                        </span>
-                                    </td>
-                                    
-                                    <td class="col-email">
-                                        <span class="text-neutral-500 font-medium">
-                                            <%= user.email %>
-                                        </span>
-                                    </td>
-                                    
-                                    <td class="col-status">
-                                        <div id="status-<%= user._id %>" 
-                                            class="badge <%= !user.isBlocked ? 'badge-active' : 'badge-blocked' %>">
-                                            <div class="w-1.5 h-1.5 rounded-full animate-pulse <%= !user.isBlocked ? 'bg-emerald-500' : 'bg-red-500' %>"></div>
-                                            <%= !user.isBlocked ? 'ACTIVE' : 'BLOCKED' %>
-                                        </div>
-                                    </td>
-                                    
-                                    <td class="col-action">
-                                        <label class="switch">
-                                            <input type="checkbox" 
-                                                <%= !user.isBlocked ? 'checked' : '' %> 
-                                                onchange="handleStatusToggle('<%= user._id %>', '<%= user.fullname %>', this)">
-                                            <span class="slider"></span>
-                                        </label>
-                                    </td>
+                    <div class="table-container">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-name">Full Name</th>
+                                    <th class="col-email">Email Address</th>
+                                    <th class="col-status">Status</th>
+                                    <th class="col-action">Manage</th>
                                 </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <% users.forEach(user=> { %>
+                                    <tr class="group">
+                                        <td class="col-name"><span class="font-bold text-neutral-200">
+                                                <%= user.fullname %>
+                                            </span></td>
+                                        <td class="col-email"><span class="text-neutral-500 font-medium">
+                                                <%= user.email %>
+                                            </span></td>
+                                        <td class="col-status">
+                                            <div id="status-<%= user._id %>"
+                                                class="badge <%= !user.isBlocked ? 'badge-active' : 'badge-blocked' %>">
+                                                <div
+                                                    class="w-1.5 h-1.5 rounded-full animate-pulse <%= !user.isBlocked ? 'bg-emerald-500' : 'bg-red-500' %>">
+                                                </div>
+                                                <%= !user.isBlocked ? 'ACTIVE' : 'BLOCKED' %>
+                                            </div>
+                                        </td>
+                                        <td class="col-action">
+                                            <label class="switch">
+                                                <input type="checkbox" <%=!user.isBlocked ? 'checked' : '' %>
+                                                onchange="handleStatusToggle('<%= user._id %>', '<%= user.fullname %>',
+                                                        this)">
+                                                        <span class="slider"></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
 
-                    <div class="px-8 py-6 bg-[#0c0c0c] flex justify-between items-center">
-                        <span class="text-[11px] font-black text-neutral-600 uppercase tracking-[0.2em]">
-                            System Node: <%= currentPage %> / <%= totalPages %>
-                        </span>
-                        
-                        <div class="flex items-center gap-3">
-                            <% for(let i=1; i<=totalPages; i++) { %>
-                                <a href="?page=<%= i %>" 
-                                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all <%= i === currentPage ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'text-neutral-500 hover:text-white hover:bg-neutral-800' %>">
-                                   <%= i %>
-                                </a>
-                            <% } %>
+                        <div class="px-8 py-6 bg-[#0c0c0c] flex justify-between items-center">
+                            <span class="text-[11px] font-black text-neutral-600 uppercase tracking-[0.2em]">
+                                System Node: <%= currentPage %> / <%= totalPages %>
+                            </span>
+                            <div class="flex items-center gap-3">
+                                <% for(let i=1; i <=totalPages; i++) { %>
+                                    <a href="?page=<%= i %>&search=<%= search %>"
+                                        class="px-4 py-2 rounded-xl text-xs font-bold transition-all <%= i === currentPage ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'text-neutral-500 hover:text-white hover:bg-neutral-800' %>">
+                                        <%= i %>
+                                    </a>
+                                    <% } %>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
     </div>
 
     <script>
-        // Tech-Optimized Search
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const val = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#userTableBody tr');
-            rows.forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
-            });
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearSearch');
+
+        // Toggle clear button visibility on input
+        searchInput.addEventListener('input', function (e) {
+            clearBtn.style.display = e.target.value.length > 0 ? 'flex' : 'none';
         });
 
-        // Premium Toggle Function
+        // Trigger search on Enter
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                const searchValue = e.target.value.trim();
+                window.location.href = `?page=1&search=${encodeURIComponent(searchValue)}`;
+            }
+        });
+
+        // Function to clear search
+        function clearSearch() {
+            window.location.href = `?page=1&search=`;
+        }
+
         async function handleStatusToggle(userId, name, checkbox) {
             const isUnblocking = checkbox.checked;
-            checkbox.checked = !isUnblocking; // Revert until confirmed
+            checkbox.checked = !isUnblocking;
 
             const { isConfirmed } = await Swal.fire({
                 title: isUnblocking ? 'Authorize User?' : 'Suspend User?',
@@ -268,7 +301,6 @@
                 showCancelButton: true,
                 confirmButtonText: isUnblocking ? 'Confirm Unlock' : 'Confirm Block',
                 confirmButtonColor: isUnblocking ? '#3b82f6' : '#ef4444',
-                cancelButtonColor: '#1a1a1a',
                 customClass: { popup: 'tech-popup' },
                 background: '#0f0f0f',
                 color: '#fff'
@@ -285,7 +317,6 @@
                     if (result.success) {
                         checkbox.checked = !result.isBlocked;
                         const badge = document.getElementById(`status-${userId}`);
-                        
                         badge.className = `badge ${result.isBlocked ? 'badge-blocked' : 'badge-active'}`;
                         badge.innerHTML = `<div class="w-1.5 h-1.5 rounded-full animate-pulse ${result.isBlocked ? 'bg-red-500' : 'bg-emerald-500'}"></div>${result.isBlocked ? 'BLOCKED' : 'ACTIVE'}`;
 
@@ -307,4 +338,5 @@
         }
     </script>
 </body>
+
 </html>
