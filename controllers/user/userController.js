@@ -5,7 +5,6 @@ import Address from "../../models/userAddress.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { error } from "console";
 
 dotenv.config();
 
@@ -22,11 +21,21 @@ const loadHomepage = async (req, res) => {
       }
     }
 
-    const products = await Product.find({})
+    const products = await Product.find({
+      isListed: true
+    })
+      .populate({
+        path: "category",
+        match: { isListed: true } 
+      })
       .sort({ createdAt: -1 })
       .limit(8);
 
-    const latestProducts = products.map(p => {
+    const filteredProducts = products.filter(
+      p => p.category !== null
+    );
+
+    const latestProducts = filteredProducts.map(p => {
       const mainVariant = p.variants[0] || {};
 
       return {
@@ -36,8 +45,6 @@ const loadHomepage = async (req, res) => {
         image: mainVariant.images?.[0] || "/images/products/default.png"
       };
     });
-
-
 
     res.render("user/home", {
       latestProducts
@@ -51,8 +58,8 @@ const loadHomepage = async (req, res) => {
 
 
 
-
 const loadSignup = (req, res) => res.render("user/signUp");
+
 
 const loadLoginpage = (req, res) => {
   try {
@@ -69,7 +76,21 @@ const loadLoginpage = (req, res) => {
   };
 }
 
-const loadProfile = (req, res) => res.render("user/profile");
+const loadProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.session.user._id);
+
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+    res.render("user/profile", { user });
+  } catch (error) {
+    console.error(error);
+    res.redirect("/");
+  }
+};
+
 const loadForgotPassword = (req, res) => res.render("user/forgotPass");
 const loadChangePassword = (req, res) => res.render("user/resetPass")
 
@@ -120,6 +141,7 @@ const sendVerificationEmail = async (email, otp) => {
     return false;
   }
 };
+
 
 //bcrypt pass
 const securePassword = async (password) => bcrypt.hash(password, 10);
@@ -178,6 +200,7 @@ const login = async (req, res) => {
 
     if (!isMatch) return res.render("user/login", { error: "Incorrect password" });
 
+    //login user session
     req.session.user = {
       _id: user._id,
       fullname: user.fullname,
@@ -245,6 +268,7 @@ const resendotp = async (req, res) => {
     }
 
     const otp = generateOtp();
+
     const emailSent = await sendVerificationEmail(emailToSend, otp);
     if (!emailSent) return res.json({ success: false, message: "OTP sending failed" });
 
@@ -304,13 +328,14 @@ const verifyOtp = async (req, res) => {
 };
 
 
-//password update
+//password update in
 const updatePassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body;
     const email = req.session.forgotEmail;
 
     if (!req.session.allowPasswordReset || !email) return res.redirect("/forgot-password");
+
     if (password !== confirmPassword) return res.render("user/newPass", { message: "Passwords do not match" });
 
     const hashedPassword = await securePassword(password);
@@ -322,6 +347,7 @@ const updatePassword = async (req, res) => {
   }
 };
 
+//update pass profile
 const updatePasswordProfile = async (req, res) => {
   try {
 
@@ -434,7 +460,6 @@ const sendChangenewEmailOtp = async (req, res) => {
 //profile
 const loadEditProfile = async (req, res) => {
   try {
-    console.log("ho");
     const user = await User.findById(req.session.user._id)
 
     res.render("user/editProfile", {
@@ -449,14 +474,19 @@ const loadEditProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { fullname, phone } = req.body;
+    const { fullname, phone, removeAvatar } = req.body;
+
     const updateData = {
       fullname,
       phone,
     };
 
+    if (removeAvatar === "true") {
+      updateData.avatar = "/default-avatar.png";
+    }
+
     if (req.file) {
-      updateData.profileImage = `/uploads/profile/${req.file.filename}`;
+      updateData.avatar = `/uploads/${req.file.filename}`;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -469,16 +499,20 @@ const updateProfile = async (req, res) => {
 
     return res.redirect("/profile");
   } catch (error) {
+    console.log(error);
     res.redirect("/edit-profile");
   }
 };
-
 // address 
 
 const loadAddress = async (req, res) => {
   try {
     const addresses = await Address.find({ userId: req.session.user._id });
-    res.render("user/address", { user: req.session.user, addresses });
+    const user = await User.findById(req.session.user._id);
+
+
+
+    res.render("user/address", { user: req.session.user, addresses, user, error: null });
   } catch (error) {
     res.status(500).send("Internal Server Error");
   }
@@ -634,6 +668,7 @@ const loadProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
 
+
     const product = await Product.findOne({ _id: productId, isListed: true })
       .populate("category")
 
@@ -641,9 +676,17 @@ const loadProductDetails = async (req, res) => {
       return res.redirect("/shop");
     }
 
+    if (!product.category || product.category.isListed === false) {
+      return res.redirect("/shop");
+    }
+
     const relatedProducts = await Product.find({
-      _id: { $ne: product._id }
-    }).limit(4);
+      _id: { $ne: product._id },
+      category: product.category._id, // same category
+      isListed: true,
+      isDeleted: false
+    }).limit(4)
+      .populate("category")
 
     res.render("user/productDetails", { product, relatedProducts });
   } catch (error) {

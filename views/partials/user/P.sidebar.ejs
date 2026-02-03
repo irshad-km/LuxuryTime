@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sidebar</title>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- SweetAlert (for logout) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Sidebar Styles -->
+    <style>
+        :root {
+            --accent-purple: #5b42f3;
+            --border-color: #333333;
+        }
+
+        body {
+            background: #070707;
+            color: white;
+            margin: 0;
+            font-family: Inter, sans-serif;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background: rgba(91, 66, 243, 0.12);
+            color: var(--accent-purple);
+            border: 1px solid rgba(91, 66, 243, 0.25);
+        }
+
+        .letter-avatar {
+            background-color: var(--accent-purple);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="flex min-h-screen">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 border-r border-gray-800 p-8 flex flex-col justify-between sticky top-0 h-screen bg-black">
+
+        <!-- Top -->
+        <div>
+            <!-- Logo -->
+            <a href="/" class="block mb-12">
+                <div class="flex items-center gap-2">
+                    <i class="ph-bold ph-watch text-2xl text-[var(--accent-purple)]"></i>
+                    <span class="font-bold tracking-widest uppercase text-sm">
+                        Luxury Watches
+                    </span>
+                </div>
+            </a>
+
+            <!-- User Info -->
+            <div class="flex items-center gap-3 mb-10">
+                <% if (user.avatar && user.avatar !== "" && user.avatar !== "/default-avatar.png") { %>
+                    <img src="<%= user.avatar %>"
+                         class="w-11 h-11 rounded-full border border-gray-700 object-cover">
+                <% } else { %>
+                    <div class="w-11 h-11 rounded-full letter-avatar text-lg border border-gray-700">
+                        <%= user.fullname.charAt(0) %>
+                    </div>
+                <% } %>
+
+                <div class="overflow-hidden">
+                    <h3 class="text-sm font-bold truncate w-32">
+                        <%= user.fullname %>
+                    </h3>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider">
+                        <%= user.membership || 'Member' %>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="space-y-2">
+                <a href="/profile" class="nav-item active">
+                    <i class="ph ph-user-circle text-xl"></i>
+                    My Profile
+                </a>
+
+                <a href="/orders" class="nav-item">
+                    <i class="ph ph-shopping-cart-simple text-xl"></i>
+                    My Orders
+                </a>
+
+                <a href="/wallet" class="nav-item">
+                    <i class="ph ph-wallet text-xl"></i>
+                    Wallet
+                </a>
+
+                <a href="/address" class="nav-item">
+                    <i class="ph ph-map-pin text-xl"></i>
+                    Address
+                </a>
+            </nav>
+        </div>
+
+        <!-- Logout -->
+        <div>
+            <form id="logout-form" action="/logout" method="POST" hidden></form>
+
+            <button onclick="handleLogout()"
+                class="w-full text-left px-4 py-3 rounded-lg text-sm text-red-400
+                       hover:bg-red-500/10 hover:text-red-500 transition
+                       flex items-center gap-3">
+                <i class="ph-bold ph-sign-out text-lg"></i>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT PLACEHOLDER -->
+    <main class="flex-1 p-10 text-gray-400">
+        <h1 class="text-2xl font-bold text-white mb-4">Main Content</h1>
+        <p>Put your page content here…</p>
+    </main>
+
+</div>
+
+<!-- Logout Script -->
+<script>
+    function handleLogout() {
+        Swal.fire({
+            title: 'Logout?',
+            text: 'Are you sure you want to logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#5b42f3',
+            cancelButtonColor: '#1a1a1a',
+            confirmButtonText: 'Yes, Logout',
+            background: '#111111',
+            color: '#ffffff',
+            iconColor: '#5b42f3',
+            backdrop: 'rgba(0,0,0,0.85)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

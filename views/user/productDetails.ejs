@@ -7,6 +7,8 @@
   <title><%= product.name %> | Luxury Time</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
 
@@ -65,6 +67,20 @@
     }
 
     #mainPicture { transition: opacity 0.3s ease; }
+
+    /* Custom Swiper Styles to match Homepage */
+    .swiper-pagination-bullet {
+      background: #333 !important;
+      opacity: 1 !important;
+    }
+    .swiper-pagination-bullet-active {
+      background: #f4bc1c !important;
+      width: 20px !important;
+      border-radius: 4px !important;
+    }
+    .relatedSwiper {
+      padding-bottom: 40px;
+    }
   </style>
 </head>
 
@@ -172,6 +188,62 @@
     </div>
   </main>
 
+  <% if (relatedProducts && relatedProducts.length > 0) { %>
+  <section class="max-w-7xl mx-auto px-8 pb-24 mt-20">
+    <div class="border-t border-subtle pt-20">
+      
+      <div class="mb-14 flex justify-between items-end">
+        <div>
+          <h3 class="uppercase tracking-widest text-xs text-gray-400">Recommendation</h3>
+          <h2 class="text-3xl font-bold mt-2 text-white">Related Products</h2>
+        </div>
+
+        <div class="flex gap-3 mb-1">
+          <button class="related-prev-btn p-3 border border-gray-800 rounded-full hover:border-white transition-all group">
+            <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <button class="related-next-btn p-3 border border-gray-800 rounded-full hover:border-white transition-all group">
+            <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="swiper relatedSwiper overflow-visible">
+        <div class="swiper-wrapper">
+          <% relatedProducts.forEach(item => { 
+              const v = item.variants[0]; 
+          %>
+            <div class="swiper-slide h-auto">
+              <a href="/product/<%= item._id %>" class="group block h-full bg-black border border-gray-900 rounded-xl p-5 hover:border-gray-700 transition duration-300">
+                <div class="h-64 flex items-center justify-center overflow-hidden rounded-lg mb-6 bg-[#111]">
+                  <img src="<%= v?.images?.[0] || '/images/products/default.png' %>" 
+                       class="h-full w-full object-contain group-hover:scale-110 transition duration-500"
+                       alt="<%= item.name %>">
+                </div>
+                <h4 class="text-sm uppercase tracking-wider font-semibold truncate text-white">
+                  <%= item.name %>
+                </h4>
+                <p class="text-yellow-500 text-sm mt-2 font-medium">
+                  ₹ <%= (v.salePrice || v.regularPrice).toLocaleString() %>
+                </p>
+                <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span class="text-[10px] uppercase tracking-[0.2em] text-white border-b border-white">View Details</span>
+                </div>
+              </a>
+            </div>
+          <% }) %>
+        </div>
+        <div class="swiper-pagination !-bottom-10"></div>
+      </div>
+
+    </div>
+  </section>
+  <% } %>
+
+  <%- include('../partials/user/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
   <script>
     const mainImg = document.getElementById('mainPicture');
     const lens = document.getElementById('zoomLens');
@@ -181,6 +253,7 @@
     const priceWrapper = document.getElementById("priceWrapper");
     const variantIndexInput = document.getElementById("variantIndex");
 
+    // Zoom Functionality
     function updateZoom() {
       const zoomLevel = 1.5;
       wrapper.onmousemove = (e) => {
@@ -203,6 +276,7 @@
       wrapper.onmouseleave = () => lens.style.visibility = 'hidden';
     }
 
+    // Thumbnail Switcher
     function swapImage(imgUrl, element) {
       mainImg.style.opacity = '0';
       setTimeout(() => {
@@ -218,14 +292,12 @@
       element.classList.remove('opacity-30');
     }
 
-    // FIXED changeVariant logic
+    // Variant Selection
     function changeVariant(index) {
       const v = variants[index];
       if (!v) return;
 
       variantIndexInput.value = index;
-
-      // Update Prices
       salePriceEl.innerText = "₹ " + (v.salePrice || v.regularPrice).toLocaleString();
       if (v.salePrice) {
         priceWrapper.innerHTML = `<span id="regularPrice" class="text-xl text-gray-700 line-through font-light tracking-tighter">₹ ${v.regularPrice.toLocaleString()}</span>`;
@@ -233,10 +305,7 @@
         priceWrapper.innerHTML = "";
       }
 
-      // Update Main Image
       mainImg.src = v.images[0];
-
-      // Rebuild Thumbnails
       thumbContainer.innerHTML = "";
       v.images.forEach((img, i) => {
         const div = document.createElement("div");
@@ -246,12 +315,40 @@
         thumbContainer.appendChild(div);
       });
 
-      // Update Active State on Buttons
       document.querySelectorAll(".variant-btn").forEach(btn => btn.classList.remove("color-active"));
       document.querySelectorAll(".variant-btn")[index].classList.add("color-active");
     }
 
-    updateZoom();
+    // Initialize Swiper & Zoom on Load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Swiper Init
+      new Swiper('.relatedSwiper', {
+        slidesPerView: 1,
+        spaceBetween: 24,
+        grabCursor: true,
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+        navigation: {
+          nextEl: '.related-next-btn',
+          prevEl: '.related-prev-btn',
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+          dynamicBullets: true,
+        },
+        breakpoints: {
+          640: { slidesPerView: 2 },
+          1024: { slidesPerView: 3 },
+          1280: { slidesPerView: 4 }
+        }
+      });
+
+      updateZoom();
+    });
   </script>
 
 </body>

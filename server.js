@@ -63,13 +63,13 @@ app.use((req, res, next) => {
   next();
 });
 
-//  VIEW ENGINE 
+//  View engin
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
-//ROUTES
+//Routes
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
 

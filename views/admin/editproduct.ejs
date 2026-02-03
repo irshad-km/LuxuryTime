@@ -218,7 +218,7 @@
                     <% product.variants.forEach((variant, vIndex)=> { %>
                         <div class="glass-card variant-card relative">
                             <label class="form-label">Color</label>
-                            <select name="variants[<%= vIndex %>][color]" class="input-field" required>
+                            <select name="variants[<%= vIndex %>][color]" class="input-field color-select" required>
                                 <option value="Black" <%=variant.color==='Black' ? 'selected' : '' %>>Black</option>
                                 <option value="White" <%=variant.color==='White' ? 'selected' : '' %>>White</option>
                                 <option value="Red" <%=variant.color==='Red' ? 'selected' : '' %>>Red</option>
@@ -306,68 +306,32 @@
                     <p class="font-semibold">Validation Error</p>
                     <p class="text-sm">${msg}</p>
                 </div>
-                <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+                <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+            `;
             container.appendChild(toast);
-            setTimeout(() => { if (toast) toast.remove(); }, 5000);
+            setTimeout(() => toast.remove(), 5000);
         }
-
-        // --- UPDATED SUBMIT HANDLER WITH VALIDATION ---
-        document.getElementById("productForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const name = document.getElementById('productName').value.trim();
-            const description = document.getElementById('productDescription').value.trim();
-            const variants = document.querySelectorAll('.variant-card');
-
-            if (name === "") return showToast("Product name is required.");
-            if (description.length < 10) return showToast("Description should be at least 10 characters.");
-
-            for (let variant of variants) {
-                const regPrice = variant.querySelector('.reg-price').value;
-                const salePrice = variant.querySelector('.sale-price').value;
-                const qty = variant.querySelector('.qty-field').value;
-
-                // Regular Price Validation (> 0)
-                if (!regPrice || parseFloat(regPrice) <= 0) {
-                    return showToast("Regular price must be greater than 0.");
-                }
-
-                // Quantity Validation (> 0)
-                if (qty === "" || parseInt(qty) <= 0) {
-                    return showToast("Stock quantity must be greater than 0.");
-                }
-
-                // Sale Price Validation (If entered, must be > 0 and < Regular Price)
-                if (salePrice !== "") {
-                    const sPrice = parseFloat(salePrice);
-                    const rPrice = parseFloat(regPrice);
-
-                    if (sPrice <= 0) {
-                        return showToast("Sale price must be greater than 0.");
-                    }
-                    if (sPrice >= rPrice) {
-                        return showToast("Sale price must be lower than Regular price.");
-                    }
-                }
-            }
-
-            const btn = document.getElementById('submitBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
-            btn.disabled = true;
-
-            document.getElementById('successModal').style.display = 'flex';
-
-            setTimeout(() => {
-                this.submit();
-            }, 1800);
-        });
 
         function initCropper(event, id) {
             const input = event.target;
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                if (!file.type.startsWith("image/")) {
+                    showToast("Invalid File: Only image files are allowed");
+                    input.value = "";
+                    return;
+                }
+
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast("File Too Large: Image must be under 2MB");
+                    input.value = "";
+                    return;
+                }
+
                 currentInputId = id;
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = function (e) {
                     const modal = document.getElementById('cropperModal');
                     const image = document.getElementById('cropperImage');
                     image.src = e.target.result;
@@ -375,7 +339,7 @@
                     if (cropper) cropper.destroy();
                     cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1 });
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 
@@ -385,40 +349,80 @@
         }
 
         function cropImage() {
-            const canvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
+            const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
             const input = document.getElementById(currentInputId);
-            const imgElement = document.getElementById('img-' + currentInputId);
-            const iconElement = document.getElementById('icon-' + currentInputId);
-            const container = document.getElementById('container-' + currentInputId);
-            const removeBtn = container.querySelector('.remove-img-btn');
-
+            const imgElement = document.getElementById(`img-${currentInputId}`);
+            const iconElement = document.getElementById(`icon-${currentInputId}`);
+            const removeBtn = document.querySelector(`#container-${currentInputId} .remove-img-btn`);
+            
             canvas.toBlob((blob) => {
-                const file = new File([blob], `img-${Date.now()}.jpg`, { type: "image/jpeg" });
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                input.files = dt.files;
+                const file = new File([blob], `updated-${Date.now()}.jpg`, { type: "image/jpeg" });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+
                 imgElement.src = canvas.toDataURL('image/jpeg');
                 imgElement.classList.remove('hidden');
-                if (iconElement) iconElement.classList.add('hidden');
+                if(iconElement) iconElement.classList.add('hidden');
                 removeBtn.classList.remove('hidden');
+                
+                const existingField = document.getElementById(`existing-${currentInputId}`);
+                if (existingField) existingField.value = "";
+
                 closeModal();
             }, 'image/jpeg');
         }
 
-        function removeImage(id) {
-            const input = document.getElementById(id);
-            const img = document.getElementById('img-' + id);
-            const icon = document.getElementById('icon-' + id);
-            const container = document.getElementById('container-' + id);
-            const existing = document.getElementById('existing-' + id);
+        function removeImage(inputId) {
+            const input = document.getElementById(inputId);
+            const imgElement = document.getElementById(`img-${inputId}`);
+            const iconElement = document.getElementById(`icon-${inputId}`);
+            const removeBtn = document.querySelector(`#container-${inputId} .remove-img-btn`);
+            const existingField = document.getElementById(`existing-${inputId}`);
 
             input.value = "";
-            img.src = "";
-            img.classList.add('hidden');
-            if (icon) icon.classList.remove('hidden');
-            container.querySelector('.remove-img-btn').classList.add('hidden');
-            if (existing) existing.remove();
+            if (existingField) existingField.value = "";
+            imgElement.src = "";
+            imgElement.classList.add('hidden');
+            if(iconElement) iconElement.classList.remove('hidden');
+            removeBtn.classList.add('hidden');
         }
+
+        // FORM SUBMIT VALIDATION (Handling empty spaces)
+        document.getElementById("productForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // .trim() ഉപയോഗിക്കുന്നതിലൂടെ വെറും സ്പേസ് മാത്രമാണെങ്കിൽ അത് ശൂന്യമായി (empty) കണക്കാക്കും
+            const name = document.getElementById('productName').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+            const variantCards = document.querySelectorAll(".variant-card");
+
+            if (name === "") return showToast("Product name cannot be empty or just spaces");
+            if (description === "") return showToast("Description cannot be empty or just spaces");
+            if (description.length < 10) return showToast("Description must be at least 10 characters long");
+
+            for (let i = 0; i < variantCards.length; i++) {
+                const color = variantCards[i].querySelector('.color-select').value.trim();
+                const regPrice = variantCards[i].querySelector('.reg-price').value;
+                const salePrice = variantCards[i].querySelector('.sale-price').value;
+                const qty = variantCards[i].querySelector('.qty-field').value;
+
+                if (color === "") return showToast(`Variant ${i + 1}: Please select or enter a color`);
+                if (!regPrice || parseFloat(regPrice) <= 0) return showToast(`Variant ${i + 1}: Regular price must be greater than 0`);
+                if (qty === "" || parseInt(qty) < 0) return showToast(`Variant ${i + 1}: Stock quantity cannot be negative`);
+
+                if (salePrice !== "" && parseFloat(salePrice) >= parseFloat(regPrice)) {
+                    return showToast(`Variant ${i + 1}: Sale price must be less than regular price`);
+                }
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+            btn.disabled = true;
+            document.getElementById('successModal').style.display = 'flex';
+
+            setTimeout(() => { this.submit(); }, 1000);
+        });
 
         function addNewVariant() {
             const section = document.getElementById('variantsSection');
@@ -427,9 +431,31 @@
             let imgHtml = '';
             for (let i = 0; i < 4; i++) {
                 const id = `v${variantCount}-input-${i}`;
-                imgHtml += `<div class="image-container" id="container-${id}"><button type="button" class="remove-img-btn hidden" onclick="removeImage('${id}')"><i class="fas fa-times"></i></button><div class="image-upload-box" onclick="document.getElementById('${id}').click()"><i class="fas fa-image text-neutral-600 text-xl" id="icon-${id}"></i><img src="" id="img-${id}" class="hidden"><input type="file" id="${id}" name="variants[${variantCount}][images]" class="hidden" accept="image/*" onchange="initCropper(event, '${id}')"></div></div>`;
+                imgHtml += `
+                    <div class="image-container" id="container-${id}">
+                        <button type="button" class="remove-img-btn hidden" onclick="removeImage('${id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="image-upload-box" onclick="document.getElementById('${id}').click()">
+                            <i class="fas fa-image text-neutral-600 text-xl" id="icon-${id}"></i>
+                            <img src="" id="img-${id}" class="hidden">
+                            <input type="file" id="${id}" name="variants[${variantCount}][images]" class="hidden img-input" accept="image/*" onchange="initCropper(event, '${id}')">
+                        </div>
+                    </div>`;
             }
-            div.innerHTML = `<button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-zinc-500 hover:text-red-500"><i class="fas fa-trash"></i></button><label class="form-label">Color</label><select name="variants[${variantCount}][color]" class="input-field"><option>Black</option><option>White</option><option>Red</option><option>Blue</option></select><div class="grid grid-cols-2 gap-4 mt-6"><input type="number" name="variants[${variantCount}][regularPrice]" placeholder="Reg Price" class="input-field reg-price"><input type="number" name="variants[${variantCount}][salePrice]" placeholder="Sale Price" class="input-field sale-price"></div><input type="number" name="variants[${variantCount}][quantity]" placeholder="Qty" class="input-field qty-field mt-6"><div class="grid grid-cols-4 gap-4 mt-6">${imgHtml}</div>`;
+            div.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-zinc-500 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                <label class="form-label">Color</label>
+                <select name="variants[${variantCount}][color]" class="input-field color-select" required>
+                    <option value="">Select Color</option>
+                    <option>Black</option><option>White</option><option>Red</option><option>Blue</option>
+                </select>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <input type="number" name="variants[${variantCount}][regularPrice]" placeholder="Reg Price" class="input-field reg-price" step="0.01">
+                    <input type="number" name="variants[${variantCount}][salePrice]" placeholder="Sale Price" class="input-field sale-price" step="0.01">
+                </div>
+                <input type="number" name="variants[${variantCount}][quantity]" placeholder="Quantity" class="input-field qty-field mt-6">
+                <div class="grid grid-cols-4 gap-4 mt-6">${imgHtml}</div>`;
             section.appendChild(div);
             variantCount++;
         }

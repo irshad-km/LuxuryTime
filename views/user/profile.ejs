@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile | Luxury Watches</title>
+    <title>Profile | Luxury Watches</title>
 
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -96,6 +96,7 @@
             cursor: pointer;
             width: 100%;
             max-width: 280px;
+            text-decoration: none;
         }
 
         .btn-primary:hover {
@@ -123,25 +124,15 @@
             color: white;
         }
 
-        .profile-pic-container {
-            position: relative;
-            width: 112px;
-            height: 112px;
-        }
-
-        .edit-badge {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: var(--accent-purple);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+        /* Letter Avatar Style */
+        .letter-avatar {
+            background-color: var(--accent-purple);
+            color: white;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid var(--dark-surface);
-            cursor: pointer;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -153,22 +144,25 @@
             <div>
                 <a href="/" class="block group">
                     <div class="flex items-center gap-2 mb-12">
-                        <i
-                            class="ph-bold ph-watch text-2xl text-[var(--accent-purple)] group-hover:scale-110 transition-transform"></i>
-                        <span
-                            class="font-bold tracking-widest uppercase text-sm group-hover:text-[var(--accent-purple)] transition-colors">Luxury
-                            Watches</span>
+                        <i class="ph-bold ph-watch text-2xl text-[var(--accent-purple)] group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold tracking-widest uppercase text-sm group-hover:text-[var(--accent-purple)] transition-colors">Luxury Watches</span>
                     </div>
                 </a>
 
                 <div class="flex items-center gap-3 mb-10">
-                    <img src="<%= user.avatar %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">
-                    <div>
+                    <% if (user.avatar && user.avatar !== "" && user.avatar !== "/default-avatar.png") { %>
+                        <img src="<%= user.avatar %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">
+                    <% } else { %>
+                        <div class="w-11 h-11 rounded-full letter-avatar text-lg border border-gray-700">
+                            <%= user.fullname.charAt(0) %>
+                        </div>
+                    <% } %>
+                    <div class="overflow-hidden">
                         <h3 class="text-sm font-bold truncate w-32">
-                            <%= user.name %>
+                            <%= user.fullname %>
                         </h3>
                         <p class="text-[10px] text-gray-500 uppercase tracking-wider">
-                            <%= user.membership %>
+                            <%= user.membership || 'Member' %>
                         </p>
                     </div>
                 </div>
@@ -186,7 +180,6 @@
                     <a href="/address" class="nav-item">
                         <i class="ph ph-map-pin text-xl"></i> Address
                     </a>
-
                 </nav>
             </div>
 
@@ -201,68 +194,61 @@
 
         <main class="flex-1 p-16">
             <div class="max-w-4xl mx-auto mb-6">
-                <a href="/"
-                    class="text-xs text-gray-500 hover:text-[var(--accent-purple)] flex items-center gap-2 transition-colors">
+                <a href="/" class="text-xs text-gray-500 hover:text-[var(--accent-purple)] flex items-center gap-2 transition-colors">
                     <i class="ph ph-arrow-left"></i> Back to Home
                 </a>
             </div>
 
-            <section
-                class="bg-[var(--dark-surface)] rounded-2xl p-12 max-w-4xl border border-gray-800 mx-auto shadow-2xl">
-                <form action="/edit-profile" method="get" enctype="multipart/form-data">
-                    <div class="flex flex-col items-center mb-12">
-                        <div class="profile-pic-container mb-4">
-                            <img src="<%= user.avatar %>" id="avatar-preview"
-                                class="w-28 h-28 rounded-full object-cover border-4 border-[#222]">
-                            <label for="avatar-upload" class="edit-badge">
-                                <i class="ph ph-pencil-simple text-white text-sm"></i>
-                            </label>
-                            <input type="file" id="avatar-upload" name="avatar" class="hidden" accept="image/*"
-                                onchange="previewImage(event)">
-                        </div>
-                        <h1 class="text-3xl font-bold">Edit Profile</h1>
+            <section class="bg-[var(--dark-surface)] rounded-2xl p-12 max-w-4xl border border-gray-800 mx-auto shadow-2xl">
+                <div class="flex flex-col items-center mb-12">
+                    <div class="mb-4">
+                        <% if (user.avatar && user.avatar !== "" && user.avatar !== "/default-avatar.png") { %>
+                            <img src="<%= user.avatar %>" id="avatar-preview" class="w-28 h-28 rounded-full object-cover border-4 border-[#222]">
+                        <% } else { %>
+                            <div class="w-28 h-28 rounded-full letter-avatar text-4xl border-4 border-[#222]">
+                                <%= user.fullname.charAt(0) %>
+                            </div>
+                        <% } %>
+                    </div>
+                    <h1 class="text-3xl font-bold">My Profile</h1>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="label">Full Name</label>
+                        <input type="text" value="<%= user.fullname %>" class="input-field" readonly>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2">
-                            <label class="label">Full Name</label>
-                            <input type="text" name="name" value="<%= user.fullname %>" class="input-field"
-                                placeholder="Alexander Pierce" readonly>
-                        </div>
+                    <div>
+                        <label class="label">Phone Number</label>
+                        <input type="text" value="<%= user.phone %>" class="input-field" readonly>
+                    </div>
 
-                        <div>
-                            <label class="label">Phone Number</label>
-                            <input type="text" name="phone" value="<%= user.phone %>" class="input-field"
-                                placeholder="+1 (555) 012-3456" readonly>
-                        </div>
+                    <div>
+                        <label class="label">Email Address</label>
+                        <input type="email" value="<%= user.email %>" class="input-field" readonly>
+                    </div>
 
-                        <div>
-                            <label class="label">Email Address</label>
-                            <input type="email" name="email" value="<%= user.email %>" class="input-field" readonly>
+                    <div class="md:col-span-2 mt-8">
+                        <h3 class="label mb-4">Security</h3>
+                        <div class="flex gap-4">
+                            <a href="/change-password" class="btn-outline">
+                                <i class="ph ph-lock"></i> Change Password
+                            </a>
+                            <a href="/change-email" class="btn-outline">
+                                <i class="ph ph-envelope"></i> Change Email
+                            </a>
                         </div>
+                    </div>
 
-                        <div class="md:col-span-2 mt-8">
-                            <h3 class="label mb-4">Security</h3>
-                            <div class="flex gap-4">
-                                <a href="/change-password" class="btn-outline">
-                                    <i class="ph ph-lock"></i> Change Password
-                                </a>
-                                <a href="/change-email" class="btn-outline">
-                                    <i class="ph ph-envelope"></i> Change Email
-                                </a>
-                            </div>
-                        </div>
-                        <a href="/edit-profile">
-                            <div class="md:col-span-2 mt-12 flex flex-col items-center">
-                                <button type="submit" class="btn-primary">
-                                    Edit Profile <i class="ph-bold ph-check"></i>
-                                </button>
+                    <div class="md:col-span-2 mt-12 flex justify-center">
+                        <a href="/edit-profile" class="btn-primary">
+                            Edit Profile <i class="ph-bold ph-pencil-simple" style="margin-left: 8px;"></i>
                         </a>
                     </div>
-    </div>
-    </form>
-    </section>
-    </main>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
@@ -286,17 +272,7 @@
                 }
             })
         }
-
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                const output = document.getElementById('avatar-preview');
-                output.src = reader.result;
-            }
-            reader.readAsDataURL(event.target.files[0]);
-        }
     </script>
 
 </body>
-
 </html>

@@ -78,7 +78,6 @@
     <header class="sticky top-0 z-50 w-full border-b border-white/10 bg-background-dark/80 backdrop-blur-md">
         <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
 
-            <!-- Logo -->
             <a href="/">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-white text-3xl">watch</span>
@@ -86,7 +85,6 @@
                 </div>
             </a>
 
-            <!-- Navigation -->
             <nav class="hidden md:flex items-center gap-10">
                 <a href="/" class="text-sm font-medium uppercase tracking-widest text-white">Home</a>
                 <a href="/shop"
@@ -103,7 +101,6 @@
             <div class="flex items-center gap-4">
 
                 <% if (user) { %>
-                    <!-- Logged in user dropdown -->
                     <div class="relative group">
                         <button class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
                             <span class="material-symbols-outlined text-2xl">account_circle</span>
@@ -112,7 +109,6 @@
                             </span>
                         </button>
 
-                        <!-- Dropdown -->
                         <div
                             class="absolute right-0 mt-3 w-40 rounded-lg bg-surface-dark border border-white/10 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                             <a href="/profile"
@@ -123,18 +119,14 @@
                                 class="block px-4 py-2 text-sm hover:bg-white hover:text-black transition">
                                 My Orders
                             </a>
-                            <form action="/logout" method="POST">
-                                <button type="submit"
-                                    class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white transition">
-                                    Logout
-                                </button>
-                            </form>
-
+                            <button type="button" onclick="toggleLogoutModal(true)"
+                                class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white transition">
+                                Logout
+                            </button>
                         </div>
                     </div>
 
                     <% } else { %>
-                        <!-- Login & Signup buttons -->
                         <a href="/login">
                             <button
                                 class="border border-white px-5 py-2 text-xs font-bold uppercase rounded-full hover:bg-white hover:text-black transition-all">
@@ -153,3 +145,44 @@
             </div>
         </div>
     </header>
+
+    <div id="logoutModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleLogoutModal(false)"></div>
+        
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-surface-dark border border-white/10 p-8 rounded-2xl shadow-2xl">
+            <div class="text-center">
+                <span class="material-symbols-outlined text-red-500 text-5xl mb-4">logout</span>
+                <h3 class="text-xl font-bold mb-2">Confirm Logout</h3>
+                <p class="text-gray-400 text-sm mb-8">Are you sure you want to log out of your account? You will need to sign in again to access your orders.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="toggleLogoutModal(false)" 
+                        class="flex-1 px-6 py-3 border border-white/10 rounded-xl text-sm font-semibold hover:bg-white/5 transition">
+                        Cancel
+                    </button>
+                    
+                    <form action="/logout" method="POST" class="flex-1">
+                        <button type="submit" 
+                            class="w-full px-6 py-3 bg-red-600 rounded-xl text-sm font-semibold hover:bg-red-700 transition">
+                            Yes, Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleLogoutModal(show) {
+            const modal = document.getElementById('logoutModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; 
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -223,7 +223,7 @@
                         <label class="form-label mt-6">Stock Quantity</label>
                         <input type="number" name="variants[0][quantity]" placeholder="0" class="input-field qty-field">
 
-                        <label class="form-label mt-6">Product Images (At least 1 required)</label>
+                        <label class="form-label mt-6">Product Images (At least 3 required)</label>
                         <div class="grid grid-cols-4 gap-4 mt-2">
                             <% for(let i=0; i < 4; i++) { %>
                                 <div class="image-upload-box" id="box-v0-input-<%= i %>">
@@ -302,7 +302,6 @@
             const desc = document.getElementById('productDescription').value.trim();
             const variantCards = document.querySelectorAll(".variant-card");
 
-            // Basic Validation
             if (!name) return showError("Product name is missing");
             if (desc.length < 10) return showError("Description should be at least 10 characters");
 
@@ -327,13 +326,11 @@
                 if(!hasImage) return showError(`Add at least one image for variant ${i+1}`);
             }
 
-            // UI Changes on success validation
             const btn = document.getElementById('submitBtn');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Adding...';
             btn.disabled = true;
             document.getElementById('successModal').style.display = 'flex';
 
-            // Brief delay for UX then submit
             setTimeout(() => {
                 this.submit();
             }, 1500);
@@ -342,6 +339,22 @@
         function initCropper(event, id) {
             const input = event.target;
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // --- IMAGE VALIDATION START ---
+                if (!file.type.startsWith("image/")) {
+                    showError("Invalid File: Only image files are allowed");
+                    input.value = "";
+                    return;
+                }
+
+                if (file.size > 2 * 1024 * 1024) {
+                    showError("File Too Large: Image must be under 2MB");
+                    input.value = "";
+                    return;
+                }
+                // --- IMAGE VALIDATION END ---
+
                 currentInputId = id;
                 const reader = new FileReader();
                 reader.onload = function (e) {
@@ -352,7 +365,7 @@
                     if (cropper) cropper.destroy();
                     cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1 });
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 

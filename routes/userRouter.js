@@ -79,18 +79,24 @@ router.post("/logout", requireLogin, userController.logout);
 // google auth
 router.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"], prompt: "select_account" })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account",
+    session: false,
+  })
 );
 
 // google
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+    session: false
+  }),
   (req, res) => {
 
     if (req.user.isBlocked) {
-      req.logout(() => { });
       return res.redirect("/login?error=blocked");
     }
 
@@ -99,11 +105,10 @@ router.get(
       email: req.user.email,
       fullname: req.user.fullname,
     };
-    
+
     return res.redirect("/");
   }
 );
-
 
 
 export default router;

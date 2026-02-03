@@ -9,7 +9,8 @@ const addProduct = async (req, res) => {
         const categories = await Category.find({ isListed: true });
 
         const existingProduct = await Product.findOne({
-            name: { $regex: `^${name}$`, $options: "i" }
+            name: { $regex: `^${name}$`, $options: "i" },
+            category: category,
         });
 
 
@@ -130,6 +131,7 @@ const updateProduct = async (req, res) => {
         }
         const existingProduct = await Product.findOne({
             _id: { $ne: productId },
+            category: category,
             name: { $regex: `^${name}$`, $options: "i" }
         });
 

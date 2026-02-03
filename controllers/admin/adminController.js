@@ -16,9 +16,9 @@ const loadLoginPage = async (req, res) => {
     }
 };
 
+//login
 const login = async (req, res) => {
     try {
-
         const { email, password } = req.body;
 
         const admin = await User.findOne({ email, isAdmin: true });
@@ -84,18 +84,18 @@ const loadUsers = async (req, res) => {
             return res.redirect("/admin");
         }
 
-        const search = req.query.search || ""; // search query from frontend
+        const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
 
-        // Simple search by fullname or email (like your categories search)
+
         const query = {
             isAdmin: false,
-            fullname: { $regex: search, $options: "i" } // search by name
+            fullname: { $regex: search, $options: "i" }
         };
 
-        // Fetch users and total count in parallel
+
         const [users, totalUsers] = await Promise.all([
             User.find(query)
                 .sort({ createdAt: -1 })
@@ -126,6 +126,7 @@ const loadUsers = async (req, res) => {
 
 const toggleUserStatus = async (req, res) => {
     try {
+
         const userId = req.params.id;
 
         const user = await User.findById(userId);
@@ -155,7 +156,7 @@ const loadproduct = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        
+
         const limit = 3;
         const skip = (page - 1) * limit;
         const sort = req.query.sort || "new";
@@ -179,12 +180,13 @@ const loadproduct = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
+
         res.render("admin/product", {
             products,
             currentPage: page,
             totalPages: Math.ceil(totalProducts / limit),
             search,
-            sort
+            sort,
         });
 
     } catch (error) {
@@ -192,6 +194,7 @@ const loadproduct = async (req, res) => {
         res.status(500).send("Server error");
     }
 };
+
 
 
 const loadaddproduct = async (req, res) => {
