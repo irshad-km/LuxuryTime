@@ -1,5 +1,6 @@
 import express from "express";
 import * as userController from "../controllers/user/userController.js";
+import * as cartController from "../controllers/user/cartController.js";
 import { requireLogin, guestOnly } from "../middlewares/auth.js";
 import passport from "passport";
 import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
@@ -76,6 +77,20 @@ router.post("/newpass", userController.updatePassword);
 router.post("/logout", requireLogin, userController.logout);
 
 
+//cart
+
+router.get("/cart",requireLogin,cartController.loadcart)
+
+router.post(
+  "/add-to-cart/:productId",
+  requireLogin,
+  cartController.
+  addToCart
+);
+
+router.post("/cart/remove/:productId",requireLogin,cartController.removeFromCart)
+
+
 // google auth
 router.get(
   "/auth/google",
@@ -85,6 +100,8 @@ router.get(
     session: false,
   })
 );
+
+
 
 // google
 

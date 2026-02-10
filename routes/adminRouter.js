@@ -45,6 +45,8 @@ router.get("/categories", requireAdminLogin, categoryController.loadCategories)
 router.post("/addCategory", requireAdminLogin, categoryController.addCategory)
 router.post("/editCategory/:id", requireAdminLogin, categoryController.editCategory)
 router.patch("/toggleCategory/:id", requireAdminLogin, categoryController.toggleCategory)
+router.patch("/softDeleteCategory/:id", requireAdminLogin, categoryController.softDeleteCategoryc)
+
 
 router.get("/logout", requireAdminLogin, adminController.logout);
 

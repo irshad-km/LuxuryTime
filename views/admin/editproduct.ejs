@@ -192,6 +192,8 @@
     <div class="admin-wrapper">
         <%- include('../partials/admin/sidebar') %>
 
+        
+
         <main class="main-content max-w-5xl mx-auto">
             <h1 class="text-3xl font-bold mb-8">Edit Product</h1>
 
@@ -388,11 +390,9 @@
             removeBtn.classList.add('hidden');
         }
 
-        // FORM SUBMIT VALIDATION (Handling empty spaces)
         document.getElementById("productForm").addEventListener("submit", function (e) {
             e.preventDefault();
 
-            // .trim() ഉപയോഗിക്കുന്നതിലൂടെ വെറും സ്പേസ് മാത്രമാണെങ്കിൽ അത് ശൂന്യമായി (empty) കണക്കാക്കും
             const name = document.getElementById('productName').value.trim();
             const description = document.getElementById('productDescription').value.trim();
             const variantCards = document.querySelectorAll(".variant-card");

@@ -213,10 +213,12 @@
   <div class="flex min-h-screen">
     <aside class="w-72 border-r border-gray-800 p-8 flex flex-col justify-between sticky top-0 h-screen bg-black">
       <div>
-        <div class="flex items-center gap-2 mb-12">
-          <i class="ph-bold ph-watch text-2xl text-[var(--accent-purple)]"></i>
-          <span class="font-bold tracking-widest uppercase text-sm">Luxury Watches</span>
-        </div>
+        <a href="/" class="block group">
+                    <div class="flex items-center gap-2 mb-12">
+                        <i class="ph-bold ph-watch text-2xl text-[var(--accent-purple)] group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold tracking-widest uppercase text-sm group-hover:text-[var(--accent-purple)] transition-colors">Luxury Watches</span>
+                    </div>
+                </a>
 
         <div class="flex items-center gap-3 mb-10">
           <img src="<%= user.avatar %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">

@@ -41,6 +41,18 @@
             border-radius: 8px;
             width: 100%;
             padding: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .input-error {
+            border-color: #ef4444 !important;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.7rem;
+            margin-top: 4px;
+            display: none;
         }
 
         .status-badge {
@@ -134,225 +146,348 @@
             border: 1px solid #222 !important;
             border-radius: 15px !important;
         }
+
+        .btn-delete:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-action-icon {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .03);
+            transition: .2s;
+        }
     </style>
 </head>
 
 <body class="flex">
 
-    <!-- Sidebar -->
     <%- include('../partials/admin/sidebar') %>
 
-        <!-- Error Toast -->
-        <% if (error) { %>
-            <div id="errorToast"
-                class="fixed top-6 right-6 bg-red-600 text-white px-6 py-4 rounded-xl shadow-xl flex gap-4 z-[9999]">
-                <i class="fas fa-circle-exclamation text-xl"></i>
-                <div class="flex-1">
-                    <p class="font-semibold">Error</p>
-                    <p class="text-sm">
-                        <%= error %>
-                    </p>
+    <% if (error) { %>
+    <div id="errorToast" class="fixed top-6 right-6 bg-red-600 text-white px-6 py-4 rounded-xl shadow-xl flex gap-4 z-[9999]">
+        <i class="fas fa-circle-exclamation text-xl"></i>
+        <div class="flex-1">
+            <p class="font-semibold">Error</p>
+            <p class="text-sm"><%= error %></p>
+        </div>
+        <button onclick="closeToast()"><i class="fas fa-times"></i></button>
+    </div>
+    <% } %>
+
+    <div class="flex-1 min-h-screen flex flex-col">
+        <main class="px-10 py-10 max-w-6xl mx-auto w-full">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-4xl font-semibold tracking-tight">Categories</h1>
+                    <p class="text-gray-500 mt-2">Manage your catalog hierarchy.</p>
                 </div>
-                <button onclick="closeToast()">
-                    <i class="fas fa-times"></i>
-                </button>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <form method="GET" action="/admin/categories" class="relative">
+                        <input type="text" name="search" value="<%= search || '' %>" placeholder="Search..." class="bg-neutral-900 border border-neutral-800 px-4 py-2 pr-10 rounded-lg text-sm w-64 focus:outline-none text-white">
+                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500">
+                            <i class="fas fa-search text-xs"></i>
+                        </button>
+                    </form>
+
+                    <% if (search) { %>
+                    <a href="/admin/categories" class="bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-2 rounded-lg text-sm">Clear</a>
+                    <% } %>
+
+                    <button onclick="openCategoryModal('add')" class="bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 font-medium text-sm">
+                        <i class="fas fa-plus text-xs"></i> Add Category
+                    </button>
+                </div>
             </div>
-            <% } %>
 
-                <div class="flex-1 min-h-screen flex flex-col">
-                    <main class="px-10 py-10 max-w-6xl mx-auto w-full">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                            <div>
-                                <h1 class="text-4xl font-semibold tracking-tight">Categories</h1>
-                                <p class="text-gray-500 mt-2">Manage your catalog hierarchy.</p>
-                            </div>
+            <div class="border border-[#1a1a1a] bg-[#0a0a0a] rounded-xl overflow-hidden shadow-2xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-900 bg-white/[0.01]">
+                            <th class="px-8 py-5 text-gray-500 text-xs uppercase">Category Name</th>
+                            <th class="px-8 py-5 text-gray-500 text-xs uppercase">Description</th>
+                            <th class="px-8 py-5 text-gray-500 text-xs uppercase text-center">Offer</th>
+                            <th class="px-8 py-5 text-gray-500 text-xs uppercase text-center">Status</th>
+                            <th class="px-8 py-5 text-gray-500 text-xs uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-900/50">
+                        <% if (categories && categories.length > 0) { %>
+                        <% categories.forEach(cat => { %>
+                        <tr class="hover:bg-white/[0.02]">
+                            <td class="px-8 py-6 font-bold text-sm uppercase"><%= cat.name %></td>
+                            <td class="px-8 py-6 text-xs text-gray-400 max-w-xs truncate"><%= cat.description || '—' %></td>
+                            <td class="px-8 py-6 text-center">
+                                <% if (cat.offer) { %>
+                                <span class="offer-tag"><%= cat.offer %>% OFF</span>
+                                <% } else { %> — <% } %>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                <span class="status-badge <%= cat.isListed ? 'status-active' : 'status-inactive' %>">
+                                    <%= cat.isListed ? 'Active' : 'Inactive' %>
+                                </span>
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <div class="flex justify-end items-center gap-3">
+                                    <button onclick="openCategoryModal('edit', '<%= JSON.stringify(cat) %>')" class="bg-[#2e37a4] px-4 py-1.5 rounded text-[10px] font-bold uppercase hover:bg-blue-700 transition-all">Edit</button>
 
-                            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                                <form method="GET" action="/admin/categories" class="relative">
-                                    <input type="text" name="search" value="<%= search || '' %>" placeholder="Search..."
-                                        class="bg-neutral-900 border border-neutral-800 px-4 py-2 pr-10 rounded-lg text-sm w-64 focus:outline-none text-white">
-                                    <button type="submit"
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500">
-                                        <i class="fas fa-search text-xs"></i>
+                                    <button onclick="deleteCategory('<%= cat._id %>')" class="btn-action-icon btn-delete text-gray-500" title="Delete">
+                                        <i class="fas fa-trash-alt text-xs"></i>
                                     </button>
-                                </form>
 
-                                <% if (search) { %>
-                                    <a href="/admin/categories"
-                                        class="bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-2 rounded-lg text-sm">Clear</a>
-                                    <% } %>
-
-                                        <button onclick="openCategoryModal('add')"
-                                            class="bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 font-medium text-sm">
-                                            <i class="fas fa-plus text-xs"></i> Add Category
-                                        </button>
-                            </div>
-                        </div>
-
-                        <!-- Categories Table -->
-                        <div class="border border-[#1a1a1a] bg-[#0a0a0a] rounded-xl overflow-hidden shadow-2xl">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b border-gray-900 bg-white/[0.01]">
-                                        <th class="px-8 py-5 text-gray-500 text-xs uppercase">Category Name</th>
-                                        <th class="px-8 py-5 text-gray-500 text-xs uppercase">Description</th>
-                                        <th class="px-8 py-5 text-gray-500 text-xs uppercase text-center">Offer</th>
-                                        <th class="px-8 py-5 text-gray-500 text-xs uppercase text-center">Status</th>
-                                        <th class="px-8 py-5 text-gray-500 text-xs uppercase text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-900/50">
-                                    <% if (categories && categories.length> 0) { %>
-                                        <% categories.forEach(cat=> { %>
-                                            <tr class="hover:bg-white/[0.02]">
-                                                <td class="px-8 py-6 font-bold text-sm uppercase">
-                                                    <%= cat.name %>
-                                                </td>
-                                                <td class="px-8 py-6 text-xs text-gray-400 max-w-xs truncate">
-                                                    <%= cat.description || '—' %>
-                                                </td>
-                                                <td class="px-8 py-6 text-center">
-                                                    <% if (cat.offer) { %>
-                                                        <span class="offer-tag">
-                                                            <%= cat.offer %>% OFF
-                                                        </span>
-                                                        <% } else { %> — <% } %>
-                                                </td>
-                                                <td class="px-8 py-6 text-center">
-                                                    <span
-                                                        class="status-badge <%= cat.isListed ? 'status-active' : 'status-inactive' %>">
-                                                        <%= cat.isListed ? 'Active' : 'Inactive' %>
-                                                    </span>
-                                                </td>
-                                                <td class="px-8 py-6 text-right">
-                                                    <div class="flex justify-end items-center gap-4">
-                                                        <button
-                                                            onclick="openCategoryModal('edit', '<%= JSON.stringify(cat) %>')"
-                                                            class="bg-[#2e37a4] px-4 py-1.5 rounded text-[10px] font-bold uppercase">Edit</button>
-                                                        <label class="switch">
-                                                            <input type="checkbox" <%=cat.isListed ? 'checked' : '' %>
-                                                            onchange="confirmToggleStatus('<%= cat._id %>', this)">
-                                                                <span class="slider"></span>
-                                                        </label>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <% }) %>
-                                                <% } else { %>
-                                                    <tr>
-                                                        <td colspan="5" class="px-8 py-10 text-center text-gray-600">No
-                                                            categories found.</td>
-                                                    </tr>
-                                                    <% } %>
-                                </tbody>
-                            </table>
-
-                            <% if (totalPages>1) { %>
-                                <div class="px-8 py-4 border-t border-[#1a1a1a] flex justify-between items-center">
-                                    <span class="text-[10px] text-gray-500 font-bold">PAGE <%= currentPage %> OF <%=
-                                                totalPages %></span>
-                                    <div class="flex gap-1">
-                                        <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>"
-                                            class="w-8 h-8 flex items-center justify-center rounded border border-[#1a1a1a] <%= currentPage === 1 ? 'pointer-events-none opacity-20' : '' %>">
-                                            <i class="fas fa-chevron-left text-[10px]"></i>
-                                        </a>
-                                        <% for(let i=1; i<=totalPages; i++) { %>
-                                            <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>"
-                                                class="w-8 h-8 flex items-center justify-center rounded text-[10px] font-bold <%= i===currentPage ? 'bg-blue-600 text-white' : 'border border-[#1a1a1a] text-gray-500' %>">
-                                                <%= i %>
-                                            </a>
-                                            <% } %>
-                                                <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>"
-                                                    class="w-8 h-8 flex items-center justify-center rounded border border-[#1a1a1a] <%= currentPage===totalPages ? 'pointer-events-none opacity-20' : '' %>">
-                                                    <i class="fas fa-chevron-right text-[10px]"></i>
-                                                </a>
-                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" <%=cat.isListed ? 'checked' : '' %> onchange="confirmToggleStatus('<%= cat._id %>', this)">
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
-                                <% } %>
-                        </div>
-                    </main>
-                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                        <% } else { %>
+                        <tr>
+                            <td colspan="5" class="px-8 py-10 text-center text-gray-600">No categories found.</td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
 
-                <!-- Category Modal -->
-                <div id="categoryModal"
-                    class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
-                    <div class="modal-content p-8 rounded-2xl shadow-2xl relative">
-                        <h2 id="modalTitle" class="text-2xl font-bold mb-6">Category</h2>
-                        <form id="categoryForm" method="POST">
-                            <div class="mb-5">
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Name</label>
-                                <input type="text" name="name" id="catName" class="input-field">
-                            </div>
-                            <div class="mb-5">
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
-                                <textarea name="description" id="catDesc" rows="3" class="input-field"></textarea>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4 mb-8">
-                                <input type="number" name="offer" id="catOffer" class="input-field"
-                                    placeholder="Offer %">
-                                <input type="date" name="offerExpiry" id="catExpiry" class="input-field text-xs">
-                            </div>
-                            <div class="flex gap-4">
-                                <button type="submit" class="flex-1 btn-primary py-3 rounded-xl font-bold">Save</button>
-                                <button type="button" onclick="closeModal()"
-                                    class="flex-1 btn-secondary py-3 rounded-xl font-bold text-gray-300">Cancel</button>
-                            </div>
-                        </form>
+                <% if (totalPages > 1) { %>
+                <div class="px-8 py-4 border-t border-[#1a1a1a] flex justify-between items-center">
+                    <span class="text-[10px] text-gray-500 font-bold">PAGE <%= currentPage %> OF <%= totalPages %></span>
+                    <div class="flex gap-1">
+                        <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="w-8 h-8 flex items-center justify-center rounded border border-[#1a1a1a] <%= currentPage === 1 ? 'pointer-events-none opacity-20' : '' %>">
+                            <i class="fas fa-chevron-left text-[10px]"></i>
+                        </a>
+                        <% for(let i=1; i<=totalPages; i++) { %>
+                        <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>" class="w-8 h-8 flex items-center justify-center rounded text-[10px] font-bold <%= i===currentPage ? 'bg-blue-600 text-white' : 'border border-[#1a1a1a] text-gray-500' %>">
+                            <%= i %>
+                        </a>
+                        <% } %>
+                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="w-8 h-8 flex items-center justify-center rounded border border-[#1a1a1a] <%= currentPage===totalPages ? 'pointer-events-none opacity-20' : '' %>">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </a>
                     </div>
                 </div>
+                <% } %>
+            </div>
+        </main>
+    </div>
 
-                <script>
-                    const modal = document.getElementById('categoryModal');
-                    const form = document.getElementById('categoryForm');
+    <div id="categoryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-content p-8 rounded-2xl shadow-2xl relative">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6">Category</h2>
+            <form id="categoryForm" method="POST" novalidate>
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Name</label>
+                    <input type="text" name="name" id="catName" class="input-field" placeholder="Category name">
+                    <p id="nameError" class="error-message">Name is required (min 3 chars, letters only).</p>
+                </div>
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                    <textarea name="description" id="catDesc" rows="3" class="input-field" placeholder="Short description"></textarea>
+                    <p id="descError" class="error-message">Description must be at least 10 characters.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Offer %</label>
+                        <input type="number" name="offer" id="catOffer" class="input-field" placeholder="0-99">
+                        <p id="offerError" class="error-message">Value 0-99.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Expiry</label>
+                        <input type="date" name="offerExpiry" id="catExpiry" class="input-field text-xs">
+                        <p id="expiryError" class="error-message">Select future date.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" id="submitBtn" class="flex-1 btn-primary py-3 rounded-xl font-bold">Save</button>
+                    <button type="button" onclick="closeModal()" class="flex-1 btn-secondary py-3 rounded-xl font-bold text-gray-300">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                    function openCategoryModal(mode, data = null) {
-                        modal.classList.remove('hidden');
-                        if (mode === 'add') {
-                            document.getElementById('modalTitle').innerText = 'Add Category';
-                            form.action = '/admin/addCategory';
-                            form.reset();
-                        } else {
-                            document.getElementById('modalTitle').innerText = 'Edit Category';
-                            const cat = JSON.parse(data);
-                            form.action = `/admin/editCategory/${cat._id}`;
-                            document.getElementById('catName').value = cat.name;
-                            document.getElementById('catDesc').value = cat.description || "";
-                            document.getElementById('catOffer').value = cat.offer || "";
-                            if (cat.offerExpiry) document.getElementById('catExpiry').value = new Date(cat.offerExpiry).toISOString().split('T')[0];
-                        }
-                    }
+    <script>
+        const modal = document.getElementById('categoryModal');
+        const form = document.getElementById('categoryForm');
 
-                    function closeModal() { modal.classList.add('hidden'); }
+        function openCategoryModal(mode, data = null) {
+            modal.classList.remove('hidden');
+            resetValidation();
+            if (mode === 'add') {
+                document.getElementById('modalTitle').innerText = 'Add Category';
+                form.dataset.mode = 'add';
+                form.action = '/admin/addCategory';
+                form.reset();
+            } else {
+                document.getElementById('modalTitle').innerText = 'Edit Category';
+                form.dataset.mode = 'edit';
+                const cat = JSON.parse(data);
+                form.action = `/admin/editCategory/${cat._id}`;
+                document.getElementById('catName').value = cat.name;
+                document.getElementById('catDesc').value = cat.description || "";
+                document.getElementById('catOffer').value = cat.offer || "";
+                if (cat.offerExpiry) {
+                    document.getElementById('catExpiry').value = new Date(cat.offerExpiry).toISOString().split('T')[0];
+                } else {
+                    document.getElementById('catExpiry').value = "";
+                }
+            }
+        }
 
-                    async function confirmToggleStatus(id, checkbox) {
-                        const result = await Swal.fire({
-                            title: 'Are you sure?',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#5350e9',
-                            cancelButtonColor: '#222',
-                            confirmButtonText: 'Yes, update it!',
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        function resetValidation() {
+            document.querySelectorAll('.input-field').forEach(i => i.classList.remove('input-error'));
+            document.querySelectorAll('.error-message').forEach(m => m.style.display = 'none');
+        }
+
+        function validateField(id, condition, errorId) {
+            const element = document.getElementById(id);
+            const errorElement = document.getElementById(errorId);
+            if (!condition) {
+                element.classList.add('input-error');
+                errorElement.style.display = 'block';
+                return false;
+            } else {
+                element.classList.remove('input-error');
+                errorElement.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Handle Form Submission with AJAX and Success Popup
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('catName').value.trim();
+            const desc = document.getElementById('catDesc').value.trim();
+            const offer = document.getElementById('catOffer').value;
+            const expiry = document.getElementById('catExpiry').value;
+
+            let isNameValid = validateField('catName', /^[a-zA-Z\s]{3,}$/.test(name), 'nameError');
+            let isDescValid = validateField('catDesc', desc.length >= 10, 'descError');
+            
+            let isOfferValid = true;
+            let isExpiryValid = true;
+
+            if (offer !== "" && offer !== null) {
+                isOfferValid = validateField('catOffer', offer >= 0 && offer <= 99, 'offerError');
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const selectedDate = new Date(expiry);
+                isExpiryValid = validateField('catExpiry', expiry !== "" && selectedDate > today, 'expiryError');
+            }
+
+            if (isNameValid && isDescValid && isOfferValid && isExpiryValid) {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                const mode = form.dataset.mode;
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        closeModal();
+                        await Swal.fire({
+                            icon: 'success',
+                            title: mode === 'add' ? 'Added!' : 'Updated!',
+                            text: `Category has been ${mode === 'add' ? 'created' : 'updated'} successfully.`,
                             background: '#0a0a0a',
-                            color: '#fff'
+                            color: '#fff',
+                            showConfirmButton: false,
+                            timer: 1500
                         });
-
-                        if (result.isConfirmed) {
-                            const response = await fetch(`/admin/toggleCategory/${id}`, { method: 'PATCH' });
-                            if (response.ok) window.location.reload();
-                        } else {
-                            checkbox.checked = !checkbox.checked;
-                        }
+                        window.location.reload();
+                    } else {
+                        const errData = await response.json();
+                        throw new Error(errData.message || 'Action failed');
                     }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message,
+                        background: '#0a0a0a',
+                        color: '#fff'
+                    });
+                }
+            }
+        });
 
-                    function closeToast() {
-                        const toast = document.getElementById('errorToast');
-                        if (toast) toast.remove();
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('input', () => {
+                if(input.classList.contains('input-error')) resetValidation();
+            });
+        });
+
+        // --- DELETE CATEGORY ---
+        async function deleteCategory(id) {
+            const result = await Swal.fire({
+                title: 'Delete category?',
+                text: 'This will hide the category from the catalog',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#222',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#0a0a0a',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/admin/softDeleteCategory/${id}`, { method: 'PATCH' });
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        throw new Error('Deletion failed');
                     }
+                } catch (error) {
+                    Swal.fire({ title: 'Error!', text: 'Failed to delete.', icon: 'error', background: '#0a0a0a', color: '#fff' });
+                }
+            }
+        }
 
-                    setTimeout(() => {
-                        closeToast();
-                    }, 3000);
-                </script>
+        async function confirmToggleStatus(id, checkbox) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: `Do you want to ${checkbox.checked ? 'List' : 'Unlist'} this category?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#5350e9',
+                cancelButtonColor: '#222',
+                confirmButtonText: 'Yes, update it!',
+                background: '#0a0a0a',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                const response = await fetch(`/admin/toggleCategory/${id}`, { method: 'PATCH' });
+                if (response.ok) window.location.reload();
+            } else {
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        function closeToast() {
+            const toast = document.getElementById('errorToast');
+            if (toast) toast.remove();
+        }
+
+        setTimeout(() => { if(document.getElementById('errorToast')) closeToast(); }, 3000);
+    </script>
 </body>
-
 </html>

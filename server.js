@@ -13,6 +13,7 @@ import connectDB from "./config/db.js";
 import userRouter from "./routes/userRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import adminSession from "./middlewares/adminsession.js";
+import {cartMiddleware}  from "./middlewares/cartCount.js";
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use(
   })
 );
 
+app.use(cartMiddleware)
 
 app.use("/admin", adminSession);
 
@@ -72,6 +74,7 @@ app.use(express.static(path.join(__dirname, "public")));
 //Routes
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
+app.use(cartMiddleware)
 
 
 app.use((req, res) => {

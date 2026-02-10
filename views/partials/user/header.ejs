@@ -52,15 +52,8 @@
         }
 
         @keyframes subtle-glow {
-
-            0%,
-            100% {
-                text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-            }
-
-            50% {
-                text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            }
+            0%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
+            50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
         }
 
         .hero-title {
@@ -70,6 +63,11 @@
         ::selection {
             background: white;
             color: black;
+        }
+
+        /* Styling for the dynamic cart badge */
+        .cart-badge {
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
     </style>
 </head>
@@ -98,9 +96,22 @@
             </nav>
 
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-6">
 
                 <% if (user) { %>
+                    <a href="/wishlist" class="text-gray-300 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-[24px]">favorite</span>
+                    </a>
+
+                    <a href="/cart" class="relative text-gray-300 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-[26px]">shopping_bag</span>
+                        <% if (cart && cart.items && cart.items.length > 0) { %>
+                            <span class="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white cart-badge">
+                                <%= cart.items.length %>
+                            </span>
+                        <% } %>
+                    </a>
+
                     <div class="relative group">
                         <button class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider">
                             <span class="material-symbols-outlined text-2xl">account_circle</span>

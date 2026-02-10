@@ -26,7 +26,7 @@ const loadHomepage = async (req, res) => {
     })
       .populate({
         path: "category",
-        match: { isListed: true } 
+        match: { isListed: true }
       })
       .sort({ createdAt: -1 })
       .limit(8);
@@ -41,10 +41,12 @@ const loadHomepage = async (req, res) => {
       return {
         _id: p._id,
         name: p.name,
-        price: mainVariant.regularPrice || 0,
+        price: mainVariant.salePrice || 0,
         image: mainVariant.images?.[0] || "/images/products/default.png"
       };
     });
+
+
 
     res.render("user/home", {
       latestProducts
@@ -305,7 +307,7 @@ const verifyOtp = async (req, res) => {
         password: hashedPassword,
         isVerified: true,
       });
-      req.session.destroy();
+      delete req.session.user;
       return res.json({ success: true, redirectUrl: "/login" });
     }
     else if (otpType === "forgot") {
@@ -578,7 +580,7 @@ const loadshopepage = async (req, res) => {
     let sortOption = { createdAt: -1 };
 
     const listedCategories = await Category.find(
-      { isListed: true },
+      { isListed: true ,isDeleted:false},
       { _id: 1, name: 1 }
     );
 
@@ -589,7 +591,8 @@ const loadshopepage = async (req, res) => {
     if (category && category !== "all") {
       const categoryDoc = await Category.findOne({
         name: category,
-        isListed: true
+        isListed: true,
+        isDeleted:false
       });
 
       //set id
@@ -666,34 +669,45 @@ const loadshopepage = async (req, res) => {
 //load details page
 const loadProductDetails = async (req, res) => {
   try {
-    const productId = req.params.id;
+    const product = await Product.findOne({
+      _id: req.params.id,
+      isListed: true
+    }).populate("category");
 
+    if (!product) return res.redirect("/shop");
 
-    const product = await Product.findOne({ _id: productId, isListed: true })
-      .populate("category")
-
-    if (!product) {
+    if (!product.category || !product.category.isListed)
       return res.redirect("/shop");
-    }
 
-    if (!product.category || product.category.isListed === false) {
-      return res.redirect("/shop");
-    }
+let variantStock = {};
+
+if (product.variants && product.variants.length > 0) {
+  product.variants.forEach(v => {
+    variantStock[v._id] = Number(v.quantity) > 0;
+  });
+}
+
+  
 
     const relatedProducts = await Product.find({
       _id: { $ne: product._id },
-      category: product.category._id, // same category
+      category: product.category._id,
       isListed: true,
       isDeleted: false
-    }).limit(4)
-      .populate("category")
+    }).limit(4);
 
-    res.render("user/productDetails", { product, relatedProducts });
-  } catch (error) {
-    console.log(error);
+    res.render("user/productDetails", {
+       product, 
+       relatedProducts ,
+      variantStock,
+      });
+
+  } catch (err) {
+    console.log(err);
     res.redirect("/shop");
   }
-}
+};
+
 
 
 // EXPORTS

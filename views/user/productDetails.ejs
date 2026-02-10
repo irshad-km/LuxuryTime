@@ -4,11 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= product.name %> | Luxury Time</title>
+  <title>
+    <%= product.name %> | Luxury Time
+  </title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
 
@@ -19,7 +21,9 @@
       overflow-x: hidden;
     }
 
-    .border-subtle { border-color: rgba(255, 255, 255, 0.05); }
+    .border-subtle {
+      border-color: rgba(255, 255, 255, 0.05);
+    }
 
     .thumb-active {
       border: 1.5px solid #f4bc1c !important;
@@ -66,18 +70,21 @@
       background-repeat: no-repeat;
     }
 
-    #mainPicture { transition: opacity 0.3s ease; }
+    #mainPicture {
+      transition: opacity 0.3s ease;
+    }
 
-    /* Custom Swiper Styles to match Homepage */
     .swiper-pagination-bullet {
       background: #333 !important;
       opacity: 1 !important;
     }
+
     .swiper-pagination-bullet-active {
       background: #f4bc1c !important;
       width: 20px !important;
       border-radius: 4px !important;
     }
+
     .relatedSwiper {
       padding-bottom: 40px;
     }
@@ -90,13 +97,16 @@
 
   <script>
     const variants = <%- JSON.stringify(product.variants) %>;
+    const variantStock = <%- JSON.stringify(variantStock) %>;
   </script>
 
-  <% const variant = product.variants[0]; %>
+  <% const variant=product.variants[0]; %>
 
   <main class="max-w-7xl mx-auto px-8 py-10">
     <nav class="text-[9px] text-gray-600 uppercase tracking-[0.3em] mb-12">
-      Home / Watches / <span class="text-gray-300"><%= product.name %></span>
+      Home / Watches / <span class="text-gray-300">
+        <%= product.name %>
+      </span>
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -108,9 +118,8 @@
         </div>
 
         <div id="thumbnailContainer" class="flex gap-6 mt-12 justify-center">
-          <% variant.images.forEach((img, index) => { %>
-          <div onclick="swapImage('<%= img %>', this)" 
-               class="thumb-box w-20 h-20 border border-subtle p-2 cursor-pointer transition-all duration-300 <%= index === 0 ? 'thumb-active' : 'opacity-30 hover:opacity-100' %>">
+          <% variant.images.forEach((img, index)=> { %>
+          <div onclick="swapImage('<%= img %>', this)" class="thumb-box w-20 h-20 border border-subtle p-2 cursor-pointer transition-all duration-300 <%= index === 0 ? 'thumb-active' : 'opacity-30 hover:opacity-100' %>">
             <img src="<%= img %>" class="w-full h-full object-contain">
           </div>
           <% }) %>
@@ -126,33 +135,37 @@
           </div>
         </div>
 
-        <h1 class="text-6xl font-light tracking-tight mb-4 text-white"><%= product.name %></h1>
+        <h1 class="text-6xl font-light tracking-tight mb-4 text-white">
+          <%= product.name %>
+        </h1>
         <p class="text-gray-500 text-sm font-light mb-8 tracking-wide">Swiss Craftsmanship & Timeless Design.</p>
 
-        <div class="flex items-baseline gap-6 mb-10">
+        <div class="flex items-baseline gap-6 mb-4">
           <span id="salePrice" class="text-4xl font-light tracking-tighter">
             ₹ <%= (variant.salePrice || variant.regularPrice).toLocaleString() %>
           </span>
           <div id="priceWrapper">
-             <% if(variant.salePrice) { %>
-                <span id="regularPrice" class="text-xl text-gray-700 line-through font-light tracking-tighter">
-                  ₹ <%= variant.regularPrice.toLocaleString() %>
-                </span>
-             <% } %>
+            <% if(variant.salePrice) { %>
+            <span id="regularPrice" class="text-xl text-gray-700 line-through font-light tracking-tighter">
+              ₹ <%= variant.regularPrice.toLocaleString() %>
+            </span>
+            <% } %>
           </div>
         </div>
+
+        <div id="stockStatus" class="text-sm uppercase tracking-widest mb-10"></div>
 
         <div class="mb-12">
           <p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4">Select Edition</p>
           <div class="flex flex-wrap gap-5">
-            <% product.variants.forEach((v, i) => { %>
+            <% product.variants.forEach((v, i)=> { %>
             <div class="flex flex-col items-center gap-2">
-              <button onclick="changeVariant(<%= i %>)" 
-                      class="variant-btn color-swatch p-0.5 <%= i === 0 ? 'color-active' : '' %>" 
-                      title="<%= v.color %>">
+              <button onclick="changeVariant(<%= i %>)" class="variant-btn color-swatch p-0.5 <%= i === 0 ? 'color-active' : '' %>" title="<%= v.color %>">
                 <div class="swatch-inner" style="background-color: <%= v.color.toLowerCase() %>;"></div>
               </button>
-              <span class="text-[8px] uppercase tracking-tighter text-gray-600"><%= v.color %></span>
+              <span class="text-[8px] uppercase tracking-tighter text-gray-600">
+                <%= v.color %>
+              </span>
             </div>
             <% }) %>
           </div>
@@ -161,8 +174,8 @@
         <div class="flex gap-4 mb-16">
           <form action="/add-to-cart/<%= product._id %>" method="POST" class="flex-1">
             <input type="hidden" name="variantIndex" id="variantIndex" value="0">
-            <button class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all">
-              Add to Bag
+            <button type="submit" id="cartBtn" class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all">
+              Add to Cart
             </button>
           </form>
           <button class="px-8 border border-subtle hover:bg-white hover:text-black transition-all">
@@ -188,54 +201,53 @@
     </div>
   </main>
 
-  <% if (relatedProducts && relatedProducts.length > 0) { %>
+  <% if (relatedProducts && relatedProducts.length> 0) { %>
   <section class="max-w-7xl mx-auto px-8 pb-24 mt-20">
     <div class="border-t border-subtle pt-20">
-      
       <div class="mb-14 flex justify-between items-end">
         <div>
           <h3 class="uppercase tracking-widest text-xs text-gray-400">Recommendation</h3>
           <h2 class="text-3xl font-bold mt-2 text-white">Related Products</h2>
         </div>
-
         <div class="flex gap-3 mb-1">
           <button class="related-prev-btn p-3 border border-gray-800 rounded-full hover:border-white transition-all group">
-            <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
           </button>
           <button class="related-next-btn p-3 border border-gray-800 rounded-full hover:border-white transition-all group">
-            <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            <svg class="w-5 h-5 stroke-gray-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
           </button>
         </div>
       </div>
 
       <div class="swiper relatedSwiper overflow-visible">
         <div class="swiper-wrapper">
-          <% relatedProducts.forEach(item => { 
-              const v = item.variants[0]; 
+          <% relatedProducts.forEach(item=> {
+            const v = item.variants[0];
           %>
-            <div class="swiper-slide h-auto">
-              <a href="/product/<%= item._id %>" class="group block h-full bg-black border border-gray-900 rounded-xl p-5 hover:border-gray-700 transition duration-300">
-                <div class="h-64 flex items-center justify-center overflow-hidden rounded-lg mb-6 bg-[#111]">
-                  <img src="<%= v?.images?.[0] || '/images/products/default.png' %>" 
-                       class="h-full w-full object-contain group-hover:scale-110 transition duration-500"
-                       alt="<%= item.name %>">
-                </div>
-                <h4 class="text-sm uppercase tracking-wider font-semibold truncate text-white">
-                  <%= item.name %>
-                </h4>
-                <p class="text-yellow-500 text-sm mt-2 font-medium">
-                  ₹ <%= (v.salePrice || v.regularPrice).toLocaleString() %>
-                </p>
-                <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span class="text-[10px] uppercase tracking-[0.2em] text-white border-b border-white">View Details</span>
-                </div>
-              </a>
-            </div>
+          <div class="swiper-slide h-auto">
+            <a href="/product/<%= item._id %>" class="group block h-full bg-black border border-gray-900 rounded-xl p-5 hover:border-gray-700 transition duration-300">
+              <div class="h-64 flex items-center justify-center overflow-hidden rounded-lg mb-6 bg-[#111]">
+                <img src="<%= v?.images?.[0] || '/images/products/default.png' %>" class="h-full w-full object-contain group-hover:scale-110 transition duration-500" alt="<%= item.name %>">
+              </div>
+              <h4 class="text-sm uppercase tracking-wider font-semibold truncate text-white">
+                <%= item.name %>
+              </h4>
+              <p class="text-yellow-500 text-sm mt-2 font-medium">
+                ₹ <%= (v.salePrice || v.regularPrice).toLocaleString() %>
+              </p>
+              <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="text-[10px] uppercase tracking-[0.2em] text-white border-b border-white">View Details</span>
+              </div>
+            </a>
+          </div>
           <% }) %>
         </div>
         <div class="swiper-pagination !-bottom-10"></div>
       </div>
-
     </div>
   </section>
   <% } %>
@@ -252,6 +264,8 @@
     const salePriceEl = document.getElementById("salePrice");
     const priceWrapper = document.getElementById("priceWrapper");
     const variantIndexInput = document.getElementById("variantIndex");
+    const stockEl = document.getElementById("stockStatus");
+    const cartBtn = document.getElementById("cartBtn");
 
     // Zoom Functionality
     function updateZoom() {
@@ -292,20 +306,25 @@
       element.classList.remove('opacity-30');
     }
 
-    // Variant Selection
+    // Variant Selection Logic
     function changeVariant(index) {
       const v = variants[index];
       if (!v) return;
 
       variantIndexInput.value = index;
+
+      // Update Price
       salePriceEl.innerText = "₹ " + (v.salePrice || v.regularPrice).toLocaleString();
       if (v.salePrice) {
-        priceWrapper.innerHTML = `<span id="regularPrice" class="text-xl text-gray-700 line-through font-light tracking-tighter">₹ ${v.regularPrice.toLocaleString()}</span>`;
+        priceWrapper.innerHTML = `<span class="text-xl text-gray-700 line-through font-light tracking-tighter">₹ ${v.regularPrice.toLocaleString()}</span>`;
       } else {
         priceWrapper.innerHTML = "";
       }
 
+      // Update Main Image
       mainImg.src = v.images[0];
+
+      // Rebuild Thumbnails
       thumbContainer.innerHTML = "";
       v.images.forEach((img, i) => {
         const div = document.createElement("div");
@@ -315,13 +334,29 @@
         thumbContainer.appendChild(div);
       });
 
+      // Update Active Color UI
       document.querySelectorAll(".variant-btn").forEach(btn => btn.classList.remove("color-active"));
-      document.querySelectorAll(".variant-btn")[index].classList.add("color-active");
+      const activeBtn = document.querySelectorAll(".variant-btn")[index];
+      if (activeBtn) activeBtn.classList.add("color-active");
+
+      // Update Stock Status
+      const isAvailable = variantStock[v._id] > 0;
+      if (isAvailable) {
+        stockEl.innerHTML = `<span style="color: #22c55e;"><i class="fa-solid fa-circle-check mr-2"></i>In Stock</span>`;
+        cartBtn.disabled = false;
+        cartBtn.style.opacity = "1";
+        cartBtn.innerText = "Add to Cart";
+      } else {
+        stockEl.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-circle-xmark mr-2"></i>Out of Stock</span>`;
+        cartBtn.disabled = true;
+        cartBtn.style.opacity = "0.5";
+        cartBtn.innerText = "Unavailable";
+      }
     }
 
-    // Initialize Swiper & Zoom on Load
     document.addEventListener('DOMContentLoaded', function() {
-      // Swiper Init
+      changeVariant(0);
+
       new Swiper('.relatedSwiper', {
         slidesPerView: 1,
         spaceBetween: 24,
@@ -329,16 +364,16 @@
         loop: true,
         autoplay: {
           delay: 5000,
-          disableOnInteraction: false,
+          disableOnInteraction: false
         },
         navigation: {
           nextEl: '.related-next-btn',
-          prevEl: '.related-prev-btn',
+          prevEl: '.related-prev-btn'
         },
         pagination: {
           el: '.swiper-pagination',
           clickable: true,
-          dynamicBullets: true,
+          dynamicBullets: true
         },
         breakpoints: {
           640: { slidesPerView: 2 },

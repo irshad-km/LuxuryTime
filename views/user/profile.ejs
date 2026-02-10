@@ -124,7 +124,6 @@
             color: white;
         }
 
-        /* Letter Avatar Style */
         .letter-avatar {
             background-color: var(--accent-purple);
             color: white;
@@ -229,17 +228,19 @@
                         <input type="email" value="<%= user.email %>" class="input-field" readonly>
                     </div>
 
-                    <div class="md:col-span-2 mt-8">
-                        <h3 class="label mb-4">Security</h3>
-                        <div class="flex gap-4">
-                            <a href="/change-password" class="btn-outline">
-                                <i class="ph ph-lock"></i> Change Password
-                            </a>
-                            <a href="/change-email" class="btn-outline">
-                                <i class="ph ph-envelope"></i> Change Email
-                            </a>
+                    <% if (!user.googleId) { %>
+                        <div class="md:col-span-2 mt-8">
+                            <h3 class="label mb-4">Security</h3>
+                            <div class="flex gap-4">
+                                <a href="/change-password" class="btn-outline">
+                                    <i class="ph ph-lock"></i> Change Password
+                                </a>
+                                <a href="/change-email" class="btn-outline">
+                                    <i class="ph ph-envelope"></i> Change Email
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    <% } %>
 
                     <div class="md:col-span-2 mt-12 flex justify-center">
                         <a href="/edit-profile" class="btn-primary">

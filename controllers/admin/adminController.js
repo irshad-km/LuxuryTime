@@ -15,7 +15,7 @@ const loadLoginPage = async (req, res) => {
         res.status(500).send("Server Error");
     }
 };
-
+``
 //login
 const login = async (req, res) => {
     try {
@@ -24,7 +24,7 @@ const login = async (req, res) => {
         const admin = await User.findOne({ email, isAdmin: true });
         if (!admin) {
             return res.render("admin/adminLogin", {
-                error: "Invalid email or password",
+                error: "Admin not found",
             });
         }
 
@@ -57,9 +57,10 @@ const logout = (req, res) => {
 };
 
 
+//load dash
 const loadDashboard = async (req, res) => {
     try {
-        console.log("success")
+        
         if (!req.session.admin) {
             return res.redirect("/admin");
         }
@@ -78,6 +79,7 @@ const loadDashboard = async (req, res) => {
 };
 
 
+//user data
 const loadUsers = async (req, res) => {
     try {
         if (!req.session.admin) {
@@ -96,7 +98,7 @@ const loadUsers = async (req, res) => {
         };
 
 
-        const [users, totalUsers] = await Promise.all([
+        const [users, totalUsers] = await Promise.all([ 
             User.find(query)
                 .sort({ createdAt: -1 })
                 .skip(skip)

@@ -6,13 +6,12 @@ import Category from "../../models/categorySchema.js"
 const addProduct = async (req, res) => {
     try {
         const { name, description, category } = req.body;
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({ isListed: true, isDeleted: false });
 
         const existingProduct = await Product.findOne({
             name: { $regex: `^${name}$`, $options: "i" },
             category: category,
         });
-
 
         if (existingProduct) {
             return res.render("admin/addproduct", {
@@ -83,7 +82,7 @@ const addProduct = async (req, res) => {
 
     } catch (error) {
         console.error("Add product error:", error);
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({ isListed: true, isDeleted: false });
         res.render("admin/addproduct", {
             categories,
             error: "Something went wrong. Please try again."
@@ -96,7 +95,7 @@ const addProduct = async (req, res) => {
 const loadEditproduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({ isListed: true, isDeleted: false });
 
         if (!product) {
             return res.redirect("/admin/products");
@@ -123,7 +122,7 @@ const updateProduct = async (req, res) => {
         const { name, description, category } = req.body;
 
         const product = await Product.findById(productId);
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({ isListed: true, isDeleted: false });
 
 
         if (!product) {
@@ -158,6 +157,8 @@ const updateProduct = async (req, res) => {
                 existingImages = Array.isArray(variant.existingImages)
                     ? variant.existingImages
                     : [variant.existingImages];
+
+                existingImages = existingImages.filter(img => img && img.trim() !== "");
             }
 
             let newImages = [];
@@ -208,7 +209,7 @@ const updateProduct = async (req, res) => {
 
     } catch (error) {
         console.error("Update product error:", error);
-        const categories = await Category.find({ isListed: true });
+        const categories = await Category.find({ isListed: true, isDeleted: false });
         const product = await Product.findById(req.params.id);
 
         res.render("admin/editproduct", {

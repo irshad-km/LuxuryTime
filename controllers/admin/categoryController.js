@@ -3,42 +3,42 @@ import Category from "../../models/categorySchema.js";
 
 //load category
 const loadCategories = async (req, res) => {
-    try {
-        const search = req.query.search || "";
-        const page = parseInt(req.query.page) || 1;
-        const limit = 2;
-        const skip = (page - 1) * limit;
+  try {
+    const search = req.query.search || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 2;
+    const skip = (page - 1) * limit;
 
-        const query = {
-            name: { $regex: search, $options: "i" }
-        };
+    const query = {
+      name: { $regex: search, $options: "i" },
+      isDeleted: false
+    };
 
-        const categories = await Category.find(query)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+    const categories = await Category.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-        const totalCategories = await Category.countDocuments(query);
+    const totalCategories = await Category.countDocuments(query);
+    const totalPages = Math.ceil(totalCategories / limit);
 
-        const totalPages = Math.ceil(totalCategories / limit);
+    const error = req.query.error || null;
 
-        const error = req.query.error || null
+    res.render("admin/category", {
+      categories,
+      currentPage: page,
+      totalPages,
+      search,
+      totalCategories,
+      error
+    });
 
-
-        res.render("admin/category", {
-            categories,
-            currentPage: page,
-            totalPages,
-            search,
-            totalCategories,
-            error
-        });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Server Error");
-    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
 };
+
 
 
 //add category
@@ -127,11 +127,35 @@ const toggleCategory = async (req, res) => {
     }
 }
 
+const softDeleteCategoryc = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const category = await Category.findById(id);
+
+        if (!category) {
+            return res.status(404).json({ success: false });
+        }
+
+        category.isDeleted = true;
+        category.isListed = false;
+
+        await category.save();
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error("Soft delete error:", error);
+        res.status(500).json({ success: false });
+    }
+}
+
 
 //export
 export {
     loadCategories,
     addCategory,
     editCategory,
-    toggleCategory
+    toggleCategory,
+    softDeleteCategoryc
 }
