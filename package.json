@@ -4,9 +4,11 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-  "start": "node server.js",
-  "dev": "nodemon server.js"
-},
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint .",
+  "lint:fix": "eslint . --fix"
+  },
   "author": "",
   "license": "ISC",
   "description": "",
@@ -26,6 +28,9 @@
     "passport-google-oauth20": "^2.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.0",
+    "globals": "^17.3.0",
     "nodemon": "^3.1.11"
   }
 }

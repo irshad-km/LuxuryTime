@@ -4,9 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>
-    <%= product.name %> | Luxury Time
-  </title>
+  <title><%= product.name %> | Luxury Time</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -21,9 +19,7 @@
       overflow-x: hidden;
     }
 
-    .border-subtle {
-      border-color: rgba(255, 255, 255, 0.05);
-    }
+    .border-subtle { border-color: rgba(255, 255, 255, 0.05); }
 
     .thumb-active {
       border: 1.5px solid #f4bc1c !important;
@@ -31,8 +27,7 @@
     }
 
     .color-swatch {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border-radius: 50%;
       border: 2px solid transparent;
       transition: all 0.3s ease;
@@ -40,29 +35,21 @@
       cursor: pointer;
     }
 
-    .color-active {
-      border-color: #f4bc1c !important;
-      transform: scale(1.1);
-    }
+    .color-active { border-color: #f4bc1c !important; transform: scale(1.1); }
 
     .swatch-inner {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       border-radius: 50%;
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .zoom-container {
-      position: relative;
-      cursor: none;
-    }
+    .zoom-container { position: relative; cursor: none; }
 
     .zoom-lens {
       position: absolute;
       border: 1px solid #f4bc1c;
       border-radius: 50%;
-      width: 160px;
-      height: 160px;
+      width: 160px; height: 160px;
       visibility: hidden;
       pointer-events: none;
       z-index: 50;
@@ -70,30 +57,30 @@
       background-repeat: no-repeat;
     }
 
-    #mainPicture {
-      transition: opacity 0.3s ease;
-    }
+    #mainPicture { transition: opacity 0.3s ease; }
 
-    .swiper-pagination-bullet {
-      background: #333 !important;
-      opacity: 1 !important;
-    }
-
+    .swiper-pagination-bullet { background: #333 !important; opacity: 1 !important; }
     .swiper-pagination-bullet-active {
       background: #f4bc1c !important;
       width: 20px !important;
       border-radius: 4px !important;
     }
 
-    .relatedSwiper {
-      padding-bottom: 40px;
+    .relatedSwiper { padding-bottom: 40px; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
+    .toast-animate { animation: slideIn 0.3s ease-out forwards; }
   </style>
 </head>
 
 <body class="antialiased">
 
   <%- include('../partials/user/header') %>
+
+  <div id="toast-container" class="fixed top-24 right-8 z-[100] flex flex-col gap-4"></div>
 
   <script>
     const variants = <%- JSON.stringify(product.variants) %>;
@@ -104,9 +91,7 @@
 
   <main class="max-w-7xl mx-auto px-8 py-10">
     <nav class="text-[9px] text-gray-600 uppercase tracking-[0.3em] mb-12">
-      Home / Watches / <span class="text-gray-300">
-        <%= product.name %>
-      </span>
+      Home / Watches / <span class="text-gray-300"><%= product.name %></span>
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -172,9 +157,9 @@
         </div>
 
         <div class="flex gap-4 mb-16">
-          <form action="/add-to-cart/<%= product._id %>" method="POST" class="flex-1">
+          <form id="addToCartForm" class="flex-1">
             <input type="hidden" name="variantIndex" id="variantIndex" value="0">
-            <button type="submit" id="cartBtn" class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all">
+            <button type="submit" id="cartBtn" class="w-full bg-[#f4bc1c] text-black py-5 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#e0ab18] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               Add to Cart
             </button>
           </form>
@@ -266,6 +251,7 @@
     const variantIndexInput = document.getElementById("variantIndex");
     const stockEl = document.getElementById("stockStatus");
     const cartBtn = document.getElementById("cartBtn");
+    const addToCartForm = document.getElementById('addToCartForm');
 
     // Zoom Functionality
     function updateZoom() {
@@ -296,6 +282,7 @@
       setTimeout(() => {
         mainImg.src = imgUrl;
         mainImg.style.opacity = '1';
+        updateZoom(); 
       }, 250);
 
       document.querySelectorAll('.thumb-box').forEach(box => {
@@ -354,6 +341,73 @@
       }
     }
 
+    // Toast Notification Function
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast-animate flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border border-white/10 backdrop-blur-md ${isError ? 'bg-red-900/80' : 'bg-zinc-900/80'}`;
+      
+      toast.innerHTML = `
+        <i class="fa-solid ${isError ? 'fa-circle-xmark text-red-500' : 'fa-circle-check text-green-500'}"></i>
+        <span class="text-sm font-medium text-white">${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(20px)';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
+    }
+
+    // AJAX ADD TO CART logic
+    addToCartForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const productId = "<%= product._id %>";
+      const variantIndex = variantIndexInput.value;
+      
+      cartBtn.disabled = true;
+      cartBtn.innerText = "Processing...";
+
+      try {
+        const response = await fetch(`/add-to-cart/${productId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantIndex })
+        });
+
+        const data = await response.json();
+
+        if (response.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+
+        if (data.success) {
+          showToast("Added to your collection");
+          
+          // DYNAMICALLY UPDATE HEADER BADGE
+          const badgeContainer = document.getElementById('cart-badge-container');
+          if (badgeContainer) {
+            badgeContainer.innerHTML = `
+              <span id="cart-count" class="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white cart-badge">
+                ${data.totalQty}
+              </span>
+            `;
+          }
+        } else {
+          showToast(data.message || "Failed to add product", true);
+        }
+      } catch (error) {
+        showToast("An error occurred. Please try again.", true);
+      } finally {
+        cartBtn.disabled = false;
+        cartBtn.innerText = "Add to Cart";
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
       changeVariant(0);
 
@@ -362,19 +416,9 @@
         spaceBetween: 24,
         grabCursor: true,
         loop: true,
-        autoplay: {
-          delay: 5000,
-          disableOnInteraction: false
-        },
-        navigation: {
-          nextEl: '.related-next-btn',
-          prevEl: '.related-prev-btn'
-        },
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true,
-          dynamicBullets: true
-        },
+        autoplay: { delay: 5000, disableOnInteraction: false },
+        navigation: { nextEl: '.related-next-btn', prevEl: '.related-prev-btn' },
+        pagination: { el: '.swiper-pagination', clickable: true, dynamicBullets: true },
         breakpoints: {
           640: { slidesPerView: 2 },
           1024: { slidesPerView: 3 },

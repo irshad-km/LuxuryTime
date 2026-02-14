@@ -40,7 +40,6 @@ const login = async (req, res) => {
             email: admin.email,
             isAdmin: true,
         };
-        console.log("success work")
 
         return res.redirect("/admin/dashboard");
     } catch (error) {

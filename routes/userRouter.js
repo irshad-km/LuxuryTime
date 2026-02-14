@@ -80,15 +80,9 @@ router.post("/logout", requireLogin, userController.logout);
 //cart
 
 router.get("/cart",requireLogin,cartController.loadcart)
-
-router.post(
-  "/add-to-cart/:productId",
-  requireLogin,
-  cartController.
-  addToCart
-);
-
+router.post("/add-to-cart/:productId",requireLogin,cartController.addToCart);
 router.post("/cart/remove/:productId",requireLogin,cartController.removeFromCart)
+router.post("/cart/update/:productId",requireLogin,cartController.updateQuantity)
 
 
 // google auth
@@ -104,7 +98,6 @@ router.get(
 
 
 // google
-
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {

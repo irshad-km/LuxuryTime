@@ -6,10 +6,8 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Your Selection | Luxury Time</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
@@ -48,29 +46,58 @@
             background: #333;
             border-radius: 10px;
         }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: slideIn 0.3s ease-out forwards;
+        }
     </style>
 </head>
 
 <body class="overflow-x-hidden custom-scrollbar">
 
-      <%- include('../partials/user/header') %>
+    <div id="toast-container" class="fixed top-20 right-5 z-[200] flex flex-col gap-3"></div>
+
+    <%- include('../partials/user/header') %>
 
     <main class="mx-auto max-w-7xl px-6 py-12 lg:px-8 min-h-[70vh]">
+        
+        <% if (removedMessages && removedMessages.length > 0) { %>
+            <div class="mb-8 space-y-3">
+                <% removedMessages.forEach(msg => { %>
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 backdrop-blur-md">
+                        <div class="flex-none w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-red-500 text-xl">inventory_2</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-red-200/90 leading-relaxed">
+                                <%= msg %>
+                            </p>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+
         <header class="mb-10">
-            <h1 class="text-4xl font-bold tracking-tight">Your Selection</h1>
+            <h1 class="text-4xl font-bold tracking-tight text-white">Your Selection</h1>
             <p class="mt-2 text-gray-400">
-                <%= (cart && cart.items.length > 0) ? cart.items.length + ' items in your cart' : 'Your cart is empty' %>
+                <%= (cart && cart.items && cart.items.length > 0) ? cart.items.length + ' items in your cart' : 'Your cart is empty' %>
             </p>
         </header>
 
-        <% if (cart && cart.items.length > 0) { %>
+        <% if (cart && cart.items && cart.items.length > 0) { %>
             <div class="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12">
 
                 <section class="lg:col-span-8 space-y-6">
-                    <% cart.items.forEach(item => { %>
-                        <div class="glass-card flex flex-col sm:flex-row gap-6 p-6 rounded-2xl">
+                    <% cart.items.forEach(function(item) { %>
+                        <div class="glass-card flex flex-col sm:flex-row gap-6 p-6 rounded-2xl transition hover:border-white/10">
+                            
                             <div class="h-40 w-full sm:w-40 flex-none overflow-hidden rounded-xl bg-neutral-900">
-                                <img src="<%= item.selectedVariant.images?.[0] || 'placeholder.png' %>"
+                                <img src="<%= item.selectedVariant && item.selectedVariant.images && item.selectedVariant.images.length > 0 ? item.selectedVariant.images[0] : '/placeholder.png' %>"
                                     alt="<%= item.product.name %>" class="w-full h-full object-cover">
                             </div>
 
@@ -78,7 +105,9 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h3 class="text-xl font-bold"><%= item.product.name %></h3>
-                                        <p class="text-sm text-gray-500 mt-1"><%= item.product.description %></p>
+                                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">
+                                            <%= item.product.description || 'Exquisite luxury timepiece.' %>
+                                        </p>
                                     </div>
                                     <p class="text-xl font-medium tracking-tight">₹ <%= item.price.toLocaleString() %></p>
                                 </div>
@@ -89,18 +118,21 @@
                                             class="flex items-center gap-1 hover:text-red-400 transition">
                                             <span class="material-symbols-outlined text-lg">delete</span> Remove
                                         </button>
-                                        
                                         <button class="flex items-center gap-1 hover:text-white transition">
-                                            <span class="material-symbols-outlined text-lg">favorite</span> Save for Wishlist
+                                            <span class="material-symbols-outlined text-lg">favorite</span> Wishlist
                                         </button>
                                     </div>
 
                                     <div class="flex items-center border border-white/10 rounded-lg overflow-hidden bg-black/20">
                                         <button class="px-3 py-1 hover:bg-white/5 border-r border-white/10 text-gray-400"
-                                            onclick="updateQty('<%= item.product._id %>', -1)">-</button>
-                                        <span class="px-4 py-1 text-sm font-bold"><%= item.quantity %></span>
+                                            onclick="updateQty('<%= item.product._id %>', '<%= item.variantIndex %>', -1)">-</button>
+                                        
+                                        <span id="qty-<%= item.product._id %>-<%= item.variantIndex %>" class="px-4 py-1 text-sm font-bold">
+                                            <%= item.quantity %>
+                                        </span>
+                                        
                                         <button class="px-3 py-1 hover:bg-white/5 border-l border-white/10 text-gray-400"
-                                            onclick="updateQty('<%= item.product._id %>', 1)">+</button>
+                                            onclick="updateQty('<%= item.product._id %>', '<%= item.variantIndex %>', 1)">+</button>
                                     </div>
                                 </div>
                             </div>
@@ -114,7 +146,7 @@
                         <div class="space-y-4 border-b border-white/5 pb-6">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-400">Subtotal</span>
-                                <span class="font-bold">₹ <%= cart.grandTotal.toLocaleString() %></span>
+                                <span class="font-bold grand-total">₹ <%= cart.grandTotal.toLocaleString() %></span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-400">Shipping</span>
@@ -123,13 +155,13 @@
                         </div>
                         <div class="py-6 flex justify-between items-center">
                             <span class="text-gray-400">Grand Total</span>
-                            <span class="text-2xl font-bold">₹ <%= cart.grandTotal.toLocaleString() %></span>
+                            <span class="text-2xl font-bold grand-total text-white">₹ <%= cart.grandTotal.toLocaleString() %></span>
                         </div>
                         <div class="space-y-3">
                             <a href="/checkout" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2">
                                 Proceed to Checkout <span class="material-symbols-outlined text-lg">arrow_forward</span>
                             </a>
-                            <a href="/shop" class="w-full block text-center border border-white/10 hover:bg-white/5 py-4 rounded-xl font-bold text-sm transition">
+                            <a href="/shop" class="w-full block text-center border border-white/10 hover:bg-white/5 py-4 rounded-xl font-bold text-sm transition text-gray-300">
                                 Continue Shopping
                             </a>
                         </div>
@@ -150,24 +182,15 @@
 
     <div id="deleteModal" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleDeleteModal(false)"></div>
-        
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-surface-dark border border-white/10 p-8 rounded-2xl shadow-2xl">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-zinc-950 border border-white/10 p-8 rounded-2xl shadow-2xl">
             <div class="text-center">
                 <span class="material-symbols-outlined text-red-500 text-5xl mb-4">delete_forever</span>
                 <h3 class="text-xl font-bold mb-2">Remove Item?</h3>
-                <p id="deleteMessage" class="text-gray-400 text-sm mb-8">Are you sure you want to remove this timepiece from your selection?</p>
-                
+                <p id="deleteMessage" class="text-gray-400 text-sm mb-8"></p>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button onclick="toggleDeleteModal(false)" 
-                        class="flex-1 px-6 py-3 border border-white/10 rounded-xl text-sm font-semibold hover:bg-white/5 transition">
-                        Cancel
-                    </button>
-                    
-                    <form id="deleteForm" action="" method="POST" class="flex-1">
-                        <button type="submit" 
-                            class="w-full px-6 py-3 bg-red-600 rounded-xl text-sm font-semibold hover:bg-red-700 transition">
-                            Yes, Remove
-                        </button>
+                    <button onclick="toggleDeleteModal(false)" class="flex-1 px-6 py-3 border border-white/10 rounded-xl text-sm font-semibold hover:bg-white/5 transition">Cancel</button>
+                    <form id="deleteForm" method="POST" class="flex-1">
+                        <button type="submit" class="w-full px-6 py-3 bg-red-600 rounded-xl text-sm font-semibold hover:bg-red-700 transition">Yes, Remove</button>
                     </form>
                 </div>
             </div>
@@ -177,44 +200,111 @@
     <footer class="mt-20 border-t border-white/10 py-10 px-8">
         <div class="mx-auto max-w-7xl flex flex-col sm:flex-row justify-between items-center gap-6">
             <p class="text-xs text-gray-500">© 2026 Luxury Time. All rights reserved.</p>
-            <div class="flex gap-8 text-xs text-gray-500 font-medium">
-                <a href="#" class="hover:text-white">Privacy Policy</a>
-                <a href="#" class="hover:text-white">Terms of Service</a>
-            </div>
         </div>
     </footer>
 
     <script>
-        // Modal Toggle Logic
-        function toggleDeleteModal(show) {
-            const modal = document.getElementById('deleteModal');
-            if (show) {
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; 
-            } else {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
+       
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            
+            container.innerHTML = '';
+
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-red-950/90' : 'bg-zinc-900/95';
+            const icon = type === 'error' ? 'error' : 'check_circle';
+            const iconColor = type === 'error' ? 'text-red-500' : 'text-green-500';
+            
+            toast.className = `${bgColor} border border-white/10 backdrop-blur-md px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 min-w-[320px] toast-animate`;
+            toast.innerHTML = `
+                <span class="material-symbols-outlined ${iconColor}">${icon}</span>
+                <span class="text-sm font-medium text-white">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+
+            // Auto-remove after 4 seconds
+            setTimeout(() => { 
+                toast.style.opacity = '0'; 
+                toast.style.transition = 'opacity 0.4s ease';
+                setTimeout(() => toast.remove(), 400); 
+            }, 4000);
         }
 
-        // Setup and show delete confirmation
+        function toggleDeleteModal(show) {
+            const modal = document.getElementById('deleteModal');
+            modal.classList.toggle('hidden', !show);
+        }
+
         function confirmDelete(productId, productName) {
             const form = document.getElementById('deleteForm');
             const message = document.getElementById('deleteMessage');
-            
-            // Set the form action dynamically
-            form.action = `/cart/remove/${productId}`;
-            // Set the message text
+            form.action = "/cart/remove/" + productId;
             message.innerText = `Are you sure you want to remove "${productName}" from your cart?`;
-            
             toggleDeleteModal(true);
         }
 
-        function updateQty(productId, change) {
-            console.log(`Update quantity for ${productId} by ${change}`);
-            // Logic for fetch call to update quantity would go here
-        }
-    </script>
+       async function updateQty(productId, variantIndex, change) {
+    const qtyElement = document.getElementById(`qty-${productId}-${variantIndex}`);
+    if (!qtyElement) return;
 
+    try {
+        const response = await fetch(`/cart/update/${productId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                variantIndex: Number(variantIndex),
+                action: change === 1 ? "increase" : "decrease"
+            })
+        });
+
+        const data = await response.json();
+        console.log(data)
+
+        if (!data.success) {
+            showToast(data.message, "error");
+            return;
+        }
+
+        // 1. Update the local quantity in the cart list
+        qtyElement.innerText = data.newQty;
+
+        // 2. Update the grand total in the summary
+        document.querySelectorAll(".grand-total").forEach(el => {
+            el.innerText = "₹ " + data.grandTotal.toLocaleString();
+        });
+
+        // 3. Update the Navbar Cart Count
+        updateNavbarCartCount(data.totalQty);
+
+        showToast("Quantity updated.", "success");
+
+    } catch (err) {
+        console.error(err);
+        showToast("Connection error.", "error");
+    }
+}
+
+function updateNavbarCartCount(totalQty) {
+    const badgeContainer = document.getElementById('cart-badge-container');
+    let cartCountSpan = document.getElementById('cart-count');
+
+    if (totalQty > 0) {
+        if (!cartCountSpan) {
+            
+            badgeContainer.innerHTML = `
+                <span id="cart-count" class="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white cart-badge">
+                    ${totalQty}
+                </span>`;
+        } else {
+            // Update existing badge
+            cartCountSpan.innerText = totalQty;
+        }
+    } else {
+        // Remove badge if quantity is 0
+        badgeContainer.innerHTML = '';
+    }
+}
+    </script>
 </body>
 </html>
