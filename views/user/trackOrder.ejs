@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order | Luxury Watches</title>
+
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --accent-purple: #5b42f3;
+            --dark-surface: #111111;
+            --border-color: #333333;
+        }
+
+        body {
+            background-color: #070707;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #9ca3af;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background: rgba(91, 66, 243, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(91, 66, 243, 0.2);
+        }
+
+        .status-container {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 40px;
+        }
+
+        .tracking-line {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .tracking-line::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #222;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 2px;
+            background: var(--accent-purple);
+            z-index: 2;
+            transform: translateY(-50%);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-node {
+            width: 16px;
+            height: 16px;
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 50%;
+            z-index: 3;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .step-node.completed {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 15px var(--accent-purple);
+        }
+
+        .step-node.active {
+            background: #111;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+
+        .info-card {
+            background: var(--dark-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            height: 100%;
+        }
+
+        .card-title {
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-row {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-invoice {
+            background: var(--accent-purple);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            transition: 0.3s;
+            font-size: 11px;
+            border: none;
+        }
+
+        .btn-return-all {
+            background: transparent;
+            border: 1px solid #f9731633;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fb923c;
+            transition: 0.3s;
+            font-size: 11px;
+        }
+
+        .btn-return-all:hover {
+            background: #f973161a;
+            border-color: #fb923c;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="returnFormModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] hidden p-4">
+        <div class="bg-[#111] border border-[#333] p-8 rounded-2xl max-w-md w-full shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-2">Return Product</h2>
+            <p id="returnItemDisplay" class="text-xs text-gray-500 mb-6 uppercase tracking-widest"></p>
+            
+            <form id="actualReturnForm">
+                <input type="hidden" id="modalOrderId">
+                <input type="hidden" id="modalItemId">
+
+                <div class="mb-4">
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-2 tracking-widest">Reason for Return</label>
+                    <textarea id="modalReason" required 
+                        class="w-full bg-black border border-[#333] rounded-xl p-4 text-sm text-white focus:border-[var(--accent-purple)] outline-none h-32 transition-all"
+                        placeholder="Please explain why you want to return this item..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeReturnModal()" 
+                        class="flex-1 px-4 py-3 bg-[#1a1a1a] border border-[#333] rounded-xl text-xs font-bold transition-all">CANCEL</button>
+                    <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-[var(--accent-purple)] rounded-xl text-xs font-bold transition-all">SUBMIT REQUEST</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="flex min-h-screen">
+        <aside class="w-72 border-r border-gray-800 p-8 flex flex-col justify-between sticky top-0 h-screen bg-black">
+            <div>
+                <a href="/" class="block group">
+                    <div class="flex items-center gap-2 mb-12">
+                        <i class="ph-bold ph-watch text-2xl text-[var(--accent-purple)] group-hover:rotate-12 transition-transform"></i>
+                        <span class="font-bold tracking-widest uppercase text-sm">Luxury Watches</span>
+                    </div>
+                </a>
+
+                <nav class="space-y-2">
+                    <a href="/profile" class="nav-item"><i class="ph ph-user-circle text-xl"></i> My Profile</a>
+                    <a href="/orders" class="nav-item active"><i class="ph ph-shopping-cart-simple text-xl"></i> My Orders</a>
+                    <a href="/wallet" class="nav-item"><i class="ph ph-wallet text-xl"></i> Wallet</a>
+                    <a href="/address" class="nav-item"><i class="ph ph-map-pin text-xl"></i> Address</a>
+                </nav>
+            </div>
+
+            <button onclick="handleLogout()" class="w-full text-left px-4 py-3 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-3">
+                <i class="ph-bold ph-sign-out text-lg"></i> Logout
+            </button>
+        </aside>
+
+        <main class="flex-1 p-16">
+            <div class="max-w-5xl mx-auto">
+                <a href="/orders" class="text-xs text-gray-500 hover:text-[var(--accent-purple)] flex items-center gap-2 mb-8 transition-colors">
+                    <i class="ph ph-arrow-left"></i> Back to My Orders
+                </a>
+
+                <div class="flex justify-between items-end mb-10">
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2">Order Tracking</h1>
+                        <p class="text-gray-500 font-mono text-sm tracking-tighter">ORDER REF: #<%= order._id %></p>
+                    </div>
+                    <div class="text-end">
+                        <span class="px-4 py-2 rounded-full bg-purple-500/10 text-[var(--accent-purple)] text-xs font-bold border border-purple-500/20">
+                            STATUS <%= (order.orderStatus || 'Pending' ).toUpperCase() %>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="status-container mb-8">
+                    <div class="card-title"><i class="ph-bold ph-truck"></i> Shipment Journey</div>
+                    <% 
+                        const stages=["pending", "confirmed" , "shipped" , "out for delivery" , "delivered" ]; 
+                        const currentStatus=(order.orderStatus || "pending" ).toLowerCase(); 
+                        let currentIndex=stages.indexOf(currentStatus);
+                        // Force "Delivered" view if order is in return process
+                        if(currentStatus === 'return requested') currentIndex = 4;
+                        const progressWidth=currentIndex>= 0 ? (currentIndex / (stages.length - 1)) * 100 : 0;
+                    %>
+                    <div class="tracking-line">
+                        <div class="progress-line" style="width: <%= progressWidth %>%"></div>
+                        <% stages.forEach((stage, index)=> { %>
+                            <div class="step-node <%= index < currentIndex ? 'completed' : (index === currentIndex ? 'active' : '') %>"></div>
+                        <% }) %>
+                    </div>
+                    <div class="flex justify-between">
+                        <% stages.forEach((stage, index)=> { %>
+                            <p class="text-[11px] font-bold <%= index <= currentIndex ? 'text-white' : 'text-gray-600' %>"><%= stage.toUpperCase() %></p>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <div class="info-card mb-8">
+                    <div class="card-title">Order Manifest (<%= order.items.length %> Items)</div>
+                    
+                    <% order.items.forEach(item => { %>
+                        <div class="item-row flex items-center gap-5">
+                            <div class="w-24 h-24 bg-black rounded-lg border border-gray-800 overflow-hidden flex-shrink-0">
+                                <img src="<%= item.image %>" class="w-full h-full object-cover">
+                            </div>
+
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold mb-1 text-white"><%= item.name %></h4>
+                                <div class="flex gap-4">
+                                    <span class="text-[11px] text-gray-400">Qty: <%= item.quantity %></span>
+                                    <span class="text-[11px] font-bold text-white">₹<%= item.price.toLocaleString() %></span>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <% /* --- IMPORTANT LOGIC FOR STATUS LABELS --- */ %>
+                                <% if (item.itemStatus === 'Return Requested') { %>
+                                    <span class="text-[10px] text-orange-400 font-bold px-3 py-1 bg-orange-400/10 border border-orange-400/20 rounded">
+                                        RETURN REQUESTED
+                                    </span>
+                                <% } else if (item.itemStatus === 'Returned') { %>
+                                    <span class="text-[10px] text-green-400 font-bold px-3 py-1 bg-green-400/10 border border-green-400/20 rounded">
+                                        RETURNED
+                                    </span>
+                                <% } else if (item.itemStatus === 'Return Rejected') { %>
+                                    <div class="flex flex-col items-end gap-1">
+                                        <span class="text-[10px] text-red-500 font-bold px-3 py-1 bg-red-500/10 border border-red-500/20 rounded">REJECTED</span>
+                                        <button onclick="openReturnForm('<%= item.name %>', '<%= order._id %>', '<%= item._id %>')" class="text-[9px] text-gray-500 underline">Re-apply?</button>
+                                    </div>
+                                <% } else if (order.orderStatus.toLowerCase() === 'delivered' || order.orderStatus.toLowerCase() === 'return requested') { %>
+                                    <% /* Show return button only if item is still 'delivered' and not already requested */ %>
+                                    <% if (item.itemStatus.toLowerCase() === 'delivered') { %>
+                                        <button onclick="openReturnForm('<%= item.name %>', '<%= order._id %>', '<%= item._id %>')"
+                                            class="text-[10px] text-orange-400 font-bold py-2 px-4 border border-orange-500/20 rounded hover:bg-orange-500/10">
+                                            Return Product
+                                        </button>
+                                    <% } %>
+                                <% } else if (['pending', 'confirmed'].includes(order.orderStatus.toLowerCase())) { %>
+                                    <button class="text-[10px] text-red-500 font-bold py-2 px-4 border border-red-500/20 rounded">Cancel Product</button>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <% 
+                        // Only show "Return All" if the order is delivered and there is at least one item NOT yet requested
+                        const showReturnAll = order.orderStatus.toLowerCase() === 'delivered' && 
+                                            order.items.some(i => i.itemStatus.toLowerCase() === 'delivered');
+                        if (showReturnAll) { 
+                    %>
+                        <button onclick="handleReturnAll()" class="btn-return-all">
+                            <i class="ph-bold ph-arrow-counter-clockwise"></i> RETURN ALL ITEMS
+                        </button>
+                    <% } %>
+
+                    <button class="btn-invoice">
+                        <i class="ph-bold ph-download-simple"></i> GET INVOICE (PDF)
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function openReturnForm(name, orderId, itemId) {
+            document.getElementById('returnItemDisplay').innerText = `Product: ${name}`;
+            document.getElementById('modalOrderId').value = orderId;
+            document.getElementById('modalItemId').value = itemId;
+            document.getElementById('modalReason').value = '';
+            document.getElementById('returnFormModal').classList.remove('hidden');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('returnFormModal').classList.add('hidden');
+        }
+
+        // Handle Single Return
+        document.getElementById('actualReturnForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                orderId: document.getElementById('modalOrderId').value,
+                itemId: document.getElementById('modalItemId').value,
+                reason: document.getElementById('modalReason').value
+            };
+
+            try {
+                const response = await fetch("/orders/return-item", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+                if (res.success) location.reload();
+            } catch (err) { console.error(err); }
+        });
+
+        // Handle Return All
+        async function handleReturnAll() {
+            const { value: reason } = await Swal.fire({
+                title: 'Return All Items',
+                text: 'Please provide a reason for the return.',
+                input: 'textarea',
+                showCancelButton: true,
+                background: '#111', color: '#fff', confirmButtonColor: '#5b42f3',
+                inputValidator: (v) => !v && 'Reason is required!'
+            });
+
+            if (reason) {
+                try {
+                    const response = await fetch("/orders/return-all", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ orderId: '<%= order._id %>', reason })
+                    });
+                    const res = await response.json();
+                    if (res.success) {
+                        Swal.fire({ icon: 'success', title: 'Requested', background: '#111', color: '#fff' })
+                        .then(() => location.reload());
+                    }
+                } catch (err) { console.error(err); }
+            }
+        }
+
+        function handleLogout() { window.location.href = '/logout'; }
+    </script>
+</body>
+</html>

@@ -580,7 +580,7 @@ const loadshopepage = async (req, res) => {
     let sortOption = { createdAt: -1 };
 
     const listedCategories = await Category.find(
-      { isListed: true ,isDeleted:false},
+      { isListed: true, isDeleted: false },
       { _id: 1, name: 1 }
     );
 
@@ -592,7 +592,7 @@ const loadshopepage = async (req, res) => {
       const categoryDoc = await Category.findOne({
         name: category,
         isListed: true,
-        isDeleted:false
+        isDeleted: false
       });
 
       //set id
@@ -679,15 +679,15 @@ const loadProductDetails = async (req, res) => {
     if (!product.category || !product.category.isListed)
       return res.redirect("/shop");
 
-let variantStock = {};
+    let variantStock = {};
 
-if (product.variants && product.variants.length > 0) {
-  product.variants.forEach(v => {
-    variantStock[v._id] = Number(v.quantity) > 0;
-  });
-}
+    if (product.variants && product.variants.length > 0) {
+      product.variants.forEach(v => {
+        variantStock[v._id] = Number(v.quantity) > 0;
+      });
+    }
 
-  
+
 
     const relatedProducts = await Product.find({
       _id: { $ne: product._id },
@@ -697,10 +697,10 @@ if (product.variants && product.variants.length > 0) {
     }).limit(4);
 
     res.render("user/productDetails", {
-       product, 
-       relatedProducts ,
+      product,
+      relatedProducts,
       variantStock,
-      });
+    });
 
   } catch (err) {
     console.log(err);

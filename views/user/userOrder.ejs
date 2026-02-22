@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | Luxury Watches</title>
+
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --accent-purple: #5b42f3;
+            --dark-surface: #111111;
+            --border-color: #262626;
+        }
+
+        body {
+            background-color: #070707;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        /* Sidebar Navigation */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #9ca3af;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background: rgba(91, 66, 243, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(91, 66, 243, 0.2);
+        }
+
+        /* Container & Table */
+        .orders-container {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .table {
+            color: #e5e7eb;
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 20px 24px;
+        }
+
+        .table tbody td {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+            background: transparent;
+            color: #d1d5db;
+        }
+
+        .table tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-delivered {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.2);
+        }
+
+        .status-shipped {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .status-pending {
+            background: rgba(156, 163, 175, 0.1);
+            color: #9ca3af;
+            border-color: rgba(156, 163, 175, 0.2);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Buttons & Search */
+        .btn-view-premium {
+            background: transparent;
+            border: 1px solid var(--accent-purple);
+            color: var(--accent-purple);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-view-premium:hover {
+            background: var(--accent-purple);
+            color: white !important;
+            box-shadow: 0 0 15px rgba(91, 66, 243, 0.3);
+        }
+
+        .search-input {
+            background: #161616;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 10px;
+            padding: 12px 16px 12px 45px;
+        }
+
+        .search-input:focus {
+            background: #1a1a1a;
+            border-color: var(--accent-purple);
+            box-shadow: none;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="flex min-h-screen">
+        <aside class="w-72 border-r border-gray-800 p-8 flex flex-col justify-between sticky top-0 h-screen bg-black">
+            <div>
+                <a href="/" class="block group">
+                    <div class="flex items-center gap-2 mb-12">
+                        <i
+                            class="ph-bold ph-watch text-2xl text-[var(--accent-purple)] group-hover:scale-110 transition-transform"></i>
+                        <span
+                            class="font-bold tracking-widest uppercase text-sm group-hover:text-[var(--accent-purple)] transition-colors">Luxury
+                            Watches</span>
+                    </div>
+                </a>
+
+                <div class="flex items-center gap-3 mb-10">
+                    <% if (user.avatar && user.avatar !== "" && user.avatar !== "/default-avatar.png") { %>
+                        <img src="<%= user.avatar %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">
+                    <% } else { %>
+                        <div class="w-11 h-11 rounded-full letter-avatar text-lg border border-gray-700">
+                            <%= user.fullname.charAt(0) %>
+                        </div>
+                    <% } %>
+                    <div class="overflow-hidden">
+                        <h3 class="text-sm font-bold truncate w-32">
+                            <%= user.fullname %>
+                        </h3>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-wider">
+                            <%= user.membership || 'Member' %>
+                        </p>
+                    </div>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="/profile" class="nav-item"><i class="ph ph-user-circle text-xl"></i> My Profile</a>
+                    <a href="/orders" class="nav-item active"><i class="ph ph-shopping-cart-simple text-xl"></i> My
+                        Orders</a>
+                    <a href="/wallet" class="nav-item"><i class="ph ph-wallet text-xl"></i> Wallet</a>
+                    <a href="/address" class="nav-item"><i class="ph ph-map-pin text-xl"></i> Address</a>
+                </nav>
+            </div>
+            <div>
+                <form id="logout-form" action="/logout" method="POST" style="display: none;"></form>
+                <button type="button" onclick="handleLogout()"
+                    class="w-full text-left px-4 py-3 rounded-lg text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200 flex items-center gap-3">
+                    <i class="ph-bold ph-sign-out text-lg"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-16">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-10">
+                    <a href="/"
+                        class="text-xs text-gray-500 hover:text-[var(--accent-purple)] flex items-center gap-2 mb-4 no-underline transition-colors">
+                        <i class="ph ph-arrow-left"></i> Back to Home
+                    </a>
+                    <h1 class="text-4xl font-bold mb-2">Order History</h1>
+                    <p class="text-gray-500">Track and manage your premium timepiece collections</p>
+                </div>
+
+                <div class="flex items-center gap-3 mb-8">
+                    <form action="/orders" method="GET" class="relative max-w-md w-full">
+                        <i
+                            class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg"></i>
+                        <input type="text" name="search" value="<%= search || '' %>" class="form-control search-input"
+                            placeholder="Search by Order ID or Status...">
+                    </form>
+
+                    <% if (search) { %>
+                        <a href="/orders"
+                            class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-lg text-sm no-underline hover:bg-red-500/20 transition-all">
+                            Clear
+                        </a>
+                        <% } %>
+                </div>
+
+                <div class="orders-container">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Payment</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if(orders && orders.length> 0) { %>
+                                    <% orders.forEach(order=> { %>
+                                        <tr>
+                                            <td class="text-sm">
+                                                <span class="text-white">
+                                                    <%= new Date(order.createdAt).toLocaleDateString('en-GB') %>
+                                                </span>
+                                                <div class="text-[10px] text-gray-500 mt-1 font-mono">#<%=
+                                                        order._id.toString().slice(-8).toUpperCase() %>
+                                                </div>
+                                            </td>
+                                            <td class="text-sm font-bold text-white">
+                                                ₹<%= order.totalAmount.toLocaleString() %>
+                                            </td>
+                                            <td class="text-sm">
+                                                <span
+                                                    class="px-2 py-1 bg-white/5 rounded text-[10px] border border-white/10">
+                                                    <%= order.paymentMethod %>
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <% let status=(order.status || 'pending' ).toLowerCase(); let
+                                                    sClass='status-pending' ; if(status==='delivered' )
+                                                    sClass='status-delivered' ; else if(['shipped', 'out for delivery'
+                                                    ].includes(status)) sClass='status-shipped' ; else
+                                                    if(status==='cancelled' ) sClass='status-cancelled' ; %>
+                                                    <span class="status-badge <%= sClass %>">
+                                                        <%= order.status || 'Pending' %>
+                                                    </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="/orders/<%= order._id %>" class="btn-view-premium">
+                                                    Track Order
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-24 text-gray-500">
+                                                        <i class="ph ph-package text-4xl mb-3 opacity-20"></i>
+                                                        <p>No orders found.</p>
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <% if (totalPages> 1) { %>
+                        <div
+                            class="px-8 py-4 border-t border-[#1a1a1a] flex justify-between items-center bg-white/[0.01]">
+                            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                                PAGE <%= currentPage %> OF <%= totalPages %>
+                            </span>
+                            <div class="flex gap-1">
+                                <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>"
+                                    class="w-8 h-8 flex items-center justify-center rounded border border-[#1a1a1a] no-underline text-white transition-all hover:bg-white/5 <%= currentPage === 1 ? 'pointer-events-none opacity-20' : '' %>">
+                                    <i class="fas fa-chevron-left text-[10px]"></i>
+                                </a>
+
+                                <% for(let i=1; i<=totalPages; i++) { %>
+                                    <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>"
+                                        class="w-8 h-8 flex items-center justify-center rounded text-[10px] font-bold no-underline transition-all <%= i===currentPage ? 'bg-indigo-600 text-white shadow-[0_0_10px_rgba(91,66,243,0.3)]' : 'border border-[#1a1a1a] text-gray-500 hover:text-white' %>">
+                                        <%= i %>
+                                    </a>
+                                    <% } %>
+
+                                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>"
+                                            class="w-8 h-8 flex items-center justify-center rounded border border-[#1a1a1a] no-underline text-white transition-all hover:bg-white/5 <%= currentPage === totalPages ? 'pointer-events-none opacity-20' : '' %>">
+                                            <i class="fas fa-chevron-right text-[10px]"></i>
+                                        </a>
+                            </div>
+                        </div>
+                        <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function handleLogout() {
+            Swal.fire({
+                title: 'Logout?',
+                text: "Are you sure you want to end your session?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#5b42f3',
+                cancelButtonColor: '#1a1a1a',
+                confirmButtonText: 'Yes, Logout',
+                background: '#111',
+                color: '#fff',
+                iconColor: '#5b42f3',
+                backdrop: `rgba(0,0,0,0.8)`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logout-form').submit();
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

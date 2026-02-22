@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | Luxury Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-black: #080808;
+            --card-bg: #111111;
+            --input-bg: #141414;
+            --border: #222222;
+            --accent-blue: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text-main: #ffffff;
+            --text-muted: #71717a;
+            --success-green: #10b981;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: var(--bg-black); 
+            color: var(--text-main); 
+            font-family: var(--font-main); 
+            line-height: 1.6; 
+            -webkit-font-smoothing: antialiased; 
+        }
+
+        .checkout-wrapper {
+            max-width: 1200px; 
+            margin: 60px auto;
+            display: grid; 
+            grid-template-columns: 1fr 420px; 
+            gap: 60px; 
+            padding: 0 24px;
+        }
+
+        h1 { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); margin-bottom: 48px; font-size: 16px; }
+        .section-title { 
+            font-size: 18px; 
+            font-weight: 600; 
+            margin: 32px 0 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        /* --- ADDRESS SELECTION STYLES --- */
+        .address-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        .address-card {
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            padding: 24px; 
+            border-radius: 16px;
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative;
+        }
+        .address-card:hover { border-color: #444; }
+        .address-card.selected {
+            border: 1px solid var(--accent-blue); 
+            background: linear-gradient(145deg, #121212 0%, #0a0a0a 100%);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.1);
+        }
+        .address-card .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .check-badge {
+            width: 22px; height: 22px; 
+            background: var(--border); 
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 11px; color: transparent;
+            transition: 0.3s;
+        }
+        .selected .check-badge { background: var(--accent-blue); color: white; }
+        .address-details p { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+        
+        .btn-edit-addr {
+            background: rgba(37, 99, 235, 0.1); border: none; color: var(--accent-blue); 
+            font-size: 11px; font-weight: 800; cursor: pointer; padding: 4px 12px;
+            border-radius: 6px; transition: 0.2s; letter-spacing: 0.05em;
+        }
+        .btn-edit-addr:hover { background: var(--accent-blue); color: white; }
+
+        .default-tag { 
+            font-size: 10px; 
+            color: var(--accent-blue); 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-top: 12px; 
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* --- FORMS & INPUTS --- */
+        .form-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            background: var(--card-bg); padding: 32px; border-radius: 16px; border: 1px solid var(--border);
+        }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .full-width { grid-column: span 2; }
+        label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; }
+        
+        input { 
+            background: var(--input-bg); border: 1px solid var(--border); padding: 14px; 
+            border-radius: 10px; color: white; outline: none; transition: 0.2s;
+        }
+        input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+
+        /* --- MODAL SPECIFIC INPUT STYLES --- */
+        #editAddressModal input {
+            background-color: #000000 !important; /* Force black background */
+            color: #ffffff !important;           /* Force white text */
+            border: 1px solid #333;
+        }
+        #editAddressModal input::placeholder {
+            color: #555 !important;              /* Muted placeholder */
+        }
+        #editAddressModal input:focus {
+            border-color: var(--accent-blue);
+            background-color: #050505 !important;
+        }
+
+        /* --- MODAL STRUCTURE --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            width: 90%; max-width: 600px; animation: modalFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes modalFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- SUMMARY & PAYMENT --- */
+        .summary-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 32px; position: sticky; top: 40px; }
+        .grand-total { display: flex; justify-content: space-between; font-size: 24px; font-weight: 700; margin: 20px 0; padding-top: 20px; border-top: 1px solid var(--border); }
+        .btn-place-order { width: 100%; background-color: var(--accent-blue); color: white; border: none; padding: 20px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; margin-top: 24px; transition: all 0.3s ease; }
+        .btn-place-order:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
+        
+        .add-address-btn {
+            background: none; border: 1px dashed #444; color: var(--text-main); padding: 18px;
+            width: 100%; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s;
+        }
+        #addressFormContainer { max-height: 0; overflow: hidden; transition: all 0.5s ease-in-out; opacity: 0; }
+        #addressFormContainer.open { max-height: 800px; margin-top: 24px; opacity: 1; }
+
+        .payment-option { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); padding: 18px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        .payment-option.active { border-color: var(--accent-blue); background: rgba(37, 99, 235, 0.08); }
+    </style>
+</head>
+<body>
+
+<%- include('../partials/user/header') %>
+
+<main class="checkout-wrapper">
+    <section>
+        <h1>Secure Checkout</h1>
+        <p class="subtitle">Complete your purchase by providing delivery and payment details.</p>
+
+        <div class="section-title">Delivery Address</div>
+        
+        <div class="address-list">
+            <% if(address && address.length > 0) { 
+                let sortedAddress = address.sort((a, b) => (a.isDefault === b.isDefault)? 0 : a.isDefault? -1 : 1);
+            %>
+                <% sortedAddress.forEach((addr) => { %>
+                    <div class="address-card <%= addr.isDefault ? 'selected' : '' %>" 
+                         onclick="selectAddress('<%= addr._id %>', this)">
+                        <div class="header">
+                            <strong><%= addr.fullname %></strong>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <button type="button" class="btn-edit-addr" onclick="event.stopPropagation(); openEditModal('<%= JSON.stringify(addr) %>')">EDIT</button>
+                                <div class="check-badge">✓</div>
+                            </div>
+                        </div>
+                        <div class="address-details">
+                            <p><%= addr.address %></p>
+                            <p><%= addr.city %>, <%= addr.state %> - <%= addr.pincode %></p>
+                            <p style="margin-top: 8px; color: var(--text-main);">📞 <%= addr.phone %></p>
+                        </div>
+                        <% if(addr.isDefault) { %>
+                            <span class="default-tag">Default Address</span>
+                        <% } %>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div style="text-align: center; padding: 40px; border: 1px dashed var(--border); border-radius: 16px;">
+                    <p style="color: var(--text-muted);">No addresses saved yet.</p>
+                </div>
+            <% } %>
+        </div>
+
+        <button class="add-address-btn" onclick="toggleAddressForm()">+ Add New Delivery Address</button>
+
+        <div id="addressFormContainer">
+            <form class="form-grid" action="/add-checkout-address" method="POST">
+                <div class="form-group"><label>Full Name</label><input type="text" name="fullname" placeholder="John Doe" required></div>
+                <div class="form-group"><label>Phone Number</label><input type="text" name="phone" placeholder="10-digit mobile" required></div>
+                <div class="form-group full-width"><label>Street Address</label><input type="text" name="address" placeholder="House No, Building, Street" required></div>
+                <div class="form-group"><label>City</label><input type="text" name="city" required></div>
+                <div class="form-group"><label>State</label><input type="text" name="state" required></div>
+                <div class="form-group"><label>Pincode</label><input type="text" name="pincode" required></div>
+                <div class="full-width" style="margin-top: 10px; display: flex; align-items: center;">
+                    <button type="submit" style="background: var(--accent-blue); color: white; border: none; padding: 16px 32px; border-radius: 10px; cursor: pointer; font-weight: 700;">Save Address</button>
+                    <button type="button" onclick="toggleAddressForm()" style="background: transparent; color: var(--text-muted); border: none; margin-left: 20px; cursor: pointer; font-weight: 500;">Discard</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <aside>
+        <div class="summary-card">
+            <h3>Order Summary</h3>
+            <div class="order-items">
+                <% if(cart && cart.items.length > 0){ %>
+                    <% cart.items.forEach(item => { %>
+                        <div class="item-row" style="display: flex; gap: 16px; margin-bottom: 20px; align-items: center;">
+                            <div style="width: 70px; height: 70px; border-radius: 12px; background: #000; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0;">
+                                <img src="<%= item.product.variants[item.variantIndex].images[0] %>" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="item-info">
+                                <p style="font-size: 14px; font-weight: 600; margin-bottom: 2px;"><%= item.product.name %></p>
+                                <p style="font-size: 12px; color: var(--text-muted);">Qty: <%= item.quantity %></p>
+                                <p style="font-weight: 500; margin-top: 4px;">₹ <%= item.price.toLocaleString() %></p>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+
+            <div class="price-details" style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px;">
+                    <span style="color: var(--text-muted);">Subtotal</span>
+                    <span>₹ <%= cart.subtotal.toLocaleString() %></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px;">
+                    <span style="color: var(--text-muted);">Shipping</span>
+                    <span style="color: var(--success-green); font-weight: 600;">FREE</span>
+                </div>
+                <div class="grand-total">
+                    <span>Total</span>
+                    <span>₹ <%= cart.grandTotal.toLocaleString() %></span>
+                </div>
+            </div>
+
+            <form action="/place-order" method="post">
+                <% 
+                   const defaultAddr = address.find(a => a.isDefault) || (address.length > 0 ? address[0] : null);
+                   const initialId = defaultAddr ? defaultAddr._id : '';
+                %>
+                <input type="hidden" name="addressId" id="selectedAddressId" value="<%= initialId %>">
+
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-weight: 800; letter-spacing: 0.08em;">PAYMENT METHOD</p>
+
+                <div class="payment-option active" onclick="setPayment('Card', this)">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; width: 100%;">
+                        <input type="radio" name="paymentMethod" value="Card" checked style="display: none;">
+                        <span style="color: white; font-size: 14px; font-weight: 500;">Credit / Debit Card</span>
+                    </label>
+                    <span>💳</span>
+                </div>
+
+                <div class="payment-option" onclick="setPayment('COD', this)">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; width: 100%;">
+                        <input type="radio" name="paymentMethod" value="COD" style="display: none;">
+                        <span style="color: white; font-size: 14px; font-weight: 500;">Cash on Delivery</span>
+                    </label>
+                    <span>💵</span>
+                </div>
+
+                <button type="submit" class="btn-place-order" <%= (address.length === 0) ? 'disabled' : '' %>>
+                    <span>Complete Purchase</span>
+                    <span>₹ <%= cart.grandTotal.toLocaleString() %> →</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+</main>
+
+<div id="editAddressModal" class="modal-overlay">
+    <div class="modal-content">
+        <form class="form-grid" action="/edit-checkout-address" method="POST">
+            <h2 class="full-width" style="margin-bottom: 10px; font-weight: 700;">Edit Address</h2>
+            
+            <input type="hidden" name="addressId" id="edit_addressId">
+            
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="fullname" id="edit_fullname" placeholder="Full name" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" name="phone" id="edit_phone" placeholder="10-digit mobile" required>
+            </div>
+            <div class="form-group full-width">
+                <label>Street Address</label>
+                <input type="text" name="address" id="edit_address" placeholder="House/Street/Area" required>
+            </div>
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" name="city" id="edit_city" placeholder="City" required>
+            </div>
+            <div class="form-group">
+                <label>State</label>
+                <input type="text" name="state" id="edit_state" placeholder="State" required>
+            </div>
+            <div class="form-group">
+                <label>Pincode</label>
+                <input type="text" name="pincode" id="edit_pincode" placeholder="6-digit code" required>
+            </div>
+            
+            <div class="full-width" style="margin-top: 10px; display: flex; gap: 15px;">
+                <button type="submit" style="background: var(--accent-blue); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-weight: 700; flex: 1;">Save Changes</button>
+                <button type="button" onclick="closeEditModal()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 16px; border-radius: 12px; cursor: pointer; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleAddressForm() {
+        const container = document.getElementById('addressFormContainer');
+        container.classList.toggle('open');
+        if(container.classList.contains('open')) {
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function selectAddress(id, element) {
+        document.querySelectorAll('.address-card').forEach(card => card.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('selectedAddressId').value = id;
+        const orderBtn = document.querySelector('.btn-place-order');
+        if (orderBtn) orderBtn.disabled = false;
+    }
+
+    function setPayment(method, element) {
+        document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('active'));
+        element.classList.add('active');
+        const radio = element.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+    }
+
+    // MODAL LOGIC
+    function openEditModal(addrData) {
+        try {
+            const addr = JSON.parse(addrData);
+            document.getElementById('edit_addressId').value = addr._id;
+            document.getElementById('edit_fullname').value = addr.fullname;
+            document.getElementById('edit_phone').value = addr.phone;
+            document.getElementById('edit_address').value = addr.address;
+            document.getElementById('edit_city').value = addr.city;
+            document.getElementById('edit_state').value = addr.state;
+            document.getElementById('edit_pincode').value = addr.pincode;
+            
+            document.getElementById('editAddressModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        } catch (e) {
+            console.error("Error parsing address data", e);
+        }
+    }
+
+    function closeEditModal() {
+        document.getElementById('editAddressModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close on outside click
+    window.onclick = function(event) {
+        const modal = document.getElementById('editAddressModal');
+        if (event.target == modal) closeEditModal();
+    }
+</script>
+
+</body>
+</html>

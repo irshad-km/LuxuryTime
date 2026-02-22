@@ -1,6 +1,9 @@
 import express from "express";
 import * as userController from "../controllers/user/userController.js";
 import * as cartController from "../controllers/user/cartController.js";
+import * as checkoutController from "../controllers/user/checkoutController.js";
+import * as PlaceOrderController from "../controllers/user/PlaceOrderController.js";
+import * as orderController from "../controllers/user/OrderController.js";
 import { requireLogin, guestOnly } from "../middlewares/auth.js";
 import passport from "passport";
 import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
@@ -79,11 +82,24 @@ router.post("/logout", requireLogin, userController.logout);
 
 //cart
 
-router.get("/cart",requireLogin,cartController.loadcart)
-router.post("/add-to-cart/:productId",requireLogin,cartController.addToCart);
-router.post("/cart/remove/:productId",requireLogin,cartController.removeFromCart)
-router.post("/cart/update/:productId",requireLogin,cartController.updateQuantity)
+router.get("/cart", requireLogin, cartController.loadcart)
+router.post("/add-to-cart/:productId", requireLogin, cartController.addToCart);
+router.post("/cart/remove/:productId", requireLogin, cartController.removeFromCart)
+router.post("/cart/update/:productId", requireLogin, cartController.updateQuantity)
 
+
+router.get("/checkout", noCache, requireLogin, checkoutController.loadcheckout)
+router.post("/add-checkout-address", requireLogin, checkoutController.addAddress)
+router.post("/edit-checkout-address", requireLogin, checkoutController.editAddress)
+
+router.post("/place-order", noCache, requireLogin, PlaceOrderController.placeOrder);
+router.get("/order-success/:orderId", noCache, requireLogin, PlaceOrderController.loadSuccess);
+
+
+router.get("/orders", requireLogin, orderController.loadOrders)
+router.get("/orders/:id", requireLogin, orderController.loadTrackOrders)
+router.post("/orders/return-item", requireLogin, orderController.requestReturn);
+router.post("/orders/return-all",requireLogin,orderController.requestReturnAll)
 
 // google auth
 router.get(

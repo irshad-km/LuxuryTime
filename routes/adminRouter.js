@@ -4,6 +4,7 @@ import { requireAdminLogin } from "../middlewares/adminBLOCK.js";
 // import adminSession from "../middlewares/adminsession.js";
 import * as categoryController from "../controllers/admin/categoryController.js";
 import * as productController from "../controllers/admin/productController.js";
+import * as orderController from "../controllers/admin/orderController.js";
 import upload from "../middlewares/multer.js";
 
 const router = express.Router();
@@ -46,6 +47,13 @@ router.post("/addCategory", requireAdminLogin, categoryController.addCategory)
 router.post("/editCategory/:id", requireAdminLogin, categoryController.editCategory)
 router.patch("/toggleCategory/:id", requireAdminLogin, categoryController.toggleCategory)
 router.patch("/softDeleteCategory/:id", requireAdminLogin, categoryController.softDeleteCategoryc)
+
+router.get("/orders", requireAdminLogin, orderController.loadOrders)
+router.get("/orders/:id", requireAdminLogin, orderController.loadordersdetails)
+router.post("/orders/update-status", requireAdminLogin, orderController.updateOrderStatus)
+router.post("/orders/approve-return",requireAdminLogin,orderController.approveReturn);
+router.post("/orders/reject-return",requireAdminLogin,orderController.rejectReturn)
+
 
 
 router.get("/logout", requireAdminLogin, adminController.logout);

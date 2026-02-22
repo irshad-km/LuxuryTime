@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excellence Confirmed | Luxury Time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@200;400;600&display=swap');
+
+        :root {
+            --gold: #c5a059;
+            --deep-blue: #0a192f;
+            --bright-blue: #3b82f6;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 3D Particle Canvas Background */
+        #particle-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        .success-container {
+            position: relative;
+            text-align: center;
+            z-index: 10;
+            transform: scale(0.9); /* For entry animation */
+        }
+
+        /* Animated Success Icon with Pulse */
+        .check-wrapper {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 40px;
+        }
+
+        .pulse-aura {
+            position: absolute;
+            inset: 0;
+            border: 2px solid var(--bright-blue);
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .circle-rim {
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--bright-blue);
+        }
+
+        .check-icon {
+            font-size: 90px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+        }
+
+        .luxury-title {
+            font-family: 'Syncopate', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #fff, var(--gold), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 4s linear infinite;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        .order-tag {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 25px;
+            border-radius: 100px;
+            font-size: 10px;
+            letter-spacing: 5px;
+            display: inline-block;
+            color: var(--gold);
+        }
+
+        /* High-End Magnetic Buttons */
+        .btn-holder {
+            display: flex;
+            gap: 25px;
+            margin-top: 60px;
+            justify-content: center;
+        }
+
+        .btn-luxury {
+            padding: 20px 45px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 4px;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .btn-filled {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-filled:hover {
+            background: transparent;
+            color: #fff;
+            border-color: #fff;
+            box-shadow: 0 0 50px rgba(255,255,255,0.15);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--bright-blue);
+            background: rgba(59, 130, 246, 0.05);
+            text-shadow: 0 0 10px var(--bright-blue);
+        }
+
+        .reveal { opacity: 0; transform: translateY(30px); }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="success-container">
+        <div class="check-wrapper reveal">
+            <div class="pulse-aura"></div>
+            <div class="circle-rim"></div>
+            <div class="check-icon">✓</div>
+        </div>
+
+        <h1 class="luxury-title reveal text-3xl md:text-5xl">Confirmed</h1>
+        <div class="reveal mt-4">
+            <span class="order-tag">ORDER #<%= order.id %></span>
+        </div>
+        
+        <p class="reveal text-neutral-500 mt-10 max-w-sm mx-auto font-light leading-loose tracking-widest text-[11px] px-6">
+            YOUR TIMEPIECE IS BEING CALIBRATED. <br>
+            A NEW STANDARD OF ELEGANCE AWAITS.
+        </p>
+
+        <div class="btn-holder">
+            <a href="/orders" class="reveal btn-luxury btn-filled">
+                View Orders
+            </a>
+            <a href="/shop" class="reveal btn-luxury btn-outline text-neutral-400 hover:text-white">
+                Back to Shop
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // --- GSAP & Animations ---
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+            // Entrance sequence
+            tl.to(".success-container", { scale: 1, duration: 2 })
+              .to(".reveal", {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                stagger: 0.2
+            }, "-=1.5");
+
+            // Infinite pulse animation for the icon
+            gsap.to(".pulse-aura", {
+                opacity: 0.5,
+                scale: 1.4,
+                duration: 2,
+                repeat: -1,
+                ease: "sine.out"
+            });
+
+            // Spinning rim
+            gsap.to(".circle-rim", {
+                rotate: 360,
+                duration: 15,
+                repeat: -1,
+                ease: "none"
+            });
+
+            // Trigger Premium Confetti
+            setTimeout(() => {
+                const end = Date.now() + 2 * 1000;
+                const colors = ['#ffffff', '#3b82f6', '#c5a059'];
+
+                (function frame() {
+                    confetti({
+                        particleCount: 3,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: colors
+                    });
+                    confetti({
+                        particleCount: 3,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: colors
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            }, 500);
+        });
+
+        // --- Starfield Background Logic ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 150; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        initCanvas();
+        createParticles();
+        animate();
+        window.addEventListener('resize', initCanvas);
+
+
+        
+    </script>
+
+    <script>
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted || window.performance.getEntriesByType("navigation")[0].type === "back_forward") {
+            window.location.href = "/";
+        }
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
+
