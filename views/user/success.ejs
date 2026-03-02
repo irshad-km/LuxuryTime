@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,6 @@
             justify-content: center;
         }
 
-        /* 3D Particle Canvas Background */
         #particle-canvas {
             position: fixed;
             inset: 0;
@@ -40,10 +40,9 @@
             position: relative;
             text-align: center;
             z-index: 10;
-            transform: scale(0.9); /* For entry animation */
+            transform: scale(0.9);
         }
 
-        /* Animated Success Icon with Pulse */
         .check-wrapper {
             position: relative;
             width: 160px;
@@ -91,7 +90,9 @@
         }
 
         @keyframes shine {
-            to { background-position: 200% center; }
+            to {
+                background-position: 200% center;
+            }
         }
 
         .order-tag {
@@ -106,7 +107,6 @@
             color: var(--gold);
         }
 
-        /* High-End Magnetic Buttons */
         .btn-holder {
             display: flex;
             gap: 25px;
@@ -135,7 +135,7 @@
             background: transparent;
             color: #fff;
             border-color: #fff;
-            box-shadow: 0 0 50px rgba(255,255,255,0.15);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.15);
         }
 
         .btn-outline:hover {
@@ -144,9 +144,13 @@
             text-shadow: 0 0 10px var(--bright-blue);
         }
 
-        .reveal { opacity: 0; transform: translateY(30px); }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
     </style>
 </head>
+
 <body>
 
     <canvas id="particle-canvas"></canvas>
@@ -162,8 +166,9 @@
         <div class="reveal mt-4">
             <span class="order-tag">ORDER #<%= order.id %></span>
         </div>
-        
-        <p class="reveal text-neutral-500 mt-10 max-w-sm mx-auto font-light leading-loose tracking-widest text-[11px] px-6">
+
+        <p
+            class="reveal text-neutral-500 mt-10 max-w-sm mx-auto font-light leading-loose tracking-widest text-[11px] px-6">
             YOUR TIMEPIECE IS BEING CALIBRATED. <br>
             A NEW STANDARD OF ELEGANCE AWAITS.
         </p>
@@ -179,20 +184,18 @@
     </div>
 
     <script>
-        // --- GSAP & Animations ---
+
         window.addEventListener('load', () => {
             const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-            // Entrance sequence
             tl.to(".success-container", { scale: 1, duration: 2 })
-              .to(".reveal", {
-                opacity: 1,
-                y: 0,
-                duration: 1.5,
-                stagger: 0.2
-            }, "-=1.5");
+                .to(".reveal", {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.5,
+                    stagger: 0.2
+                }, "-=1.5");
 
-            // Infinite pulse animation for the icon
             gsap.to(".pulse-aura", {
                 opacity: 0.5,
                 scale: 1.4,
@@ -201,7 +204,6 @@
                 ease: "sine.out"
             });
 
-            // Spinning rim
             gsap.to(".circle-rim", {
                 rotate: 360,
                 duration: 15,
@@ -209,7 +211,6 @@
                 ease: "none"
             });
 
-            // Trigger Premium Confetti
             setTimeout(() => {
                 const end = Date.now() + 2 * 1000;
                 const colors = ['#ffffff', '#3b82f6', '#c5a059'];
@@ -237,7 +238,6 @@
             }, 500);
         });
 
-        // --- Starfield Background Logic ---
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -292,21 +292,16 @@
         window.addEventListener('resize', initCanvas);
 
 
-        
+
     </script>
 
     <script>
-    window.addEventListener("pageshow", function (event) {
-        if (event.persisted || window.performance.getEntriesByType("navigation")[0].type === "back_forward") {
-            window.location.href = "/";
-        }
-    });
-</script>
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted || window.performance.getEntriesByType("navigation")[0].type === "back_forward") {
+                window.location.href = "/";
+            }
+        });
+    </script>
 </body>
+
 </html>
-
-
-
-
-
-

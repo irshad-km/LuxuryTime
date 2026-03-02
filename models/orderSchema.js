@@ -22,6 +22,9 @@ const orderSchema = new mongoose.Schema({
       name: String,
       quantity: Number,
       price: Number,
+      discountAmount: Number,    
+      finalPrice: Number,
+
       itemStatus: { type: String, default: 'Delivered' },
       images: {
         type: [String],
@@ -61,11 +64,38 @@ const orderSchema = new mongoose.Schema({
     country: String,
   },
 
+  subtotal: {
+    type: Number,
+    required: true
+  },
+
+  discount: {
+    type: Number,
+    default: 0
+  },
+
+  couponCode: {
+    type: String,
+    default: null
+  },
+
+  shippingCharge: {
+    type: Number,
+    default: 0
+  },
+
+  tax: {
+    type: Number,
+    default: 0
+  },
+
+
+
   totalAmount: Number,
 
   paymentMethod: {
     type: String,
-    enum: ["COD", "ONLINE"],
+    enum: ["COD", "ONLINE","Wallet"],
   },
 
   paymentStatus: {

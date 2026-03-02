@@ -4,6 +4,9 @@ import * as cartController from "../controllers/user/cartController.js";
 import * as checkoutController from "../controllers/user/checkoutController.js";
 import * as PlaceOrderController from "../controllers/user/PlaceOrderController.js";
 import * as orderController from "../controllers/user/OrderController.js";
+import * as walletController from "../controllers/user/walletController.js";
+import { createOrder, verifyPayment } from "../controllers/user/paymentController.js";
+import * as wishlistController from "../controllers/user/wishlistController.js";
 import { requireLogin, guestOnly } from "../middlewares/auth.js";
 import passport from "passport";
 import { checkUserBlocked } from "../middlewares/adminBLOCK.js";
@@ -25,7 +28,7 @@ router.get("/signUp", guestOnly, userController.loadSignup);
 router.get("/profile", requireLogin, userController.loadProfile);
 
 
-
+router.get("/about",userController.loadAboutPage)
 router.get("/shop", userController.loadshopepage)
 router.get("/product/:id", userController.loadProductDetails)
 router.get("/newpass", userController.loadnewPassword);
@@ -86,20 +89,41 @@ router.get("/cart", requireLogin, cartController.loadcart)
 router.post("/add-to-cart/:productId", requireLogin, cartController.addToCart);
 router.post("/cart/remove/:productId", requireLogin, cartController.removeFromCart)
 router.post("/cart/update/:productId", requireLogin, cartController.updateQuantity)
+router.post("/add-to-cart-from-wishlist", requireLogin, cartController.moveToCartFromWishlist)
 
-
+//checkout
 router.get("/checkout", noCache, requireLogin, checkoutController.loadcheckout)
 router.post("/add-checkout-address", requireLogin, checkoutController.addAddress)
 router.post("/edit-checkout-address", requireLogin, checkoutController.editAddress)
+router.post("/apply-coupon", requireLogin, checkoutController.applyCoupon)
+router.post("/remove-coupon", requireLogin, checkoutController.removeCoupon)
+
+
+router.post("/create-razorpay-order", requireLogin, createOrder);
+router.post("/verify-payment", requireLogin, verifyPayment);
 
 router.post("/place-order", noCache, requireLogin, PlaceOrderController.placeOrder);
 router.get("/order-success/:orderId", noCache, requireLogin, PlaceOrderController.loadSuccess);
+router.get('/payment-error', requireLogin, PlaceOrderController.PaymentError);
 
-
+//order managemend
 router.get("/orders", requireLogin, orderController.loadOrders)
 router.get("/orders/:id", requireLogin, orderController.loadTrackOrders)
 router.post("/orders/return-item", requireLogin, orderController.requestReturn);
-router.post("/orders/return-all",requireLogin,orderController.requestReturnAll)
+router.post("/orders/return-all", requireLogin, orderController.requestReturnAll)
+router.get("/orders/:id/invoice", requireLogin, orderController.getInvoice);
+router.post('/orders/:id/cancel-item', requireLogin, orderController.cancelOrder);
+
+
+//wishlist
+router.get("/wishlist", requireLogin,wishlistController.loadWishlist)
+router.post("/wishlist/add", requireLogin,wishlistController.addToWishlist)
+router.delete("/wishlist/remove/:productId/:variantId", requireLogin,wishlistController.removeItem)
+
+
+router.get("/wallet", requireLogin, walletController.loadwallet);
+router.post("/add-money", requireLogin, walletController.createOrder);
+router.post("/verify-payment-add", requireLogin, walletController.verifyPaymentadd);
 
 // google auth
 router.get(

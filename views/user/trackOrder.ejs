@@ -245,7 +245,6 @@
                         const stages=["pending", "confirmed" , "shipped" , "out for delivery" , "delivered" ]; 
                         const currentStatus=(order.orderStatus || "pending" ).toLowerCase(); 
                         let currentIndex=stages.indexOf(currentStatus);
-                        // Force "Delivered" view if order is in return process
                         if(currentStatus === 'return requested') currentIndex = 4;
                         const progressWidth=currentIndex>= 0 ? (currentIndex / (stages.length - 1)) * 100 : 0;
                     %>
@@ -280,8 +279,11 @@
                             </div>
 
                             <div class="text-end">
-                                <% /* --- IMPORTANT LOGIC FOR STATUS LABELS --- */ %>
-                                <% if (item.itemStatus === 'Return Requested') { %>
+                                <% if (item.itemStatus === 'Cancelled') { %>
+                                    <span class="text-[10px] text-red-400 font-bold px-3 py-1 bg-red-400/10 border border-red-400/20 rounded">
+                                        CANCELLED
+                                    </span>
+                                <% } else if (item.itemStatus === 'Return Requested') { %>
                                     <span class="text-[10px] text-orange-400 font-bold px-3 py-1 bg-orange-400/10 border border-orange-400/20 rounded">
                                         RETURN REQUESTED
                                     </span>
@@ -295,7 +297,6 @@
                                         <button onclick="openReturnForm('<%= item.name %>', '<%= order._id %>', '<%= item._id %>')" class="text-[9px] text-gray-500 underline">Re-apply?</button>
                                     </div>
                                 <% } else if (order.orderStatus.toLowerCase() === 'delivered' || order.orderStatus.toLowerCase() === 'return requested') { %>
-                                    <% /* Show return button only if item is still 'delivered' and not already requested */ %>
                                     <% if (item.itemStatus.toLowerCase() === 'delivered') { %>
                                         <button onclick="openReturnForm('<%= item.name %>', '<%= order._id %>', '<%= item._id %>')"
                                             class="text-[10px] text-orange-400 font-bold py-2 px-4 border border-orange-500/20 rounded hover:bg-orange-500/10">
@@ -303,7 +304,10 @@
                                         </button>
                                     <% } %>
                                 <% } else if (['pending', 'confirmed'].includes(order.orderStatus.toLowerCase())) { %>
-                                    <button class="text-[10px] text-red-500 font-bold py-2 px-4 border border-red-500/20 rounded">Cancel Product</button>
+                                    <button onclick="confirmCancelProduct('<%= order._id %>', '<%= item._id %>', '<%= item.name %>')"
+                                        class="text-[10px] text-red-500 font-bold py-2 px-4 border border-red-500/20 rounded hover:bg-red-500/10">
+                                        Cancel Product
+                                    </button>
                                 <% } %>
                             </div>
                         </div>
@@ -312,9 +316,8 @@
 
                 <div class="flex justify-end gap-4">
                     <% 
-                        // Only show "Return All" if the order is delivered and there is at least one item NOT yet requested
                         const showReturnAll = order.orderStatus.toLowerCase() === 'delivered' && 
-                                            order.items.some(i => i.itemStatus.toLowerCase() === 'delivered');
+                                             order.items.some(i => i.itemStatus.toLowerCase() === 'delivered');
                         if (showReturnAll) { 
                     %>
                         <button onclick="handleReturnAll()" class="btn-return-all">
@@ -322,7 +325,7 @@
                         </button>
                     <% } %>
 
-                    <button class="btn-invoice">
+                    <button onclick="confirmInvoiceDownload('<%= order._id %>')" class="btn-invoice">
                         <i class="ph-bold ph-download-simple"></i> GET INVOICE (PDF)
                     </button>
                 </div>
@@ -331,6 +334,66 @@
     </div>
 
     <script>
+        // --- NEW: Cancel Product Function ---
+        async function confirmCancelProduct(orderId, itemId, itemName) {
+            const result = await Swal.fire({
+                title: 'Cancel Item?',
+                text: `Are you sure you want to cancel "${itemName}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                background: '#111',
+                color: '#fff',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Yes, Cancel it!'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/orders/${orderId}/cancel-item`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ itemId: itemId })
+                    });
+
+                    const res = await response.json();
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cancelled',
+                            text: 'Product has been cancelled successfully.',
+                            background: '#111',
+                            color: '#fff'
+                        }).then(() => location.reload());
+                    } else {
+                        throw new Error(res.message);
+                    }
+                } catch (err) {
+                    Swal.fire({ icon: 'error', title: 'Error', text: err.message, background: '#111', color: '#fff' });
+                }
+            }
+        }
+
+        // --- Invoice Download ---
+        function confirmInvoiceDownload(orderId) {
+            Swal.fire({
+                title: 'Download Invoice?',
+                text: "Do you want to download the invoice for this order?",
+                icon: 'question',
+                showCancelButton: true,
+                background: '#111',
+                color: '#fff',
+                confirmButtonColor: '#5b42f3',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Yes, Download',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/orders/${orderId}/invoice`;
+                }
+            });
+        }
+
+        // --- Return Logic ---
         function openReturnForm(name, orderId, itemId) {
             document.getElementById('returnItemDisplay').innerText = `Product: ${name}`;
             document.getElementById('modalOrderId').value = orderId;
@@ -343,7 +406,6 @@
             document.getElementById('returnFormModal').classList.add('hidden');
         }
 
-        // Handle Single Return
         document.getElementById('actualReturnForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
@@ -363,7 +425,6 @@
             } catch (err) { console.error(err); }
         });
 
-        // Handle Return All
         async function handleReturnAll() {
             const { value: reason } = await Swal.fire({
                 title: 'Return All Items',

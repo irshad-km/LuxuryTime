@@ -35,13 +35,13 @@
         ::-webkit-scrollbar-track { background: #0E0E0E; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
-        @keyframes subtle-glow {
-            0%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
-            50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        
+        /* Transition for Heart Icon */
+        .material-symbols-outlined {
+            transition: color 0.3s ease, font-variation-settings 0.3s ease;
         }
-        .hero-title { animation: subtle-glow 5s infinite; }
-        ::selection { background: white; color: black; }
-        .cart-badge { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+
+        .badge-shadow { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
     </style>
 </head>
 
@@ -64,16 +64,31 @@
 
             <div class="flex items-center gap-6">
                 <% if (user) { %>
-                    <a href="/wishlist" class="text-gray-300 hover:text-white transition-colors">
-                        <span class="material-symbols-outlined text-[24px]">favorite</span>
+                    
+                    <a href="/wishlist" class="relative text-gray-300 hover:text-white transition-colors group">
+                        <span id="wishlist-icon" 
+                              class="material-symbols-outlined text-[24px] 
+                              <%= (typeof wishlistCount !== 'undefined' && wishlistCount > 0) ? 'text-red-500' : '' %>"
+                              style="<%= (typeof wishlistCount !== 'undefined' && wishlistCount > 0) ? "font-variation-settings: 'FILL' 1;" : "font-variation-settings: 'FILL' 0;" %>">
+                            favorite
+                        </span>
+                        
+                        <div id="wishlist-badge-container">
+                            <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
+                                <span id="wishlist-count"
+                                    class="absolute -top-1.5 -right-1.5 flex h-4 w-4 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white badge-shadow">
+                                    <%= wishlistCount %>
+                                </span>
+                            <% } %>
+                        </div>
                     </a>
 
                     <a href="/cart" class="relative text-gray-300 hover:text-white transition-colors">
                         <span class="material-symbols-outlined text-[26px]">shopping_bag</span>
                         <div id="cart-badge-container">
-                            <% if (totalQty > 0) { %>
+                            <% if (typeof totalQty !== 'undefined' && totalQty > 0) { %>
                                 <span id="cart-count"
-                                    class="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white cart-badge">
+                                    class="absolute -top-1.5 -right-1.5 flex h-4 w-4 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white badge-shadow">
                                     <%= totalQty %>
                                 </span>
                             <% } %>
@@ -85,31 +100,40 @@
                             <span class="material-symbols-outlined text-2xl">account_circle</span>
                             <span><%= user.fullname %></span>
                         </button>
-                        <div class="absolute right-0 mt-3 w-40 rounded-lg bg-surface-dark border border-white/10 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                            <a href="/profile" class="block px-4 py-2 text-sm hover:bg-white hover:text-black transition">My Profile</a>
-                            <a href="/orders" class="block px-4 py-2 text-sm hover:bg-white hover:text-black transition">My Orders</a>
-                            <button type="button" onclick="toggleLogoutModal(true)" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white transition">Logout</button>
+                        <div class="absolute right-0 mt-3 w-44 rounded-lg bg-surface-dark border border-white/10 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="/profile" class="block px-4 py-3 text-sm hover:bg-white/5 transition border-b border-white/5">My Profile</a>
+                            <a href="/orders" class="block px-4 py-3 text-sm hover:bg-white/5 transition border-b border-white/5">My Orders</a>
+                            <button type="button" onclick="toggleLogoutModal(true)" class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500 hover:text-white transition rounded-b-lg">Logout</button>
                         </div>
                     </div>
+
                 <% } else { %>
-                    <a href="/login"><button class="border border-white px-5 py-2 text-xs font-bold uppercase rounded-full hover:bg-white hover:text-black transition-all">Login</button></a>
-                    <a href="/signUp"><button class="bg-white px-5 py-2 text-xs font-bold uppercase text-black rounded-full hover:bg-gray-200 transition-all">Sign Up</button></a>
+                    <div class="flex items-center gap-3">
+                        <a href="/login">
+                            <button class="border border-white/20 px-5 py-2 text-[10px] font-bold uppercase rounded-full hover:bg-white hover:text-black transition-all">Login</button>
+                        </a>
+                        <a href="/signUp">
+                            <button class="bg-white px-5 py-2 text-[10px] font-bold uppercase text-black rounded-full hover:bg-gray-200 transition-all shadow-lg shadow-white/5">Sign Up</button>
+                        </a>
+                    </div>
                 <% } %>
             </div>
         </div>
     </header>
 
     <div id="logoutModal" class="fixed inset-0 z-[100] hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleLogoutModal(false)"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-surface-dark border border-white/10 p-8 rounded-2xl shadow-2xl">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="toggleLogoutModal(false)"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-surface-dark border border-white/10 p-8 rounded-2xl shadow-2xl">
             <div class="text-center">
-                <span class="material-symbols-outlined text-red-500 text-5xl mb-4">logout</span>
+                <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-red-500 text-3xl">logout</span>
+                </div>
                 <h3 class="text-xl font-bold mb-2">Confirm Logout</h3>
-                <p class="text-gray-400 text-sm mb-8">Are you sure you want to log out?</p>
-                <div class="flex flex-col sm:flex-row gap-3">
+                <p class="text-gray-400 text-sm mb-8">Are you sure you want to log out from Luxury Time?</p>
+                <div class="flex gap-3">
                     <button onclick="toggleLogoutModal(false)" class="flex-1 px-6 py-3 border border-white/10 rounded-xl text-sm font-semibold hover:bg-white/5 transition">Cancel</button>
                     <form action="/logout" method="POST" class="flex-1">
-                        <button type="submit" class="w-full px-6 py-3 bg-red-600 rounded-xl text-sm font-semibold hover:bg-red-700 transition">Yes, Logout</button>
+                        <button type="submit" class="w-full px-6 py-3 bg-red-600 rounded-xl text-sm font-semibold hover:bg-red-700 transition">Logout</button>
                     </form>
                 </div>
             </div>
@@ -119,8 +143,13 @@
     <script>
         function toggleLogoutModal(show) {
             const modal = document.getElementById('logoutModal');
-            if (show) { modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
-            else { modal.classList.add('hidden'); document.body.style.overflow = ''; }
+            if (show) { 
+                modal.classList.remove('hidden'); 
+                document.body.style.overflow = 'hidden'; 
+            } else { 
+                modal.classList.add('hidden'); 
+                document.body.style.overflow = ''; 
+            }
         }
     </script>
 </body>

@@ -1,150 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luxury Time Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard | LuxTime</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            background-color: #0a0a0a;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .sidebar-item:hover {
-            background-color: #1a1a1a;
-        }
-
-        .active-nav {
-            background-color: #3b82f6;
-            color: white;
-        }
-
-        .card {
-            background-color: #121212;
-            border: 1px solid #1f1f1f;
-        }
+        body { background-color: #030712; color: #f3f4f6; font-family: 'Inter', sans-serif; }
+        .stat-card, .table-container { background-color: #111827; border: 1px solid #1f2937; }
+        .text-muted { color: #9ca3af; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
     </style>
 </head>
-
-<body class="flex h-screen">
+<body class="flex h-screen overflow-hidden">
 
     <%- include('../partials/admin/sidebar') %>
 
-
-        <main class="flex-1 p-8 overflow-y-auto">
-            <header class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold">Dashboard</h2>
-                    <p class="text-gray-400">Welcome back, here's what's happening with your store today.</p>
-                </div>
-                <button class="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-lg flex items-center gap-2">
-                    <i class="fa-regular fa-calendar"></i> Last 30 Days
-                </button>
-            </header>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="card p-6 rounded-2xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-gray-400 text-sm">Total Revenue</span>
-                        <i class="fa-solid fa-dollar-sign text-blue-500 bg-blue-500/10 p-2 rounded"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold">₹45,231.89</h3>
-                    <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 12% vs last month</p>
-                </div>
-
-                <div class="card p-6 rounded-2xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-gray-400 text-sm">Total Sales</span>
-                        <i class="fa-solid fa-bag-shopping text-blue-500 bg-blue-500/10 p-2 rounded"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold">1,204</h3>
-                    <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 5% vs last month</p>
-                </div>
-
-                <div class="card p-6 rounded-2xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-gray-400 text-sm">New Customers</span>
-                        <i class="fa-solid fa-user-plus text-blue-500 bg-blue-500/10 p-2 rounded"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold">342</h3>
-                    <p class="text-red-500 text-sm mt-2"><i class="fa-solid fa-arrow-down"></i> 2% vs last month</p>
-                </div>
-
-                <div class="card p-6 rounded-2xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-gray-400 text-sm">Total Orders</span>
-                        <i class="fa-solid fa-box-open text-blue-500 bg-blue-500/10 p-2 rounded"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold">450</h3>
-                    <p class="text-green-500 text-sm mt-2"><i class="fa-solid fa-arrow-up"></i> 8% vs last month</p>
-                </div>
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Dashboard</h1>
+                <p class="text-muted">Welcome back, here's what's happening today.</p>
             </div>
+        </header>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card p-6 rounded-2xl lg:col-span-2">
-                    <h4 class="font-bold mb-6">Sales Over Time</h4>
-                    <canvas id="salesChart" height="150"></canvas>
-                </div>
-                <div class="card p-6 rounded-2xl">
-                    <h4 class="font-bold mb-6">Order Status</h4>
-                    <canvas id="orderStatusChart"></canvas>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card p-6 rounded-xl">
+                <span class="text-xs text-muted">Total Revenue</span>
+                <h2 class="text-2xl font-bold">₹<%= totalRevenue.toLocaleString('en-IN') %></h2>
             </div>
-        </main>
+            <div class="stat-card p-6 rounded-xl">
+                <span class="text-xs text-muted">Total Orders</span>
+                <h2 class="text-2xl font-bold"><%= totalOrders %></h2>
+            </div>
+            <div class="stat-card p-6 rounded-xl">
+                <span class="text-xs text-muted">New Customers</span>
+                <h2 class="text-2xl font-bold"><%= totalUsers %></h2>
+            </div>
+            <div class="stat-card p-6 rounded-xl">
+                <span class="text-xs text-muted">Avg. Order Value</span>
+                <h2 class="text-2xl font-bold">₹<%= (totalRevenue / (totalOrders || 1)).toFixed(0) %></h2>
+            </div>
+        </div>
 
-        <script>
-            // Sales Chart
-            const ctx1 = document.getElementById('salesChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: ['Jan 01', 'Jan 05', 'Jan 10', 'Jan 15', 'Jan 20', 'Jan 25', 'Jan 30'],
-                    datasets: [{
-                        label: 'Sales',
-                        data: [200000, 250000, 300000, 450000, 800000, 950000, 1100000],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#3b82f6'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: '#1f1f1f' }, ticks: { color: '#666' } },
-                        x: { grid: { display: false }, ticks: { color: '#666' } }
-                    }
-                }
-            });
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card p-6 rounded-xl lg:col-span-2">
+                <h3 class="font-bold mb-6">Sales Over Time</h3>
+                <canvas id="salesChart" height="120"></canvas>
+            </div>
+            
+            <div class="stat-card p-6 rounded-xl">
+                <h3 class="font-bold mb-4">Order Status</h3>
+                <div class="relative flex justify-center items-center mb-6">
+                    <canvas id="statusDonut"></canvas>
+                    <div class="absolute text-center">
+                        <p class="text-2xl font-bold"><%= totalOrders %></p>
+                        <p class="text-[10px] text-muted uppercase">Orders</p>
+                    </div>
+                </div>
+                <div id="donut-legend" class="space-y-2"></div>
+            </div>
+        </div>
 
-            // Donut Chart
-            const ctx2 = document.getElementById('orderStatusChart').getContext('2d');
-            new Chart(ctx2, {
+        <div class="table-container rounded-xl overflow-hidden">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h3 class="font-bold">Recent Orders</h3>
+                <a href="/admin/orders" class="text-blue-500 text-sm hover:underline">View All</a>
+            </div>
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-800/50 text-muted uppercase text-[10px] tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Order ID</th>
+                        <th class="px-6 py-4">Customer</th>
+                        <th class="px-6 py-4">Amount</th>
+                        <th class="px-6 py-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    <% recentOrders.forEach(order => { %>
+                    <tr class="hover:bg-gray-800/30 transition">
+                        <td class="px-6 py-4 text-muted font-mono text-xs">#<%= order._id.toString().slice(-6).toUpperCase() %></td>
+                        <td class="px-6 py-4">
+                            <%= (order.userId && order.userId.fullname) ? order.userId.fullname : 'Guest' %>
+                        </td>
+                        <td class="px-6 py-4 font-bold">₹<%= order.totalAmount.toLocaleString('en-IN') %></td>
+                        <td class="px-6 py-4">
+                            <% 
+                                let badgeClass = "bg-gray-500/10 text-gray-500"; 
+                                let s = (order.orderStatus || '').toLowerCase();
+                                if (s === 'delivered') badgeClass = "bg-green-500/10 text-green-500";
+                                else if (s === 'shipped') badgeClass = "bg-yellow-500/10 text-yellow-500";
+                                else if (s === 'processing') badgeClass = "bg-blue-500/10 text-blue-500";
+                                else if (s === 'cancelled') badgeClass = "bg-red-500/10 text-red-500";
+                            %>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold <%= badgeClass %>">
+                                <%= order.orderStatus %>
+                            </span>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // 1. Parse Data from Backend
+        const salesData = <%- salesOverTime %>;
+        const statusData = <%- statusCounts %>;
+        const totalCount = <%= totalOrders %> || 1;
+
+        // 2. Line Chart Logic
+        new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: {
+                labels: salesData.map(d => d._id),
+                datasets: [{
+                    data: salesData.map(d => d.dailyRevenue),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+        });
+
+        // 3. Round Graph (Donut) Logic - FIXED
+        const colorPalette = { 
+            'shipped': '#eab308',    
+            'delivered': '#22c55e',  
+            'processing': '#3b82f6', 
+            'cancelled': '#ef4444',
+            'pending': '#f97316'
+        };
+
+        const ctxDonut = document.getElementById('statusDonut');
+        if (ctxDonut) {
+            new Chart(ctxDonut, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Shipped', 'Delivered', 'Processing'],
-                    datasets: [{
-                        data: [45, 30, 25],
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
-                        borderWidth: 0,
-                        hoverOffset: 4
+                    labels: statusData.map(d => d._id),
+                    datasets: [{ 
+                        data: statusData.map(d => d.count), 
+                        // We use toLowerCase() to ensure it matches the palette
+                        backgroundColor: statusData.map(d => colorPalette[d._id.toLowerCase()] || '#6b7280'), 
+                        borderWidth: 0, 
+                        cutout: '80%' 
                     }]
                 },
-                options: {
-                    cutout: '70%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#fff', padding: 20 } }
-                    }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } } 
                 }
             });
-        </script>
-</body>
+        }
 
+        // 4. Generate Legend
+        const legendDiv = document.getElementById('donut-legend');
+        if (legendDiv) {
+            statusData.forEach(item => {
+                const percentage = Math.round((item.count / totalCount) * 100);
+                const color = colorPalette[item._id.toLowerCase()] || '#6b7280';
+                legendDiv.innerHTML += `
+                    <div class="flex justify-between items-center text-xs">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full" style="background:${color}"></div>
+                            <span class="text-muted">${item._id}</span>
+                        </div>
+                        <span class="font-bold">${percentage}%</span>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
 </html>

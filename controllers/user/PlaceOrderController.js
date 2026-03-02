@@ -1,5 +1,7 @@
+import User from "../../models/userSchema.js";
 import Order from "../../models/orderSchema.js";
 import Cart from "../../models/cartSchema.js";
+import Wallet from "../../models/walletSchema.js";
 import Address from "../../models/userAddress.js";
 import Product from "../../models/productSchema.js";
 
@@ -23,30 +25,111 @@ const placeOrder = async (req, res) => {
         if (!addressData) {
             return res.redirect("/checkout?error=Invalid address selection");
         }
+for (let item of cart.items) {
 
+    if (!item.product) {
+        return res.redirect("/cart?error=Product removed");
+    }
+
+    const product = await Product.findById(item.product._id)
+        .populate("category");
+
+    if (!product || product.isDeleted || !product.isListed) {
+        return res.redirect(`/cart?error=${item.product.name} is unavailable`);
+    }
+
+    if (!product.category || !product.category.isListed) {
+        return res.redirect(`/cart?error=${item.product.name} category is unavailable`);
+    }
+
+    const variant = product.variants?.[item.variantIndex];
+
+    if (!variant) {
+        return res.redirect(`/cart?error=${product.name} variant unavailable`);
+    }
+
+    if (variant.quantity <= 0) {
+        return res.redirect(`/cart?error=${product.name} is out of stock`);
+    }
+
+    if (variant.quantity < item.quantity) {
+        return res.redirect(`/cart?error=Only ${variant.quantity} left for ${product.name}`);
+    }
+}
+
+        let subtotal = 0;
         for (let item of cart.items) {
-            if (!item.product || item.product.isListed === false) {
-                return res.redirect("/cart?error=Product unavailable");
-            }
-            const variant = item.product.variants[item.variantIndex];
-            if (!variant || variant.quantity < item.quantity) {
-                return res.redirect(`/cart?error=Insufficient stock for ${item.product.name}`);
-            }
+            subtotal += item.price * item.quantity;
         }
+
+        let discount = 0;
+        let couponCode = null;
+
+        const appliedCoupon = req.session.appliedCoupon || null;
+
+        if (appliedCoupon) {
+            discount = appliedCoupon.discount || 0;
+            couponCode = appliedCoupon.code || null;
+        }
+
+        const shippingCharge = 0;
+        const tax = 0;
+
+        const totalAmount = subtotal - discount + shippingCharge + tax;
+
+        if (totalAmount < 0) {
+            return res.redirect("/checkout?error=Invalid total amount");
+        }
+
+
+      
+if (paymentMethod === "Wallet") {
+
+    const wallet = await Wallet.findOne({ userId: userId });
+
+    if (!wallet) {
+        return res.redirect("/checkout?error=Wallet not found");
+    }
+
+    if (wallet.balance < totalAmount) {
+        return res.redirect("/checkout?error=Insufficient wallet balance");
+    }
+
+    wallet.balance -= totalAmount;
+    await wallet.save();
+}
 
         const orderItems = cart.items.map(item => {
             const variant = item.product.variants[item.variantIndex];
+
             return {
                 productId: item.product._id,
                 variantId: new mongoose.Types.ObjectId(variant._id),
                 name: item.product.name,
                 quantity: item.quantity,
                 price: item.price,
+                totalPrice: item.price * item.quantity,
                 images: variant?.images || [],
                 variantIndex: item.variantIndex,
                 itemStatus: "pending"
             };
         });
+
+        let finalPaymentMethod = "COD";
+        let finalPaymentStatus = "Pending";
+
+        if (paymentMethod === "Card") {
+            finalPaymentMethod = "ONLINE";
+            finalPaymentStatus = "Paid";
+        } 
+        else if (paymentMethod === "Wallet") {
+            finalPaymentMethod = "Wallet";
+            finalPaymentStatus = "Paid";
+        } 
+        else {
+            finalPaymentMethod = "COD";
+            finalPaymentStatus = "Pending";
+        }
 
         const newOrder = new Order({
             userId,
@@ -60,9 +143,16 @@ const placeOrder = async (req, res) => {
                 pincode: addressData.pincode,
                 country: addressData.country || 'India',
             },
-            totalAmount: cart.grandTotal,
-            paymentMethod: paymentMethod === "Card" ? "ONLINE" : "COD",
-            paymentStatus: paymentMethod === "Card" ? "paid" : "pending",
+
+            subtotal,
+            discount,
+            couponCode,
+            shippingCharge,
+            tax,
+            totalAmount,
+
+            paymentMethod: finalPaymentMethod,
+            paymentStatus: finalPaymentStatus,
             orderStatus: "pending"
         });
 
@@ -70,6 +160,7 @@ const placeOrder = async (req, res) => {
 
         for (let item of cart.items) {
             const stockKey = `variants.${item.variantIndex}.quantity`;
+
             await Product.findByIdAndUpdate(item.product._id, {
                 $inc: { [stockKey]: -item.quantity }
             });
@@ -77,8 +168,12 @@ const placeOrder = async (req, res) => {
 
         await Cart.findOneAndDelete({ user: userId });
 
+
+        req.session.appliedCoupon = null;
+
         req.session.orderCompleted = true;
         req.session.lastOrderId = savedOrder._id.toString();
+
 
         res.redirect(`/order-success/${savedOrder._id}`);
 
@@ -114,4 +209,20 @@ const loadSuccess = async (req, res) => {
     }
 };
 
-export { placeOrder, loadSuccess };
+
+const PaymentError = async (req, res) => {
+    try {
+        const errorMessage = req.query.msg || "Transaction failed or was cancelled.";
+        res.render('user/paymenderror', { 
+            message: errorMessage 
+        });
+    } catch (error) {
+        res.redirect('/checkout');
+    }
+};
+
+export {
+    placeOrder,
+    loadSuccess,
+    PaymentError
+};

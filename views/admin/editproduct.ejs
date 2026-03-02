@@ -111,7 +111,9 @@
         }
 
         @keyframes popIn {
-            to { transform: scale(1); }
+            to {
+                transform: scale(1);
+            }
         }
 
         #cropperModal {
@@ -165,7 +167,8 @@
 
     <div id="successModal">
         <div class="success-card">
-            <div class="w-20 h-20 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div
+                class="w-20 h-20 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i class="fas fa-arrows-rotate text-4xl"></i>
             </div>
             <h2 class="text-2xl font-bold mb-2">Product Updated!</h2>
@@ -182,102 +185,133 @@
                 <i class="fas fa-circle-exclamation text-xl"></i>
                 <div class="flex-1">
                     <p class="font-semibold">Error</p>
-                    <p class="text-sm"><%= error %></p>
+                    <p class="text-sm">
+                        <%= error %>
+                    </p>
                 </div>
                 <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
             </div>
-        <% } %>
+            <% } %>
     </div>
 
     <div class="admin-wrapper">
         <%- include('../partials/admin/sidebar') %>
 
-        
 
-        <main class="main-content max-w-5xl mx-auto">
-            <h1 class="text-3xl font-bold mb-8">Edit Product</h1>
 
-            <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" id="productForm">
+            <main class="main-content max-w-5xl mx-auto">
+                <h1 class="text-3xl font-bold mb-8">Edit Product</h1>
 
-                <div class="glass-card">
-                    <label class="form-label">Product Name</label>
-                    <input type="text" name="name" id="productName" class="input-field" value="<%= product.name %>">
+                <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data"
+                    id="productForm">
 
-                    <label class="form-label mt-6">Description</label>
-                    <textarea name="description" id="productDescription" rows="4" class="input-field"><%= product.description %></textarea>
+                    <div class="glass-card">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" name="name" id="productName" class="input-field" value="<%= product.name %>">
 
-                    <label class="form-label mt-6">Category</label>
-                    <select name="category" class="input-field">
-                        <% categories.forEach(cat=> { %>
-                            <option value="<%= cat._id %>" <%=product.category.toString()===cat._id.toString() ? 'selected' : '' %>>
-                                <%= cat.name %>
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
+                        <label class="form-label mt-6">Description</label>
+                        <textarea name="description" id="productDescription" rows="4"
+                            class="input-field"><%= product.description %></textarea>
 
-                <div id="variantsSection">
-                    <% product.variants.forEach((variant, vIndex)=> { %>
-                        <div class="glass-card variant-card relative">
-                            <label class="form-label">Color</label>
-                            <select name="variants[<%= vIndex %>][color]" class="input-field color-select" required>
-                                <option value="Black" <%=variant.color==='Black' ? 'selected' : '' %>>Black</option>
-                                <option value="White" <%=variant.color==='White' ? 'selected' : '' %>>White</option>
-                                <option value="Red" <%=variant.color==='Red' ? 'selected' : '' %>>Red</option>
-                                <option value="Blue" <%=variant.color==='Blue' ? 'selected' : '' %>>Blue</option>
-                                <option value="Silver" <%=variant.color==='Silver' ? 'selected' : '' %>>Silver</option>
-                                <option value="Green" <%=variant.color==='Green' ? 'selected' : '' %>>Green</option>
-                            </select>
+                        <label class="form-label mt-6">Category</label>
+                        <select name="category" class="input-field">
+                            <% categories.forEach(cat=> { %>
+                                <option value="<%= cat._id %>" <%=product.category.toString()===cat._id.toString()
+                                    ? 'selected' : '' %>>
+                                    <%= cat.name %>
+                                </option>
+                                <% }) %>
+                        </select>
+                    </div>
 
-                            <div class="grid grid-cols-2 gap-4 mt-6">
-                                <div>
-                                    <label class="form-label">Regular Price</label>
-                                    <input type="number" name="variants[<%= vIndex %>][regularPrice]" value="<%= variant.regularPrice %>" class="input-field reg-price" step="0.01">
-                                </div>
-                                <div>
-                                    <label class="form-label">Sale Price</label>
-                                    <input type="number" name="variants[<%= vIndex %>][salePrice]" value="<%= variant.salePrice %>" class="input-field sale-price" step="0.01">
-                                </div>
-                            </div>
+                    <div id="variantsSection">
+                        <% product.variants.forEach((variant, vIndex)=> { %>
+                            <div class="glass-card variant-card relative">
+                                <label class="form-label">Color</label>
+                                <select name="variants[<%= vIndex %>][color]" class="input-field color-select" required>
+                                    <option value="Black" <%=variant.color==='Black' ? 'selected' : '' %>>Black</option>
+                                    <option value="White" <%=variant.color==='White' ? 'selected' : '' %>>White</option>
+                                    <option value="Red" <%=variant.color==='Red' ? 'selected' : '' %>>Red</option>
+                                    <option value="Blue" <%=variant.color==='Blue' ? 'selected' : '' %>>Blue</option>
+                                    <option value="Silver" <%=variant.color==='Silver' ? 'selected' : '' %>>Silver
+                                    </option>
+                                    <option value="Green" <%=variant.color==='Green' ? 'selected' : '' %>>Green</option>
+                                </select>
 
-                            <label class="form-label mt-6">Stock Quantity</label>
-                            <input type="number" name="variants[<%= vIndex %>][quantity]" value="<%= variant.quantity %>" class="input-field qty-field">
-
-                            <div class="grid grid-cols-4 gap-4 mt-6">
-                                <% for(let i=0; i < 4; i++) { %>
-                                    <div class="image-container" id="container-v<%= vIndex %>-input-<%= i %>">
-                                        <button type="button" class="remove-img-btn <%= (variant.images && variant.images[i]) ? '' : 'hidden' %>" onclick="removeImage('v<%= vIndex %>-input-<%= i %>')">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                        <div class="image-upload-box" onclick="document.getElementById('v<%= vIndex %>-input-<%= i %>').click()">
-                                            <% if (variant.images && variant.images[i]) { %>
-                                                <img src="<%= variant.images[i] %>" id="img-v<%= vIndex %>-input-<%= i %>">
-                                                <input type="hidden" name="variants[<%= vIndex %>][existingImages][<%= i %>]" value="<%= variant.images[i] %>" id="existing-v<%= vIndex %>-input-<%= i %>">
-                                            <% } else { %>
-                                                <i class="fas fa-image text-neutral-600 text-xl" id="icon-v<%= vIndex %>-input-<%= i %>"></i>
-                                                <img src="" id="img-v<%= vIndex %>-input-<%= i %>" class="hidden">
-                                            <% } %>
-                                            <input type="file" id="v<%= vIndex %>-input-<%= i %>" name="variants[<%= vIndex %>][images]" class="hidden img-input" accept="image/*" onchange="initCropper(event, 'v<%= vIndex %>-input-<%= i %>')">
-                                        </div>
+                                <div class="grid grid-cols-2 gap-4 mt-6">
+                                    <div>
+                                        <label class="form-label">Regular Price</label>
+                                        <input type="number" name="variants[<%= vIndex %>][regularPrice]"
+                                            value="<%= variant.regularPrice %>" class="input-field reg-price"
+                                            step="0.01">
                                     </div>
-                                <% } %>
+                                    <div>
+                                        <label class="form-label">Sale Price</label>
+                                        <input type="number" name="variants[<%= vIndex %>][salePrice]"
+                                            value="<%= variant.salePrice %>" class="input-field sale-price" step="0.01">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">offer</label>
+                                    <input type="number" name="variants[<%= vIndex %>][offer]"
+                                        value="<%= variant.offer %>" class="input-field sale-price" step="0.01">
+                                </div>
+
+                                <label class="form-label mt-6">Stock Quantity</label>
+                                <input type="number" name="variants[<%= vIndex %>][quantity]"
+                                    value="<%= variant.quantity %>" class="input-field qty-field">
+
+                                <div class="grid grid-cols-4 gap-4 mt-6">
+                                    <% for(let i=0; i < 4; i++) { %>
+                                        <div class="image-container" id="container-v<%= vIndex %>-input-<%= i %>">
+                                            <button type="button"
+                                                class="remove-img-btn <%= (variant.images && variant.images[i]) ? '' : 'hidden' %>"
+                                                onclick="removeImage('v<%= vIndex %>-input-<%= i %>')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <div class="image-upload-box"
+                                                onclick="document.getElementById('v<%= vIndex %>-input-<%= i %>').click()">
+                                                <% if (variant.images && variant.images[i]) { %>
+                                                    <img src="<%= variant.images[i] %>"
+                                                        id="img-v<%= vIndex %>-input-<%= i %>">
+                                                    <input type="hidden"
+                                                        name="variants[<%= vIndex %>][existingImages][<%= i %>]"
+                                                        value="<%= variant.images[i] %>"
+                                                        id="existing-v<%= vIndex %>-input-<%= i %>">
+                                                    <% } else { %>
+                                                        <i class="fas fa-image text-neutral-600 text-xl"
+                                                            id="icon-v<%= vIndex %>-input-<%= i %>"></i>
+                                                        <img src="" id="img-v<%= vIndex %>-input-<%= i %>"
+                                                            class="hidden">
+                                                        <% } %>
+                                                            <input type="file" id="v<%= vIndex %>-input-<%= i %>"
+                                                                name="variants[<%= vIndex %>][images]"
+                                                                class="hidden img-input" accept="image/*"
+                                                                onchange="initCropper(event, 'v<%= vIndex %>-input-<%= i %>')">
+                                            </div>
+                                        </div>
+                                        <% } %>
+                                </div>
                             </div>
-                        </div>
-                    <% }) %>
-                </div>
+                            <% }) %>
+                    </div>
 
-                <button type="button" onclick="addNewVariant()" class="w-full mb-8 py-3 border-2 border-dashed border-zinc-800 rounded-xl text-zinc-500 hover:text-white transition-all">
-                    <i class="fas fa-plus mr-2"></i> Add New Color Variant
-                </button>
-
-                <div class="flex items-center justify-end gap-4 pb-10">
-                    <a href="/admin/products" class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold">Cancel</a>
-                    <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold transition-all">
-                        Update Product
+                    <button type="button" onclick="addNewVariant()"
+                        class="w-full mb-8 py-3 border-2 border-dashed border-zinc-800 rounded-xl text-zinc-500 hover:text-white transition-all">
+                        <i class="fas fa-plus mr-2"></i> Add New Color Variant
                     </button>
-                </div>
-            </form>
-        </main>
+
+                    <div class="flex items-center justify-end gap-4 pb-10">
+                        <a href="/admin/products"
+                            class="bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold">Cancel</a>
+                        <button type="submit" id="submitBtn"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold transition-all">
+                            Update Product
+                        </button>
+                    </div>
+                </form>
+            </main>
     </div>
 
     <div id="cropperModal">
@@ -286,7 +320,8 @@
             <div class="cropper-container-box"><img id="cropperImage" src=""></div>
             <div class="flex justify-end gap-4">
                 <button type="button" onclick="closeModal()" class="px-6 py-2 text-zinc-400">Cancel</button>
-                <button type="button" onclick="cropImage()" class="px-8 py-2 bg-blue-600 text-white rounded-lg font-bold">Save Crop</button>
+                <button type="button" onclick="cropImage()"
+                    class="px-8 py-2 bg-blue-600 text-white rounded-lg font-bold">Save Crop</button>
             </div>
         </div>
     </div>
@@ -356,7 +391,7 @@
             const imgElement = document.getElementById(`img-${currentInputId}`);
             const iconElement = document.getElementById(`icon-${currentInputId}`);
             const removeBtn = document.querySelector(`#container-${currentInputId} .remove-img-btn`);
-            
+
             canvas.toBlob((blob) => {
                 const file = new File([blob], `updated-${Date.now()}.jpg`, { type: "image/jpeg" });
                 const dataTransfer = new DataTransfer();
@@ -365,9 +400,9 @@
 
                 imgElement.src = canvas.toDataURL('image/jpeg');
                 imgElement.classList.remove('hidden');
-                if(iconElement) iconElement.classList.add('hidden');
+                if (iconElement) iconElement.classList.add('hidden');
                 removeBtn.classList.remove('hidden');
-                
+
                 const existingField = document.getElementById(`existing-${currentInputId}`);
                 if (existingField) existingField.value = "";
 
@@ -386,7 +421,7 @@
             if (existingField) existingField.value = "";
             imgElement.src = "";
             imgElement.classList.add('hidden');
-            if(iconElement) iconElement.classList.remove('hidden');
+            if (iconElement) iconElement.classList.remove('hidden');
             removeBtn.classList.add('hidden');
         }
 
@@ -461,4 +496,5 @@
         }
     </script>
 </body>
+
 </html>

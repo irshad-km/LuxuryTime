@@ -268,13 +268,13 @@
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <% let status=(order.status || 'pending' ).toLowerCase(); let
-                                                    sClass='status-pending' ; if(status==='delivered' )
-                                                    sClass='status-delivered' ; else if(['shipped', 'out for delivery'
-                                                    ].includes(status)) sClass='status-shipped' ; else
-                                                    if(status==='cancelled' ) sClass='status-cancelled' ; %>
+                                                <% let orderStatus=(order.orderStatus || 'pending' ).toLowerCase(); let
+                                                    sClass='orderStatus-pending' ; if(orderStatus==='delivered' )
+                                                    sClass='orderStatus-delivered' ; else if(['shipped', 'out for delivery'
+                                                    ].includes(orderStatus)) sClass='orderStatus-shipped' ; else
+                                                    if(orderStatus==='cancelled' ) sClass='orderStatus-cancelled' ; %>
                                                     <span class="status-badge <%= sClass %>">
-                                                        <%= order.status || 'Pending' %>
+                                                        <%= order.orderStatus || 'Pending' %>
                                                     </span>
                                             </td>
                                             <td class="text-end">

@@ -1,7 +1,11 @@
 import Order from "../../models/orderSchema.js";
 import Product from "../../models/productSchema.js";
 import User from "../../models/userSchema.js";
+import Wallet from "../../models/walletSchema.js";
 import mongoose from "mongoose";
+import PDFDocument from "pdfkit";
+
+
 
 
 const loadOrders = async (req, res) => {
@@ -10,12 +14,12 @@ const loadOrders = async (req, res) => {
         if (!userId) return res.redirect("/login");
 
         const page = parseInt(req.query.page) || 1;
-        const limit = 1; 
+        const limit = 3;
         const skip = (page - 1) * limit;
         const search = req.query.search || "";
 
         let query = { userId: userId };
-        
+
         if (search) {
             let searchConditions = [
                 { orderStatus: { $regex: search, $options: "i" } },
@@ -39,12 +43,14 @@ const loadOrders = async (req, res) => {
 
         const totalPages = Math.ceil(totalOrders / limit) || 1;
 
+        console.log(orders)
+
         return res.render("user/userOrder", {
             orders,
             currentPage: page,
             totalPages,
             search,
-            user: req.session.user 
+            user: req.session.user
         });
 
     } catch (error) {
@@ -52,6 +58,8 @@ const loadOrders = async (req, res) => {
         res.status(500).send("Server Error");
     }
 };
+
+
 
 const loadTrackOrders = async (req, res) => {
     try {
@@ -109,6 +117,7 @@ const loadTrackOrders = async (req, res) => {
 };
 
 
+
 const requestReturn = async (req, res) => {
     try {
         const { orderId, itemId, reason } = req.body;
@@ -153,6 +162,8 @@ const requestReturn = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
+
 
 const requestReturnAll = async (req, res) => {
     try {
@@ -210,11 +221,157 @@ const requestReturnAll = async (req, res) => {
 }
 
 
+
+//getInvoice 
+const getInvoice = async (req, res) => {
+    try {
+        const userId = req.session.user?._id;
+        const orderId = req.params.id;
+
+        if (!userId) return res.redirect("/login");
+
+        const order = await Order.findOne({ _id: orderId, userId })
+            .populate("items.productId");
+
+        if (!order) {
+            return res.status(404).send("Order not found");
+        }
+
+        const doc = new PDFDocument({ margin: 50 });
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=invoice-${order._id}.pdf`
+        );
+
+        doc.pipe(res);
+
+        doc.fontSize(20).text("Luxury Watches", { align: "center" });
+        doc.moveDown();
+
+        doc.fontSize(12).text(`Invoice ID: ${order._id}`);
+        doc.text(`Date: ${new Date(order.createdAt).toDateString()}`);
+        doc.text(`Customer: ${req.session.user.fullname}`);
+        doc.moveDown();
+
+        doc.text("Items:");
+        doc.moveDown(0.5);
+
+        order.items.forEach((item) => {
+            doc.text(
+                `${item.productId?.fullname || "Product"} - Qty: ${item.quantity} - ₹${item.price}`
+            );
+        });
+
+        doc.moveDown();
+        doc.text(`Total Amount: ₹${order.totalAmount}`, {
+            align: "right",
+        });
+
+        doc.end();
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Server Error");
+    }
+};
+
+
+
+const cancelOrder = async (req, res) => {
+    try {
+        const userId = req.session.user?._id;
+        const orderId = req.params.id;
+        const { itemId } = req.body;
+
+        const order = await Order.findOne({ _id: orderId, userId })
+            .populate("items.productId");
+
+        if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+        const item = order.items.find(i => i._id.toString() === itemId);
+
+        if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+
+        if (item.itemStatus === "Cancelled") {
+            return res.status(400).json({ success: false, message: "Item already cancelled" });
+        }
+
+        const itemOriginalTotal = Number(item.price) || 0;
+        const orderSubtotal = Number(order.subtotal) || 0;
+        const totalDiscountReceived = Number(order.discount) || 0;
+
+        let refundAmount = itemOriginalTotal;
+
+
+        if (orderSubtotal > 0 && totalDiscountReceived > 0) {
+            const itemDiscountShare = (itemOriginalTotal / orderSubtotal) * totalDiscountReceived;
+            refundAmount = itemOriginalTotal - itemDiscountShare
+        }
+
+        console.log(refundAmount)
+
+        await Product.updateOne(
+    { 
+        _id: item.productId._id,
+        "variants._id": item.variantId   
+    },
+    { 
+        $inc: { "variants.$.quantity": item.quantity }
+    }
+);
+
+        const currentTotal = Number(order.totalAmount) || 0;
+        order.totalAmount = Math.max(0, currentTotal - refundAmount);
+
+        console.log(order.totalAmount)
+
+        item.itemStatus = "Cancelled";
+
+        const allCancelled = order.items.every(i => i.itemStatus === "Cancelled");
+        if (allCancelled) {
+            order.orderStatus = "Cancelled";
+        }
+
+        await order.save();
+
+        if (order.paymentMethod === "ONLINE") {
+            let wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                wallet = new Wallet({ userId, balance: 0, transactions: [] });
+            }
+
+            wallet.balance += refundAmount;
+            wallet.transactions.push({
+                transactionType: "credit",
+                amount: refundAmount,
+                source: "order_cancel",
+                status: "success",
+                orderId: order._id,
+                description: `Refund for cancelled item: ${item.name}`
+            });
+
+            await wallet.save();
+        }
+
+        res.json({ success: true, refundAmount });
+
+    } catch (error) {
+        console.error("Cancel Order Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+
+
 export {
     loadOrders,
     loadTrackOrders,
     requestReturn,
-    requestReturnAll
+    requestReturnAll,
+    getInvoice,
+    cancelOrder
 }
 
 

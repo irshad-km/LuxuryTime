@@ -1,6 +1,8 @@
 import Order from "../../models/orderSchema.js";
 import User from "../../models/userSchema.js";
 import Product from "../../models/productSchema.js";
+import Wallet from "../../models/walletSchema.js";
+
 
 import mongoose from "mongoose";
 
@@ -8,7 +10,7 @@ const loadOrders = async (req, res) => {
     try {
 
         const page = parseInt(req.query.page) || 1;
-        const limit = 1;
+        const limit = 2;
         const skip = (page - 1) * limit;
         const search = req.query.search || "";
 
@@ -92,10 +94,13 @@ const updateOrderStatus = async (req, res) => {
             }
         }
 
+
         order.orderStatus = status;
 
         order.items.forEach(item => {
-            item.itemStatus = status;
+            if (item.itemStatus !== "Cancelled") {
+                item.itemStatus = status;
+            }
         });
 
         await order.save();
@@ -112,7 +117,6 @@ const approveReturn = async (req, res) => {
         const { orderId, itemId } = req.body;
 
         const order = await Order.findById(orderId);
-
         if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
         const item = order.items.id(itemId);
@@ -120,39 +124,57 @@ const approveReturn = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid item for return" });
         }
 
+        const itemOriginalTotal = Number(item.price) || 0;
+        const orderSubtotal = Number(order.subtotal) || 0;
+        const totalDiscountReceived = Number(order.discount) || 0;
+
+        let refundAmount = itemOriginalTotal;
+
+        if (orderSubtotal > 0 && totalDiscountReceived > 0) {
+            const itemDiscountShare = (itemOriginalTotal / orderSubtotal) * totalDiscountReceived;
+            refundAmount = Math.round(itemOriginalTotal - itemDiscountShare);
+        }
+
         item.itemStatus = "Returned";
 
+        const allReturned = order.items.every(i => ["Returned", "Cancelled"].includes(i.itemStatus));
+        if (allReturned) {
+            order.orderStatus = "Returned";
+        }
+
+        order.totalAmount = Math.max(0, (Number(order.totalAmount) || 0) - refundAmount);
+
         await Product.updateOne(
-            {
-                _id: item.productId,
-                "variants._id": item.variantId
-            },
-            {
-                $inc: { "variants.$.quantity": item.quantity }
-            }
+            { _id: item.productId, "variants._id": item.variantId },
+            { $inc: { "variants.$.quantity": item.quantity } }
         );
 
 
-        const allReturned = order.items.every(i => ["Returned", "Cancelled"].includes(i.itemStatus));
-        const anyRequested = order.items.some(i => i.itemStatus === "Return Requested");
-
-        if (allReturned) {
-            order.orderStatus = "Returned";
-        } else if (anyRequested) {
-            order.orderStatus = "Return Requested";
-        } else {
-            order.orderStatus = "delivered";
+        let wallet = await Wallet.findOne({ userId: order.userId });
+        if (!wallet) {
+            wallet = new Wallet({ userId: order.userId, balance: 0, transactions: [] });
         }
 
+        wallet.balance += refundAmount;
+        wallet.transactions.push({
+            transactionType: "credit",
+            amount: refundAmount,
+            source: "order_return",
+            status: "success",
+            orderId: order._id,
+            description: `Refund for returned item: ${item.name} (Discount applied)`
+        });
+
+        await wallet.save();
         await order.save();
+
         res.redirect(`/admin/orders/${orderId}`);
 
-
     } catch (error) {
-        console.error(error);
+        console.error("Approve Return Error:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-}
+};
 
 
 const rejectReturn = async (req, res) => {

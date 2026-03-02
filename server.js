@@ -14,6 +14,7 @@ import userRouter from "./routes/userRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import adminSession from "./middlewares/adminsession.js";
 import {cartMiddleware}  from "./middlewares/cartCount.js";
+import {wishlistProvider}  from "./middlewares/wishlistProvider.js";
 
 dotenv.config();
 
@@ -51,6 +52,8 @@ app.use(
   })
 );
 
+
+app.use(wishlistProvider);
 app.use(cartMiddleware)
 
 app.use("/admin", adminSession);

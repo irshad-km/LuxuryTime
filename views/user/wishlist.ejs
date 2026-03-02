@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Time | Wishlist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --bg-black: #000000;
+            --card-bg: #111111;
+            --accent-blue: #2563eb;
+            --text-white: #ffffff;
+            --text-gray: #888888;
+            --border-gray: #222222;
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+            min-height: 60vh;
+        }
+
+        .wishlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .wishlist-header h1 { font-size: 2.2rem; margin: 0; font-weight: 600; }
+        .wishlist-header p { color: var(--text-gray); margin-top: 8px; }
+
+        .clear-all {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            padding-bottom: 5px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        
+        .clear-all:hover { color: #ef4444; }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            border: 1px solid var(--border-gray);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: #333; }
+
+        /* --- IMAGE ALIGNMENT FIX --- */
+        .card-img-container {
+            height: 320px;
+            width: 100%;
+            background: linear-gradient(180deg, #161616 0%, #0c0c0c 100%);
+            display: flex;
+            justify-content: center; /* Centers horizontally */
+            align-items: center;     /* Centers vertically */
+            position: relative;
+            padding: 20px;           /* Prevents image touching edges */
+            box-sizing: border-box;
+        }
+
+        .card-img-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;     /* Keeps aspect ratio perfect */
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+            display: block;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            z-index: 20;
+            transition: 0.2s;
+            background: rgba(0,0,0,0.4);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .remove-btn:hover { color: #fff; background: #ef4444; }
+
+        /* --- INFO & BUTTON ALIGNMENT --- */
+        .card-info { 
+            padding: 20px; 
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Pushes bottom content down */
+        }
+        
+        .card-info h3 { 
+            margin: 0; 
+            font-size: 1.05rem; 
+            font-weight: 600; 
+            color: #fff;
+            min-height: 2.6em; /* Keeps titles aligned even if short */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .specs { color: var(--text-gray); font-size: 0.8rem; margin: 6px 0 12px 0; }
+        
+        .variant {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            margin-bottom: 15px;
+        }
+
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid #444; }
+
+        .price { 
+            font-size: 1.15rem; 
+            font-weight: 600; 
+            margin-top: auto; /* This is the magic for button alignment */
+            margin-bottom: 20px; 
+            color: #fff; 
+        }
+
+        .btn-cart {
+            width: 100%;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-cart:hover { background: #1d4ed8; transform: scale(1.02); }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i { font-size: 4rem; color: #222; margin-bottom: 20px; }
+
+        .product-page-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/user/header') %>
+
+    <div class="container">
+        <div class="wishlist-header">
+            <div>
+                <h1>My Wishlist</h1>
+                <p>Your saved premium timepieces</p>
+            </div>
+         
+        </div>
+
+        <div class="wishlist-grid" id="wishlistGrid">
+            <% if (wishlist && wishlist.length > 0) { %>
+                <% wishlist.forEach(item => { %>
+                    <div class="card" id="card-<%= item.variantId %>">
+                        <div class="card-img-container">
+                            <span class="remove-btn" onclick="removeItem('<%= item.productId._id %>', '<%= item.variantId %>')">
+                                <i class="fa-solid fa-xmark"></i>
+                            </span>
+                            <a href="/product/<%= item.productId._id %>" class="product-page-link">
+                                <img src="<%= item.image %>" alt="<%= item.productId.name %>">
+                            </a>
+                        </div>
+                        <div class="card-info">
+                            <a href="/product/<%= item.productId._id %>" class="product-page-link">
+                                <h3><%= item.productId.name %></h3>
+                            </a>
+                            
+                            <p class="specs"><%= item.material %> • <%= item.size %></p>
+                            <div class="variant">
+                                <span class="color-dot" style="background-color: <%= item.dotColor %>"></span>
+                                <%= item.dotColor %>
+                            </div>
+                            <div class="price">₹<%= item.price.toLocaleString('en-IN') %></div>
+                            <button class="btn-cart" onclick="moveToCart('<%= item.productId._id %>', '<%= item.variantId %>')">
+                                <i class="fa-solid fa-bag-shopping"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-state">
+                    <i class="fa-solid fa-heart-crack"></i>
+                    <h2>Your wishlist is empty</h2>
+                    <p>Explore our collection and save your favorites.</p>
+                    <a href="/shop" style="color: var(--accent-blue); text-decoration: none; margin-top: 20px; display: inline-block;">Start Shopping</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        // HEADER UI UPDATER
+        function updateHeaderWishlistUI(count) {
+            const heartIcon = document.getElementById('wishlist-icon');
+            const badgeContainer = document.getElementById('wishlist-badge-container');
+
+            if (heartIcon) {
+                if (count > 0) {
+                    heartIcon.classList.add('text-red-500');
+                    if (badgeContainer) {
+                        badgeContainer.innerHTML = `
+                            <span id="wishlist-count" class="absolute -top-1.5 -right-1.5 flex h-4 w-4 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
+                                ${count}
+                            </span>`;
+                    }
+                } else {
+                    heartIcon.classList.remove('text-red-500');
+                    if (badgeContainer) badgeContainer.innerHTML = '';
+                }
+            }
+        }
+
+        // REMOVE ITEM
+        async function removeItem(productId, variantId) {
+            const result = await Swal.fire({
+                title: 'Remove item?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#000',
+                confirmButtonText: 'Yes',
+                background: '#111',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/wishlist/remove/${productId}/${variantId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    if (data.success) {
+                        const card = document.getElementById(`card-${variantId}`);
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            updateHeaderWishlistUI(data.wishlistCount);
+                            if (document.querySelectorAll('.card').length === 0) location.reload();
+                        }, 300);
+                    }
+                } catch (error) { console.error(error); }
+            }
+        }
+
+        // CLEAR ALL
+        async function clearWishlist() {
+            const result = await Swal.fire({
+                title: 'Clear All?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                background: '#111',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch('/wishlist/clear', { method: 'DELETE' });
+                    const data = await response.json();
+                    if (data.success) location.reload();
+                } catch (error) { console.error(error); }
+            }
+        }
+
+        // MOVE TO CART
+        async function moveToCart(productId, variantId) {
+            try {
+                const response = await fetch('/add-to-cart-from-wishlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, variantId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Added to Cart', background: '#111', color: '#fff', timer: 1500, showConfirmButton: false });
+                    const card = document.getElementById(`card-${variantId}`);
+                    if(card) {
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            updateHeaderWishlistUI(data.wishlistCount);
+                            if (document.querySelectorAll('.card').length === 0) location.reload();
+                        }, 300);
+                    }
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (error) { console.error(error); }
+        }
+    </script>
+</body>
+</html>

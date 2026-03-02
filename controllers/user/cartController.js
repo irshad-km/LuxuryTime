@@ -1,5 +1,6 @@
 import Cart from "../../models/cartSchema.js";
 import Product from "../../models/productSchema.js";
+import Wishlist from "../../models/wishlistSchema.js";
 
 const loadcart = async (req, res) => {
     try {
@@ -9,11 +10,15 @@ const loadcart = async (req, res) => {
         }
 
         let cart = await Cart.findOne({ user: userId })
-            .populate("items.product");
+            .populate({
+                path: "items.product",
+                populate: { path: "category" }
+            });
 
         if (!cart) {
             return res.render("user/cart", {
                 cart: null,
+                totalQty: 0,
                 removedMessages: []
             });
         }
@@ -22,22 +27,21 @@ const loadcart = async (req, res) => {
         let subtotal = 0;
         let removedMessages = [];
 
-
         for (let item of cart.items) {
-
             if (!item.product) {
                 removedMessages.push("A product was removed from your cart.");
                 continue;
             }
 
-            const productName = item.product.name;
+            const product = item.product;
+            const productName = product.name;
 
-            if (item.product.isDeleted || !item.product.isListed) {
+            if (product.isDeleted || !product.isListed || !product.category || !product.category.isListed) {
                 removedMessages.push(`${productName} is currently unavailable.`);
                 continue;
             }
 
-            const variant = item.product.variants?.[item.variantIndex];
+            const variant = product.variants?.[item.variantIndex];
             if (!variant) {
                 removedMessages.push(`${productName} variant is unavailable.`);
                 continue;
@@ -49,72 +53,78 @@ const loadcart = async (req, res) => {
             }
 
             let finalQuantity = item.quantity;
-
             if (item.quantity > variant.quantity) {
                 finalQuantity = variant.quantity;
-
-                removedMessages.push(
-                    `${productName} quantity reduced to ${variant.quantity} due to stock update.`
-                );
+                removedMessages.push(`${productName} quantity reduced to ${variant.quantity} due to stock update.`);
             }
 
-            const latestPrice = Number(variant.salePrice || variant.price || 0);
+
+            const reglPrice = variant.salePrice || 0;
+            const variantOffer = variant.offer || 0; 
+            const categoryOffer = product.category?.offer || 0;
+            const bestOffer = Math.max(variantOffer, categoryOffer);
+            
+            const latestPrice = Math.floor(reglPrice - (reglPrice * (bestOffer / 100)));
+
             if (!latestPrice || isNaN(latestPrice)) continue;
 
-            if (item.price !== latestPrice) {
-                removedMessages.push(
-                    `${productName} price updated from ₹${item.price} to ₹${latestPrice}.`
-                );
-            }
-
-            const totalPrice = latestPrice * finalQuantity;
-            subtotal += totalPrice;
+            const itemTotalPrice = latestPrice * finalQuantity;
+            subtotal += itemTotalPrice;
 
             validItems.push({
-                product: item.product._id,
+                product: product._id,
                 quantity: finalQuantity,
                 variantIndex: item.variantIndex,
                 price: latestPrice,
-                totalPrice: totalPrice
+                totalPrice: itemTotalPrice
             });
         }
 
         cart.items = validItems;
         cart.subtotal = subtotal;
         cart.grandTotal = subtotal;
-
+        
+        cart.markModified('items');
         await cart.save();
 
-        cart = await Cart.findOne({ user: userId })
-            .populate("items.product")
+        const updatedCart = await Cart.findOne({ user: userId })
+            .populate({
+                path: "items.product",
+                populate: { path: "category" }
+            })
             .lean();
 
-        if (cart && cart.items.length > 0) {
-            cart.items = cart.items.map(item => {
+        if (updatedCart && updatedCart.items.length > 0) {
+            updatedCart.items = updatedCart.items.map(item => {
                 const variant = item.product?.variants?.[item.variantIndex];
-                return {
-                    ...item,
-                    selectedVariant: variant
+                
+                const vOffer = variant?.offer || 0;
+                const cOffer = item.product?.category?.offer || 0;
+                const bOffer = Math.max(vOffer, cOffer);
+                const finalPrice = Math.floor(variant.salePrice - (variant.salePrice * (bOffer / 100)));
+
+                return { 
+                    ...item, 
+                    selectedVariant: variant,
+                    calculatedPrice: finalPrice,
+                    offerPercentage: bOffer
                 };
             });
         }
 
-        const totalQty = cart?.items?.reduce((sum, item) => {
-            return sum + item.quantity;
-        }, 0) || 0;
+        const totalQty = updatedCart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
         res.render("user/cart", {
-            cart,
+            cart: updatedCart,
             totalQty,
             removedMessages
         });
 
     } catch (error) {
         console.error("Load Cart Error:", error);
-        res.status(500).send("Error loading cart");
+        res.status(500).send("Internal Server Error");
     }
 };
-
 
 
 
@@ -289,9 +299,99 @@ const updateQuantity = async (req, res) => {
     }
 };
 
+const moveToCartFromWishlist = async (req, res) => {
+    try {
+        const userId = req.session.user?._id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Please login to continue" });
+        }
+
+        const { productId, variantId } = req.body;
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        let price = 0;
+        let stockAvailable = 0;
+        let vIndex = -1;
+
+        
+        if (variantId && variantId !== "" && variantId !== productId.toString()) {
+            vIndex = product.variants.findIndex(v => v._id.toString() === variantId);
+        }
+
+        if (vIndex === -1 && product.variants.length > 0) {
+            vIndex = 0;
+        }
+
+        if (vIndex !== -1 && product.variants[vIndex]) {
+            const selectedVariant = product.variants[vIndex];
+            
+            price = Number(selectedVariant.salePrice) || Number(selectedVariant.regularPrice) || 0;
+            stockAvailable = Number(selectedVariant.quantity) || 0;
+        } else {
+            return res.status(400).json({ success: false, message: "No valid variants found for this product" });
+        }
+
+        let cart = await Cart.findOne({ user: userId });
+        if (!cart) {
+            cart = new Cart({ user: userId, items: [], grandTotal: 0 });
+        }
+
+        const itemIndex = cart.items.findIndex(
+            item => item.product.toString() === productId && item.variantIndex === vIndex
+        );
+
+        const currentQtyInCart = itemIndex > -1 ? cart.items[itemIndex].quantity : 0;
+        const newTotalQty = currentQtyInCart + 1;
+
+        if (newTotalQty > 4) {
+            return res.json({ success: false, message: "Maximum 4 units allowed per order." });
+        }
+        if (newTotalQty > stockAvailable) {
+            return res.json({ success: false, message: "Out of stock." });
+        }
+
+        if (itemIndex > -1) {
+            cart.items[itemIndex].quantity = newTotalQty;
+            cart.items[itemIndex].totalPrice = newTotalQty * price;
+        } else {
+            cart.items.push({
+                product: productId,
+                variantIndex: vIndex, 
+                price: price,
+                quantity: 1,
+                totalPrice: price,
+            });
+        }
+
+        cart.grandTotal = cart.items.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
+
+        await cart.save();
+
+        await Wishlist.findOneAndUpdate(
+            { userId: userId }, 
+            { $pull: { products: { productId: productId } } }
+        );
+
+        return res.json({
+            success: true,
+            message: "Moved to cart",
+            totalQty: cart.items.reduce((sum, item) => sum + item.quantity, 0)
+        });
+
+    } catch (error) {
+        console.error("Move to Cart Error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 export {
     loadcart,
     addToCart,
     removeFromCart,
-    updateQuantity
+    updateQuantity,
+    moveToCartFromWishlist
 }

@@ -33,6 +33,7 @@ const addProduct = async (req, res) => {
                 const regularPrice = Number(v.regularPrice);
                 const salePrice = v.salePrice ? Number(v.salePrice) : null;
                 const quantity = Number(v.quantity);
+                const offer = Number(v.offer)
 
                 if (salePrice !== null && salePrice >= regularPrice) {
                     return res.render("admin/addproduct", {
@@ -64,6 +65,7 @@ const addProduct = async (req, res) => {
                     regularPrice,
                     salePrice,
                     quantity,
+                    offer,
                     images,
                 });
             };
@@ -179,7 +181,8 @@ const updateProduct = async (req, res) => {
             }
 
             const regularPrice = Number(variant.regularPrice);
-            const salePrice = variant.salePrice ? Number(variant.salePrice) : null;
+            const salePrice = variant.salePrice ? Number(variant.salePrice) : null; 
+            const offer = Number(variant.offer)
 
             if (salePrice !== null && salePrice >= regularPrice) {
                 return res.render("admin/editproduct", {
@@ -193,6 +196,7 @@ const updateProduct = async (req, res) => {
                 color: variant.color,
                 regularPrice,
                 salePrice,
+                offer,
                 quantity: Number(variant.quantity),
                 images: totalImages
             });

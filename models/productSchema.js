@@ -22,6 +22,10 @@ const variantSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  offer: {
+    type: Number,
+    default: 0
+  },
   images: {
     type: [String],
     default: []
@@ -53,7 +57,7 @@ const productSchema = new mongoose.Schema(
       default: true
     },
     isDeleted: {
-      type:Boolean,
+      type: Boolean,
       default: false,
     }
   },

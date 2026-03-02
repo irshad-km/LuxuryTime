@@ -567,38 +567,19 @@ const deleteAddress = async (req, res) => {
 const loadshopepage = async (req, res) => {
   try {
     const { category, price, sort, search } = req.query;
-
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
 
-    let filter = {
-      isListed: true,
-      isDeleted: false
-    };
-
+    let filter = { isListed: true, isDeleted: false };
     let sortOption = { createdAt: -1 };
 
-    const listedCategories = await Category.find(
-      { isListed: true, isDeleted: false },
-      { _id: 1, name: 1 }
-    );
-
-    filter.category = {
-      $in: listedCategories.map(cat => cat._id)
-    };
+    const listedCategories = await Category.find({ isListed: true, isDeleted: false });
+    filter.category = { $in: listedCategories.map(cat => cat._id) };
 
     if (category && category !== "all") {
-      const categoryDoc = await Category.findOne({
-        name: category,
-        isListed: true,
-        isDeleted: false
-      });
-
-      //set id
-      if (categoryDoc) {
-        filter.category = categoryDoc._id;
-      }
+      const categoryDoc = listedCategories.find(c => c.name === category);
+      if (categoryDoc) filter.category = categoryDoc._id;
     }
 
     if (search && search.trim() !== "") {
@@ -606,61 +587,56 @@ const loadshopepage = async (req, res) => {
     }
 
     if (price) {
-      if (price === "under1000") {
-        filter["variants.regularPrice"] = { $lt: 1000 };
-      } else if (price === "1000-5000") {
-        filter["variants.regularPrice"] = { $gte: 1000, $lte: 5000 };
-      } else if (price === "above5000") {
-        filter["variants.regularPrice"] = { $gt: 5000 };
-      }
+      if (price === "under1000") filter["variants.salePrice"] = { $lt: 1000 };
+      else if (price === "1000-5000") filter["variants.salePrice"] = { $gte: 1000, $lte: 5000 };
+      else if (price === "above5000") filter["variants.salePrice"] = { $gt: 5000 };
     }
 
-    //sort
-    if (sort === "priceLow") {
-      sortOption = { "variants.regularPrice": 1 };
-    } else if (sort === "priceHigh") {
-      sortOption = { "variants.regularPrice": -1 };
-    } else if (sort === "new") {
-      sortOption = { createdAt: -1 };
-    }
+    if (sort === "priceLow") sortOption = { "variants.salePrice": 1 };
+    else if (sort === "priceHigh") sortOption = { "variants.salePrice": -1 };
+    else if (sort === "new") sortOption = { createdAt: -1 };
 
     const totalProducts = await Product.countDocuments(filter);
-
-    const products = await Product.find(filter, { isDeleted: false })
-      .populate("category")
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limit);
+    const products = await Product.find(filter).populate("category").sort(sortOption).skip(skip).limit(limit);
 
     const formattedProducts = products.map(p => {
+
       const mainVariant = p.variants[0] || {};
+      const regPrice = mainVariant.salePrice || 0;
+
+
+      const variantOffer = mainVariant.offer || 0; 
+      const categoryOffer = p.category?.offer || 0;
+      
+
+      const bestOffer = Math.max(variantOffer, categoryOffer);
+
+      const calculatedSalePrice = Math.floor(regPrice - (regPrice * (bestOffer / 100)));
 
       return {
         _id: p._id,
         name: p.name,
         description: p.description,
-        price: mainVariant.regularPrice || 0,
-        oldPrice: mainVariant.salePrice || null,
-        image: mainVariant.images?.[0] || "/images/products/default.png",
-        tag: mainVariant.salePrice ? "SALE" : "NEW"
+        regularPrice: regPrice,
+        salePrice: calculatedSalePrice,
+        offerPercentage: bestOffer,
+        image: mainVariant.images?.[0] || "/images/products/default.png"
       };
     });
 
     res.render("user/shop", {
       products: formattedProducts,
       categories: listedCategories,
-
       currentPage: page,
       totalPages: Math.ceil(totalProducts / limit),
-
       category: category || "all",
-      price: price || [],
+      price: price || "",
       sort: sort || "",
       search: search || "",
     });
 
   } catch (error) {
-    console.error("Load shop page error:", error);
+    console.error(error);
     res.status(500).send("Server error");
   }
 };
@@ -674,38 +650,91 @@ const loadProductDetails = async (req, res) => {
       isListed: true
     }).populate("category");
 
-    if (!product) return res.redirect("/shop");
-
-    if (!product.category || !product.category.isListed)
+    if (!product || !product.category || !product.category.isListed) {
       return res.redirect("/shop");
-
-    let variantStock = {};
-
-    if (product.variants && product.variants.length > 0) {
-      product.variants.forEach(v => {
-        variantStock[v._id] = Number(v.quantity) > 0;
-      });
     }
 
+    const categoryOffer = product.category?.offer || 0;
+    const variantsWithOffers = product.variants.map(v => {
+      const variantOffer = v.offer || 0;
+      const bestOffer = Math.max(variantOffer, categoryOffer);
+      const regPrice = v.salePrice || 0;
+      const salePrice = Math.floor(regPrice - (regPrice * (bestOffer / 100)));
 
+      return {
+        ...v.toObject(),
+        calculatedSalePrice: salePrice,
+        bestOffer: bestOffer,
+        hasStock: Number(v.quantity) > 0
+      };
+    });
 
-    const relatedProducts = await Product.find({
+    const mainPricing = variantsWithOffers[0] || {};
+    product.calculatedSalePrice = mainPricing.calculatedSalePrice;
+    product.bestOffer = mainPricing.bestOffer;
+    product.regularPrice = mainPricing.salePrice;
+
+    const relatedProductsRaw = await Product.find({
       _id: { $ne: product._id },
       category: product.category._id,
       isListed: true,
       isDeleted: false
-    }).limit(4);
+    }).populate("category").limit(4);
+
+    const relatedProducts = relatedProductsRaw.map(p => {
+      const v = p.variants[0] || {};
+      const vOffer = v.offer || 0;
+      const cOffer = p.category?.offer || 0;
+      const bOffer = Math.max(vOffer, cOffer);
+      const regPrice = v.salePrice || 0;
+
+      return {
+        ...p.toObject(),
+        salePrice: Math.floor(regPrice - (regPrice * (bOffer / 100))),
+        regularPrice: regPrice,
+        offerPercentage: bOffer,
+        image: v.images?.[0] || "/images/products/default.png"
+      };
+    });
 
     res.render("user/productDetails", {
       product,
       relatedProducts,
-      variantStock,
+      variants: variantsWithOffers
     });
 
   } catch (err) {
     console.log(err);
     res.redirect("/shop");
   }
+};
+
+
+const loadAboutPage = async (req, res) => {
+    try {
+        const pageData = {
+            title: "Our Heritage | Luxury Time",
+            
+            history: [
+                { year: "1985", milestone: "The Foundation", desc: "Our first workshop opens in Geneva." },
+                { year: "2010", milestone: "Modern Innovation", desc: "Launch of our first proprietary automatic movement." },
+                { year: "2026", milestone: "Digital Legacy", desc: "Blending traditional horology with modern smart tech." }
+            ],
+
+            features: [
+                { icon: "⚙️", label: "Precision Engineering", detail: "Internationally recognized movements." },
+                { icon: "💎", label: "Premium Materials", detail: "Surgical steel and sapphire crystal." },
+                { icon: "🤲", label: "Hand-Finished", detail: "Assembled by master watchmakers." },
+                { icon: "🛡️", label: "Quality Checks", detail: "72-hour rigorous performance testing." }
+            ]
+        };
+
+        res.render('user/about', pageData);
+
+    } catch (error) {
+        console.error("Error rendering about page:", error);
+        res.status(500).render('error', { message: "Could not load the about page." });
+    }
 };
 
 
@@ -739,5 +768,6 @@ export {
   updateAddress,
   deleteAddress,
   loadshopepage,
-  loadProductDetails
+  loadProductDetails,
+  loadAboutPage
 };
