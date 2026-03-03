@@ -2,6 +2,7 @@ import User from "../../models/userSchema.js";
 import Product from "../../models/productSchema.js";
 import Category from "../../models/categorySchema.js";
 import Address from "../../models/userAddress.js";
+import Wallet from "../../models/walletSchema.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
@@ -152,15 +153,29 @@ const securePassword = async (password) => bcrypt.hash(password, 10);
 //signup
 const signUp = async (req, res) => {
   try {
-    const { fullname, email, phone, password, confirmPassword } = req.body;
+    const { fullname, email, phone, password, confirmPassword, referral } = req.body;
+
+
     if (password !== confirmPassword) {
       return res.render("user/signUp", { message: "Passwords do not match" });
     }
+
 
     const userExist = await User.findOne({ email });
     if (userExist) {
       return res.render("user/signUp", { message: "Email already exists" });
     }
+
+    let referrer = null;
+
+
+    if (referral && referral.trim() !== "") {
+      referrer = await User.findOne({ referralCode: referral });
+      if (!referrer) {
+        return res.render("user/signUp", { message: "Invalid referral code" });
+      }
+    }
+
 
     const otp = generateOtp();
     const emailSent = await sendVerificationEmail(email, otp);
@@ -172,13 +187,15 @@ const signUp = async (req, res) => {
 
     req.session.userOtp = otp;
     req.session.userData = { fullname, email, phone, password };
-    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
+    req.session.referrerId = referrer ? referrer._id : null;
+    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000; 
     req.session.otpType = "signup";
     req.session.lastOtpSent = Date.now();
 
     res.render("user/verify-otp");
+
   } catch (error) {
-    console.log(error);
+    console.error("SignUp Error:", error);
     res.status(500).send("Server error");
   }
 };
@@ -290,7 +307,7 @@ const resendotp = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    const { otpType, otpExpiresAt, userOtp, forgotOtp, userData, changeNewEmail } = req.session;
+    const { otpType, otpExpiresAt, userOtp, forgotOtp, userData, changeNewEmail,referrerId } = req.session;
 
     if (!otpType || !otpExpiresAt) return res.json({ success: false, message: "Session expired" });
     if (Date.now() > otpExpiresAt) return res.json({ success: false, message: "OTP expired" });
@@ -298,18 +315,71 @@ const verifyOtp = async (req, res) => {
     const correctOtp = (otpType === "forgot") ? forgotOtp : userOtp;
     if (otp !== correctOtp) return res.json({ success: false, message: "Invalid OTP" });
 
-    if (otpType === "signup") {
-      const hashedPassword = await securePassword(userData.password);
-      await User.create({
-        fullname: userData.fullname,
-        email: userData.email,
-        phone: userData.phone,
-        password: hashedPassword,
-        isVerified: true,
-      });
-      delete req.session.user;
-      return res.json({ success: true, redirectUrl: "/login" });
-    }
+   if (otpType === "signup") {
+  const hashedPassword = await securePassword(userData.password);
+
+  const generateReferralCode = (fullname) => {
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return fullname.slice(0, 3).toUpperCase() + random;
+  };
+
+  const newUser = await User.create({
+    fullname: userData.fullname,
+    email: userData.email,
+    phone: userData.phone,
+    password: hashedPassword,
+    isVerified: true,
+    referralCode: generateReferralCode(userData.fullname),
+    referredBy: referrerId || null,
+  });
+
+
+  if (referrerId) {
+
+    await Wallet.findOneAndUpdate(
+      { userId: referrerId },
+      { 
+        $inc: { balance: 100 },
+        $push: { 
+          transactions: { 
+            transactionType: "credit", 
+            amount: 100, 
+            source: "referral_bonus",  
+            status: "success",
+            description: "Referral bonus for inviting " + userData.fullname
+          } 
+        } 
+      },
+      { upsert: true, new: true }
+    );
+
+
+    await Wallet.create({
+      userId: newUser._id,
+      balance: 50,
+      transactions: [{ 
+        transactionType: "credit",
+        amount: 50, 
+        source: "referral_bonus",
+        status: "success",
+        description: "Welcome bonus from referral" 
+      }]
+    });
+  } else {
+
+    await Wallet.create({
+      userId: newUser._id,
+      balance: 0,
+      transactions: []
+    });
+  }
+
+
+  req.session.userData = null;
+  req.session.referrerId = null;
+
+  return res.json({ success: true, redirectUrl: "/login" });
+}
     else if (otpType === "forgot") {
       req.session.allowPasswordReset = true;
       return res.json({ success: true, redirectUrl: "/newpass" });
