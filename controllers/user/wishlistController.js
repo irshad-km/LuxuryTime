@@ -65,32 +65,31 @@ const loadWishlist = async (req, res) => {
 const addToWishlist = async (req, res) => {
     try {
         const userId = req.session.user?._id;
-        
         if (!userId) {
             return res.status(401).json({ success: false, message: "Please login first" });
         }
 
         const { productId, variantId, name, image, price, material, size, dotColor } = req.body;
 
-    
+        // Default variantId set cheyyuka
+        const finalVariantId = (variantId && variantId !== "null" && variantId.trim() !== "") ? variantId : productId;
 
         let wishlist = await Wishlist.findOne({ userId });
 
         if (!wishlist) {
-            wishlist = new Wishlist({
-                userId,
-                products: []
-            });
+            wishlist = new Wishlist({ userId, products: [] });
         }
 
+        // IVIDEYAANU MAATTAM: Product ID and Variant ID randum check cheyyunnu
         const isExisting = wishlist.products.find(
-            (item) => item.productId.toString() === productId
+            (item) => item.productId.toString() === productId && 
+                      item.variantId.toString() === finalVariantId
         );
 
         if (isExisting) {
             return res.status(400).json({
                 success: false,
-                message: "Product already in wishlist"
+                message: "This specific variant is already in your wishlist"
             });
         }
 
@@ -102,32 +101,21 @@ const addToWishlist = async (req, res) => {
             material,
             size,
             dotColor,
-            variantId: (variantId && variantId !== "") ? variantId : productId 
+            variantId: finalVariantId
         };
-
-        if (variantId && variantId !== "null" && variantId.trim() !== "") {
-            newProduct.variantId = variantId;
-        }
 
         wishlist.products.push(newProduct);
         await wishlist.save();
-        console.log(wishlist)
-
-       
-        const updatedCount = wishlist.products.length;
 
         return res.status(200).json({
             success: true,
-            message: "Product added to wishlist",
-            wishlistCount: updatedCount 
+            message: "Variant added to wishlist",
+            wishlistCount: wishlist.products.length 
         });
 
     } catch (error) {
         console.error("Wishlist Controller Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 

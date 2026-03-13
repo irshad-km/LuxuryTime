@@ -206,6 +206,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
   <script>
     const mainImg = document.getElementById('mainPicture');
     const lens = document.getElementById('zoomLens');
@@ -314,38 +316,56 @@
       }, 3000);
     }
 
+    // --- ADD TO CART LOGIC ---
     addToCartForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
       const productId = "<%= product._id %>";
       const variantIndex = variantIndexInput.value;
+      
       cartBtn.disabled = true;
       cartBtn.innerText = "Processing...";
+
       try {
-        const response = await fetch(`/add-to-cart/${productId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ variantIndex })
-        });
-        const data = await response.json();
-        if (response.status === 401) { window.location.href = '/login'; return; }
-        if (data.success) {
-          showToast("Added to your collection");
-          const badgeContainer = document.getElementById('cart-badge-container');
-          if (badgeContainer) {
-            badgeContainer.innerHTML = `<span id="cart-count" class="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white cart-badge">${data.totalQty}</span>`;
+          const response = await fetch(`/add-to-cart/${productId}`, {
+              method: 'POST',
+              headers: { 
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json' 
+              },
+              body: JSON.stringify({ variantIndex })
+          });
+
+          // ലോഗിൻ ചെയ്തില്ലെങ്കിൽ റീഡയറക്ട് ചെയ്യുന്നു (വിത്ത് മെസ്സേജ്)
+          if (response.status === 401) {
+              window.location.href = '/login?message=login_required';
+              return;
           }
-        } else {
-          showToast(data.message || "Failed to add product", true);
-        }
+
+          const data = await response.json();
+
+          if (data.success) {
+              showToast("Added to your collection");
+              const badgeContainer = document.getElementById('cart-badge-container');
+              if (badgeContainer && data.totalQty !== undefined) {
+                  badgeContainer.innerHTML = `
+                      <span id="cart-count" class="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white cart-badge">
+                          ${data.totalQty}
+                      </span>`;
+              }
+          } else {
+              showToast(data.message || "Failed to add product", true);
+          }
       } catch (error) {
-        showToast("An error occurred. Please try again.", true);
+          console.error("Cart Error:", error);
+          showToast("An error occurred. Please try again.", true);
       } finally {
-        cartBtn.disabled = false;
-        cartBtn.innerText = "Add to Cart";
+          cartBtn.disabled = false;
+          cartBtn.innerText = "Add to Cart";
       }
     });
 
-    // --- UPDATED WISHLIST LOGIC (NO REFRESH) ---
+    // --- WISHLIST LOGIC ---
     wishlistBtn.addEventListener('click', async function() {
       const productId = "<%= product._id %>";
       const variantIndex = variantIndexInput.value;
@@ -354,7 +374,10 @@
       try {
         const response = await fetch('/wishlist/add', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+          },
           body: JSON.stringify({
             productId,
             variantId: v._id,
@@ -367,31 +390,28 @@
           })
         });
 
-        const data = await response.json();
-        
-        if (response.status === 401) { 
-            window.location.href = '/login'; 
-            return; 
+        // വിഷ് ലിസ്റ്റിലും ലോഗിൻ റീഡയറക്ഷൻ ഒരേപോലെ നൽകുന്നു
+        if (response.status === 401) {
+            window.location.href = "/login?message=login_required";
+            return;
         }
 
+        const data = await response.json();
+        
         if (data.success) {
-          // 1. Toast Notification
           showToast("Added to wishlist");
           
-          // 2. Local Heart Icon Update (Luxury Gold)
           const icon = document.getElementById('wishlistIcon');
           if (icon) {
             icon.classList.replace('fa-regular', 'fa-solid');
             icon.style.color = '#f4bc1c';
           }
 
-          // 3. Header Heart Update (if using Google Symbols/Icons)
           const headerHeart = document.getElementById('wishlist-icon');
           if (headerHeart) {
             headerHeart.style.fontVariationSettings = "'FILL' 1";
           }
 
-          // 4. Update Header Badge Count
           const badgeContainer = document.getElementById('wishlist-badge-container');
           if (badgeContainer && data.wishlistCount !== undefined) {
             badgeContainer.innerHTML = `

@@ -1,6 +1,7 @@
 import Cart from "../../models/cartSchema.js";
 import Address from "../../models/userAddress.js";
 import Coupon from "../../models/couponSchema.js";
+import Orders from "../../models/orderSchema.js";
 import Wallet from "../../models/walletSchema.js";
 import mongoose from "mongoose";
 
@@ -270,11 +271,6 @@ const applyCoupon = async (req, res) => {
 
         const finalAmount = cartTotal - discount;
 
-        await Coupon.updateOne(
-            { _id: coupon._id },
-            { $addToSet: { usedUsers: userId } }
-        );
-
         req.session.appliedCoupon = {
             couponId: coupon._id,
             code: coupon.code,
@@ -325,6 +321,7 @@ const removeCoupon = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
 
 export {
     loadcheckout,

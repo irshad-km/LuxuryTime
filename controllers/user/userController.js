@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+
 // home page
 const loadHomepage = async (req, res) => {
   try {
@@ -32,6 +33,7 @@ const loadHomepage = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(8);
 
+      
     const filteredProducts = products.filter(
       p => p.category !== null
     );
@@ -155,7 +157,7 @@ const signUp = async (req, res) => {
   try {
     const { fullname, email, phone, password, confirmPassword, referral } = req.body;
 
-
+let message=null
     if (password !== confirmPassword) {
       return res.render("user/signUp", { message: "Passwords do not match" });
     }
@@ -192,7 +194,9 @@ const signUp = async (req, res) => {
     req.session.otpType = "signup";
     req.session.lastOtpSent = Date.now();
 
-    res.render("user/verify-otp");
+    res.render("user/verify-otp",
+      message
+    );
 
   } catch (error) {
     console.error("SignUp Error:", error);
@@ -259,7 +263,9 @@ const sendForgotOtp = async (req, res) => {
     req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
     req.session.otpType = "forgot";
 
-    res.redirect("/verify-otp")
+    res.redirect("/verify-otp",
+      error
+    )
   } catch (error) {
     console.log(error);
     res.redirect("/forgot-password");
@@ -582,8 +588,6 @@ const loadAddress = async (req, res) => {
     const addresses = await Address.find({ userId: req.session.user._id });
     const user = await User.findById(req.session.user._id);
 
-
-
     res.render("user/address", { user: req.session.user, addresses, user, error: null });
   } catch (error) {
     res.status(500).send("Internal Server Error");
@@ -719,6 +723,7 @@ const loadProductDetails = async (req, res) => {
       _id: req.params.id,
       isListed: true
     }).populate("category");
+
 
     if (!product || !product.category || !product.category.isListed) {
       return res.redirect("/shop");

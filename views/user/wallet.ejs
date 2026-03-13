@@ -98,13 +98,30 @@
           </div>
         </a>
 
-        <div class="flex items-center gap-3 mb-10">
-          <img src="<%= user.avatar || 'https://via.placeholder.com/150' %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">
-          <div>
-            <h3 class="text-sm font-bold truncate w-32"><%= user.name %></h3>
-            <p class="text-[10px] text-gray-500 uppercase tracking-wider"><%= user.membership || 'Member' %></p>
-          </div>
-        </div>
+           <div class="flex items-center gap-3 mb-10">
+                    <% if (user.avatar && user.avatar !=="" && user.avatar !=="/default-avatar.png" ) { %>
+                        <img src="<%= user.avatar %>"
+                            class="w-11 h-11 rounded-full border border-gray-700 object-cover">
+                        <% } else { %>
+                            <div class="w-11 h-11 rounded-full letter-avatar text-lg border border-gray-700">
+                                <%= user.fullname.charAt(0) %>
+                            </div>
+                            <% } %>
+                                <div class="overflow-hidden">
+                                    <h3 class="text-sm font-bold truncate w-32">
+                                        <%= user.fullname %>
+                                    </h3>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-wider">
+                                        <%= user.email %>
+                                    </p>
+                                    <p style="color: white;"
+                                        class="text-[14px] font-bold text-gray-500 uppercase tracking-wider">
+                                        <strong>
+                                            <%= user.referralCode %>
+                                        </strong>
+                                    </p>
+                                </div>
+                </div>
 
         <nav class="space-y-2">
           <a href="/profile" class="nav-item"><i class="ph ph-user-circle text-xl"></i> My Profile</a>
@@ -202,20 +219,19 @@
     const { value: amount } = await Swal.fire({
         title: 'Add Funds',
         input: 'number',
-        inputLabel: 'എത്ര രൂപയാണ് ആഡ് ചെയ്യേണ്ടത്?',
+        inputLabel: 'Amound',
         inputPlaceholder: '₹ 500',
         background: '#111',
         color: '#fff',
         confirmButtonColor: '#5b42f3',
         showCancelButton: true,
         inputValidator: (value) => {
-            if (!value || value <= 0) return 'ദയവായി ഒരു തുക നൽകുക!';
+            if (!value || value <= 0) return 'pleas add amound';
         }
     });
 
     if (amount) {
         try {
-            // 1. ഓർഡർ ക്രിയേറ്റ് ചെയ്യുന്നു (amount സഹിതം)
             const response = await fetch('/add-money', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -224,10 +240,9 @@
 
             const order = await response.json();
 
-            // 2. Razorpay ഓപ്‌ഷനുകൾ
             const options = {
                 "key": "rzp_test_SL4UUWfxlMKHO2", 
-                "amount": order.amount, // ബാക്കെൻഡിൽ നിന്ന് വരുന്ന തുക (ഇതാണ് പോപ്പ്അപ്പിൽ കാണുക)
+                "amount": order.amount, 
                 "currency": "INR",
                 "name": "Luxury Watches",
                 "description": "Wallet Top-up",
@@ -251,7 +266,7 @@
             const rzp = new window.Razorpay(options);
             rzp.open();
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'പെയ്‌മെന്റ് പരാജയപ്പെട്ടു', background: '#111', color: '#fff' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'paymend faild', background: '#111', color: '#fff' });
         }
     }
 }

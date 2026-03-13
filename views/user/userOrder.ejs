@@ -172,22 +172,29 @@
                     </div>
                 </a>
 
-                <div class="flex items-center gap-3 mb-10">
-                    <% if (user.avatar && user.avatar !== "" && user.avatar !== "/default-avatar.png") { %>
-                        <img src="<%= user.avatar %>" class="w-11 h-11 rounded-full border border-gray-700 object-cover">
-                    <% } else { %>
-                        <div class="w-11 h-11 rounded-full letter-avatar text-lg border border-gray-700">
-                            <%= user.fullname.charAt(0) %>
-                        </div>
-                    <% } %>
-                    <div class="overflow-hidden">
-                        <h3 class="text-sm font-bold truncate w-32">
-                            <%= user.fullname %>
-                        </h3>
-                        <p class="text-[10px] text-gray-500 uppercase tracking-wider">
-                            <%= user.membership || 'Member' %>
-                        </p>
-                    </div>
+                 <div class="flex items-center gap-3 mb-10">
+                    <% if (user.avatar && user.avatar !=="" && user.avatar !=="/default-avatar.png" ) { %>
+                        <img src="<%= user.avatar %>"
+                            class="w-11 h-11 rounded-full border border-gray-700 object-cover">
+                        <% } else { %>
+                            <div class="w-11 h-11 rounded-full letter-avatar text-lg border border-gray-700">
+                                <%= user.fullname.charAt(0) %>
+                            </div>
+                            <% } %>
+                                <div class="overflow-hidden">
+                                    <h3 class="text-sm font-bold truncate w-32">
+                                        <%= user.fullname %>
+                                    </h3>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-wider">
+                                        <%= user.email %>
+                                    </p>
+                                    <p style="color: white;"
+                                        class="text-[14px] font-bold text-gray-500 uppercase tracking-wider">
+                                        <strong>
+                                            <%= user.referralCode %>
+                                        </strong>
+                                    </p>
+                                </div>
                 </div>
 
                 <nav class="space-y-2">

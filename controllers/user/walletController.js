@@ -1,5 +1,6 @@
 import Razorpay from "razorpay";
 import Wallet from "../../models/walletSchema.js";
+import User from "../../models/userSchema.js";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -22,6 +23,7 @@ const createOrder = async (req, res) => {
         };
 
         const order = await razorpay.orders.create(options);
+        
         res.status(200).json(order); 
     } catch (error) {
         console.error("Razorpay Order Error:", error);
@@ -33,9 +35,12 @@ const loadwallet = async (req, res) => {
     try {
         const userId = req.session.user?._id;
         if (!userId) return res.redirect("/login");
+
+        const user= await User.findById(userId)
+
         let wallet = await Wallet.findOne({ userId });
         if (!wallet) wallet = await Wallet.create({ userId, balance: 0, transactions: [] });
-        res.render("user/wallet", { user: req.session.user, wallet });
+        res.render("user/wallet", { user: req.session.user, wallet,user });
     } catch (error) {
         res.status(500).send("Internal Server Error");
     }

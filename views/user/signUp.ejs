@@ -1,16 +1,17 @@
 <%- include('../partials/user/header') %>
 
-  <div class="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-6 bg-black overflow-hidden">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <div class="absolute inset-0 z-0">
-      <div class="w-full h-full bg-cover bg-center opacity-20" style="background-image: url('/images/back.png');"></div>
-    </div>
+<div class="relative min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-10 bg-black overflow-hidden">
 
-    <div class="absolute inset-0 bg-black/60 z-0"></div>
+  <div class="absolute inset-0 z-0">
+    <div class="w-full h-full bg-cover bg-center opacity-20" style="background-image: url('/images/back.png');"></div>
+  </div>
+  <div class="absolute inset-0 bg-black/60 z-0"></div>
 
-    <div
-      class="relative z-10 w-full max-w-[460px] bg-charcoal/80 backdrop-blur-2xl border border-white/5 rounded-2xl p-8 shadow-2xl">
-
+  <div class="relative z-10 w-full max-w-[460px]">
+    
+    <div class="bg-charcoal/80 backdrop-blur-2xl border border-white/5 rounded-2xl p-8 shadow-2xl">
       <header class="text-center mb-6">
         <h1 class="text-2xl font-bold text-white mb-1">Create Your Account</h1>
         <p class="text-slate-400 text-xs">Join us and find your perfect watch</p>
@@ -21,6 +22,13 @@
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
         Sign up with Google
       </a>
+
+      <% if(typeof message !== 'undefined' && message) { %>
+        <div class="mt-4 flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 py-2 px-3 rounded-lg">
+          <i class="fas fa-circle-exclamation text-red-500 text-[10px]"></i>
+          <p class="text-red-500 text-[11px] font-medium tracking-tight"><%= message %></p>
+        </div>
+      <% } %>
 
       <div class="flex items-center my-5">
         <div class="flex-grow h-px bg-white/10"></div>
@@ -60,16 +68,22 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <div>
+          <div class="relative">
             <input id="password" name="password" type="password" placeholder="Password"
-              class="w-full bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-            <p id="passwordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+              class="w-full bg-white/5 rounded-lg px-4 py-3 pr-10 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+            <button type="button" onclick="toggleVisibility('password', this)" class="absolute right-3 top-3.5 text-slate-500 hover:text-white transition-colors">
+              <i class="fas fa-eye text-xs"></i>
+            </button>
+            <p id="passwordError" class="text-red-500 text-[10px] mt-1 leading-tight h-6"></p>
           </div>
 
-          <div>
+          <div class="relative">
             <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm"
-              class="w-full bg-white/5 rounded-lg px-4 py-3 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
-            <p id="confirmPasswordError" class="text-red-500 text-[11px] mt-1 h-3"></p>
+              class="w-full bg-white/5 rounded-lg px-4 py-3 pr-10 text-sm text-white outline-none border border-transparent focus:border-[#3e3efa] transition">
+            <button type="button" onclick="toggleVisibility('confirmPassword', this)" class="absolute right-3 top-3.5 text-slate-500 hover:text-white transition-colors">
+              <i class="fas fa-eye text-xs"></i>
+            </button>
+            <p id="confirmPasswordError" class="text-red-500 text-[10px] mt-1 leading-tight h-6"></p>
           </div>
         </div>
 
@@ -90,109 +104,102 @@
 
     </div>
   </div>
+</div>
 
-  <script>
-    const form = document.getElementById("signupForm");
-
-    // Input elements
-    const inputs = {
-      fullname: document.getElementById("fullname"),
-      email: document.getElementById("email"),
-      phone: document.getElementById("phone"),
-      referral: document.getElementById("referral"),
-      password: document.getElementById("password"),
-      confirmPassword: document.getElementById("confirmPassword")
-    };
-
-    // Error elements
-    const errors = {
-      fullname: document.getElementById("fullnameError"),
-      email: document.getElementById("emailError"),
-      phone: document.getElementById("phoneError"),
-      referral: document.getElementById("referralError"),
-      password: document.getElementById("passwordError"),
-      confirmPassword: document.getElementById("confirmPasswordError")
-    };
-
-    const validateEmail = (email) => {
-      return String(email).toLowerCase().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-    };
-
-    const validatePhone = (phone) => {
-      return /^[6-9]\d{9}$/.test(phone);
-    };
-
-    function checkValidity() {
-      let isValid = true;
-
-      // Fullname Validation
-      if (inputs.fullname.value.trim().length < 3) {
-        errors.fullname.textContent = "Name must be at least 3 characters";
-        isValid = false;
-      } else if (/[^a-zA-Z\s]/.test(inputs.fullname.value)) {
-        errors.fullname.textContent = "Name should only contain letters";
-        isValid = false;
-      } else {
-        errors.fullname.textContent = "";
-      }
-
-      // Email Validation
-      if (!validateEmail(inputs.email.value)) {
-        errors.email.textContent = "Please enter a valid email address";
-        isValid = false;
-      } else {
-        errors.email.textContent = "";
-      }
-
-      // Phone Validation
-      if (!validatePhone(inputs.phone.value)) {
-        errors.phone.textContent = "Enter a valid 10-digit phone number";
-        isValid = false;
-      } else {
-        errors.phone.textContent = "";
-      }
-
-      // Password Validation
-      if (inputs.password.value.length < 6) {
-        errors.password.textContent = "Minimum 6 characters required";
-        isValid = false;
-      } else {
-        errors.password.textContent = "";
-      }
-
-      // Confirm Password Validation
-      if (inputs.confirmPassword.value !== inputs.password.value) {
-        errors.confirmPassword.textContent = "Passwords do not match";
-        isValid = false;
-      } else if (inputs.confirmPassword.value === "") {
-        errors.confirmPassword.textContent = "Please confirm your password";
-        isValid = false;
-      } else {
-        errors.confirmPassword.textContent = "";
-      }
-
-      // Referral (Optional but if entered, check format)
-      if (inputs.referral.value && !/^[A-Z0-9]{3,10}$/i.test(inputs.referral.value)) {
-        errors.referral.textContent = "Invalid referral format";
-        isValid = false;
-      } else {
-        errors.referral.textContent = "";
-      }
-
-      return isValid;
+<script>
+  // Password Visibility Toggle Function
+  function toggleVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === "password") {
+      input.type = "text";
+      icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      input.type = "password";
+      icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
+  }
 
-    // Real-time validation on input
-    Object.values(inputs).forEach(input => {
-      input.addEventListener("input", () => {
-        checkValidity();
-      });
-    });
+  const form = document.getElementById("signupForm");
 
-    // Final validation on submit
-    form.addEventListener("submit", function (e) {
-      if (!checkValidity()) {
-        e.preventDefault();
-      }
-    });
-  </script>
+  const inputs = {
+    fullname: document.getElementById("fullname"),
+    email: document.getElementById("email"),
+    phone: document.getElementById("phone"),
+    referral: document.getElementById("referral"),
+    password: document.getElementById("password"),
+    confirmPassword: document.getElementById("confirmPassword")
+  };
+
+  const errors = {
+    fullname: document.getElementById("fullnameError"),
+    email: document.getElementById("emailError"),
+    phone: document.getElementById("phoneError"),
+    referral: document.getElementById("referralError"),
+    password: document.getElementById("passwordError"),
+    confirmPassword: document.getElementById("confirmPasswordError")
+  };
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
+  
+  const validateStrongPassword = (pass) => {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(pass);
+  };
+
+  function checkValidity() {
+    let isValid = true;
+
+    // Name
+    if (inputs.fullname.value.trim().length < 3) {
+      errors.fullname.textContent = "Name must be at least 3 characters";
+      isValid = false;
+    } else if (/[^a-zA-Z\s]/.test(inputs.fullname.value)) {
+      errors.fullname.textContent = "Letters only";
+      isValid = false;
+    } else { errors.fullname.textContent = ""; }
+
+    // Email
+    if (!validateEmail(inputs.email.value)) {
+      errors.email.textContent = "Invalid email address";
+      isValid = false;
+    } else { errors.email.textContent = ""; }
+
+    // Phone
+    if (!validatePhone(inputs.phone.value)) {
+      errors.phone.textContent = "Valid 10-digit number required";
+      isValid = false;
+    } else { errors.phone.textContent = ""; }
+
+    // Password
+    const passVal = inputs.password.value;
+    if (passVal.length < 6) {
+      errors.password.textContent = "Min 6 characters required";
+      isValid = false;
+    } else if (!validateStrongPassword(passVal)) {
+      errors.password.textContent = "Include Upper, Lower, Num & Special char";
+      isValid = false;
+    } else { errors.password.textContent = ""; }
+
+    // Confirm Password
+    if (inputs.confirmPassword.value === "") {
+      errors.confirmPassword.textContent = "Please confirm password";
+      isValid = false;
+    } else if (inputs.confirmPassword.value !== inputs.password.value) {
+      errors.confirmPassword.textContent = "Passwords do not match";
+      isValid = false;
+    } else { errors.confirmPassword.textContent = ""; }
+
+    return isValid;
+  }
+
+  Object.values(inputs).forEach(input => {
+    input.addEventListener("input", checkValidity);
+  });
+
+  form.addEventListener("submit", function (e) {
+    if (!checkValidity()) {
+      e.preventDefault();
+    }
+  });
+</script>

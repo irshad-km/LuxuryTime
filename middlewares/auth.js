@@ -5,8 +5,11 @@ const requireLogin = async (req, res, next) => {
   try {
     const loggedUser = req.session.user;
 
-    if (!loggedUser) {
-      return res.redirect("/login");
+  if (!loggedUser) {
+      if (req.headers.accept.indexOf('application/json') > -1 || req.xhr) {
+        return res.status(401).json({ success: false, error: "Please login" });
+      }
+      return res.redirect("/login?message=login_required");
     }
 
     const user = await User.findById(loggedUser._id || loggedUser.id);
@@ -18,7 +21,7 @@ const requireLogin = async (req, res, next) => {
 
 
     res.locals.user = user;
-    
+
     next();
   } catch (error) {
     console.log(error);

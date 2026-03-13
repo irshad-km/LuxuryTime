@@ -58,7 +58,6 @@ const logout = (req, res) => {
     res.redirect("/admin");
 };
 
-
 //load dash
 const loadDashboard = async (req, res) => {
     try {
@@ -77,8 +76,6 @@ const loadDashboard = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5)
             .populate('userId', 'fullname');
-
-
 
 
         const statusCounts = await Order.aggregate([
@@ -120,7 +117,7 @@ const loadUsers = async (req, res) => {
 
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = 2;
+        const limit = 4;
         const skip = (page - 1) * limit;
 
 
@@ -241,174 +238,208 @@ const loadaddproduct = async (req, res) => {
     }
 };
 
+
 const loadSalesReport = async (req, res) => {
     try {
-        const totalOrders = await Order.countDocuments({ status: { $ne: 'Cancelled' } });
-
-        const revenueData = await Order.aggregate([
-            { $match: { status: { $ne: 'Cancelled' } } },
-            { $group: { _id: null, total: { $sum: "$totalAmount" } } }
-        ]);
-
-        const totalRevenue = revenueData.length > 0 ? revenueData[0].total : 0;
-        const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders) : 0;
+        const { range, start, end } = req.query;
         
-        const newCustomers = await User.countDocuments({
-            createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) }
-        });
+        let queryCondition = { 
+            orderStatus: { $in: ['delivered', 'pending'] } 
+        };
+        
+        const currentRange = range || 'today';
+        let startDate, endDate;
+        const now = new Date();
 
-        const recentOrdersRaw = await Order.find()
-            .sort({ createdAt: -1 })
-            .limit(10)
-            .populate('userId', 'fullname');
+        if (currentRange === 'today') {
+            startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date();
+            endDate.setHours(23, 59, 59, 999);
+        } else if (currentRange === 'weekly') {
+            const tempDate = new Date();
+            startDate = new Date(tempDate.setDate(tempDate.getDate() - tempDate.getDay()));
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date();
+        } else if (currentRange === 'monthly') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date();
+        } else if (currentRange === 'yearly') {
+            startDate = new Date(now.getFullYear(), 0, 1);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date();
+        } else if (currentRange === 'custom' && start && end) {
+            startDate = new Date(start);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(end);
+            endDate.setHours(23, 59, 59, 999);
+        }
 
+        if (currentRange !== 'all' && startDate && endDate) {
+            queryCondition.createdAt = { $gte: startDate, $lte: endDate };
+        }
 
-            const recentOrders = recentOrdersRaw.map(order => ({
-            id: order._id.toString().slice(-8).toUpperCase(), 
-            date: order.createdAt.toLocaleDateString('en-IN'),
-            customer: order.userId ? order.userId.fullname : 'Guest Customer',
-            status: order.status || order.orderStatus, 
-            amount: order.totalAmount.toLocaleString('en-IN')
-        }));
+        const orders = await Order.find(queryCondition)
+            .populate('userId')
+            .sort({ createdAt: -1 });
+
+            console.log(orders)
+            
+        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+        const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0);
 
         const data = {
             adminName: req.session.admin ? req.session.admin.name : "Admin",
+            filter: currentRange,
+            startDate: start || '',
+            endDate: end || '',
             stats: {
-                totalRevenue: totalRevenue.toLocaleString('en-IN'),
-                totalOrders: totalOrders,
-                avgOrderValue: avgOrderValue.toLocaleString('en-IN'),
-                newCustomers: newCustomers
+                totalRevenue,
+                totalOrders: orders.length,
+                avgOrderValue: orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0,
+                newCustomers: 0,
+                totalDiscount
             },
-            recentOrders: recentOrders
+            recentOrders: orders.map(order => ({
+                id: order._id.toString().slice(-6).toUpperCase(),
+                date: order.createdAt,
+                customer: order.userId ? (order.userId.fullname || order.userId.name || "Customer") : "Guest",
+                status: order.orderStatus,
+                amount: order.totalAmount,
+            }))
         };
 
         res.render('admin/saleReport', { data });
 
     } catch (error) {
-        console.error("Error loading sales report:", error);
-        res.status(500).send("Internal Server Error");
+        console.error("Error:", error);
+        res.status(500).send("Server Error");
     }
 };
 
 
 const downloadSalesReport = async (req, res) => {
     try {
-        const { format } = req.params;
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate, range } = req.query;
 
         let start = new Date();
         let end = new Date();
 
-        if (startDate && endDate) {
+
+        if (range === 'all') {
+            start = new Date(0); 
+            end = new Date();
+        } else if (range === 'today') {
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+        } else if (startDate && endDate) {
             start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
             end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
         } else {
             start.setDate(start.getDate() - 30);
+            start.setHours(0, 0, 0, 0);
         }
 
         const orders = await Order.find({
             createdAt: { $gte: start, $lte: end },
-            status: { $ne: "Cancelled" }
+            orderStatus: { $in: ["delivered", "pending"] } 
         }).populate("userId").sort({ createdAt: -1 });
 
+
+        const doc = new PDFDocument({ margin: 30, size: "A4" });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename=LuxuryTime_Sales_Report.pdf`);
+        doc.pipe(res);
+
+
+        doc.rect(0, 0, 612, 100).fill("#0a0a0a"); 
+        doc.fillColor("#d4af37").fontSize(26).font("Helvetica-Bold").text("LUXURY TIME", 40, 35); 
+        doc.fillColor("#ffffff").fontSize(10).font("Helvetica").text("PREMIUM SALES AUDIT REPORT", 40, 65);
+        doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 450, 65);
+
+
+        const stats = orders.reduce((acc, o) => {
+            acc.total += (o.totalAmount || 0);
+            acc.discount += (o.discount || 0);
+            return acc;
+        }, { total: 0, discount: 0 });
+
+
+        doc.fillColor("#1a1a1a").fontSize(14).font("Helvetica-Bold").text("Executive Summary", 40, 120);
+        doc.rect(40, 140, 530, 60).fill("#f4f4f4").stroke("#d4af37");
         
-        if (format === "excel") {
-            const workbook = new excelJS.Workbook();
-            const worksheet = workbook.addWorksheet("Sales Report");
+        doc.fillColor("#000000").fontSize(10).font("Helvetica-Bold");
+        doc.text(`Total Orders: ${orders.length}`, 60, 155);
+        doc.text(`Total Discounts: INR ${stats.discount.toLocaleString('en-IN')}`, 60, 175);
+        
+        doc.fontSize(12).text(`Total Net Revenue:`, 340, 155);
+        doc.fillColor("#b8860b").fontSize(16).text(`INR ${stats.total.toLocaleString('en-IN')}`, 340, 175);
 
-            worksheet.columns = [
-                { header: "Order ID", key: "id", width: 25 },
-                { header: "Date", key: "date", width: 15 },
-                { header: "Customer", key: "customer", width: 25 },
-                { header: "Status", key: "status", width: 15 },
-                { header: "Amount (INR)", key: "amount", width: 15 }
-            ];
 
-            worksheet.getRow(1).font = { bold: true };
+        const tableTop = 230;
+        doc.rect(40, tableTop, 530, 20).fill("#1a1a1a");
+        doc.fillColor("#ffffff").fontSize(8).font("Helvetica-Bold");
 
-            orders.forEach(o => {
-                
-                const orderAmount = o.totalAmount || o.finalAmount || 0;
-                
-                worksheet.addRow({
-                    id: o._id ? o._id.toString() : "N/A",
-                    date: o.createdAt ? o.createdAt.toLocaleDateString('en-IN') : "N/A",
-                    customer: o.userId ? o.userId.fullname : "Guest Customer",
-                    status: o.status || o.orderStatus || "N/A",
-                    amount: orderAmount
-                });
-            });
 
-            res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            res.setHeader("Content-Disposition", `attachment; filename=LuxuryTime_Report.xlsx`);
-            return await workbook.xlsx.write(res);
-        }
+        doc.text("DATE", 45, tableTop + 6);
+        doc.text("ORDER ID", 100, tableTop + 6);
+        doc.text("CUSTOMER", 190, tableTop + 6);
+        doc.text("STATUS", 330, tableTop + 6);
+        doc.text("DISC.", 420, tableTop + 6);
+        doc.text("FINAL AMOUNT", 480, tableTop + 6, { align: "right" });
+
+        let currentRowY = tableTop + 25;
+        doc.font("Helvetica").fontSize(8);
 
         
-        if (format === "pdf") {
-            const doc = new PDFDocument({ margin: 40, size: "A4" });
-            res.setHeader("Content-Type", "application/pdf");
-            res.setHeader("Content-Disposition", `attachment; filename=LuxuryTime_Report.pdf`);
-            doc.pipe(res);
+        orders.forEach((order, i) => {
 
+            if (currentRowY > 750) {
+                doc.addPage();
+                currentRowY = 50;
+            }
+
+
+            if (i % 2 === 0) doc.rect(40, currentRowY - 5, 530, 20).fill("#fafafa");
             
-            doc.rect(0, 0, 612, 100).fill("#1a1a1a");
-            doc.fillColor("#ffffff").fontSize(24).font("Helvetica-Bold").text("LUXURY TIME", 40, 35);
-            doc.fontSize(10).font("Helvetica").text("OFFICIAL SALES REPORT", 40, 65);
-
+            doc.fillColor("#333333");
             
-            const totalRevenue = orders.reduce((sum, o) => {
-                const val = o.totalAmount || o.finalAmount || 0;
-                return sum + val;
-            }, 0);
+
+            const dateStr = order.createdAt ? order.createdAt.toLocaleDateString('en-IN') : "N/A";
+            doc.text(dateStr, 45, currentRowY);
+
+
+            const idStr = order._id ? order._id.toString().slice(-10).toUpperCase() : "N/A";
+            doc.text(idStr, 100, currentRowY);
+
+
+            const customerName = order.userId ? (order.userId.fullname || order.userId.name || "Guest") : "Guest";
+            doc.text(customerName.substring(0, 22), 190, currentRowY);
+
+
+            const status = (order.orderStatus || "N/A").toUpperCase();
+            doc.text(status, 330, currentRowY);
+
+
+            const discount = order.discount || 0;
+            doc.text(`- ${discount}`, 420, currentRowY);
             
+
+            doc.fillColor("#000000").font("Helvetica-Bold");
+            const total = (order.totalAmount || 0).toLocaleString('en-IN');
+            doc.text(`INR ${total}`, 480, currentRowY, { align: "right" });
             
-            doc.fillColor("#333333").fontSize(12).font("Helvetica-Bold").text("Executive Summary", 40, 120);
-            doc.rect(40, 140, 520, 50).fill("#f9f9f9").stroke("#e0e0e0");
-            doc.fillColor("#000000").fontSize(11).text(`Total Orders: ${orders.length}`, 60, 160);
-            doc.text(`Total Revenue: INR ${totalRevenue.toLocaleString('en-IN')}`, 350, 160);
+            currentRowY += 22;
+        });
 
-            
-            const tableTop = 220;
-            doc.fillColor("#333333").fontSize(10).font("Helvetica-Bold");
-            doc.text("Date", 40, tableTop);
-            doc.text("Order ID", 120, tableTop);
-            doc.text("Customer", 250, tableTop);
-            doc.text("Amount", 500, tableTop, { align: "right" });
-            doc.moveTo(40, tableTop + 15).lineTo(560, tableTop + 15).stroke();
+        doc.end();
 
-            
-            let currentRowY = tableTop + 25;
-            doc.font("Helvetica").fontSize(9);
-
-            orders.forEach((order, i) => {
-                if (currentRowY > 750) {
-                    doc.addPage();
-                    currentRowY = 50;
-                }
-
-                const displayAmount = order.totalAmount || order.finalAmount || 0;
-
-                if (i % 2 === 0) doc.rect(40, currentRowY - 5, 520, 20).fill("#f6f6f6");
-                
-                doc.fillColor("#444444");
-                doc.text(order.createdAt ? order.createdAt.toLocaleDateString('en-IN') : "N/A", 40, currentRowY);
-                doc.text(order._id ? order._id.toString().slice(-10).toUpperCase() : "N/A", 120, currentRowY);
-                doc.text(order.userId ? (order.userId.fullname || "User") : "Guest", 250, currentRowY);
-                
-                doc.fillColor("#000000").font("Helvetica-Bold");
-                doc.text(`INR ${Number(displayAmount).toLocaleString('en-IN')}`, 500, currentRowY, { align: "right" });
-                doc.font("Helvetica");
-
-                currentRowY += 25;
-            });
-
-            doc.end();
-        }
     } catch (error) {
-        console.error("Download Error:", error);
-        res.status(500).send("Error generating report");
+        console.error("PDF Download Error:", error);
+        res.status(500).send("Internal Server Error");
     }
 };
 

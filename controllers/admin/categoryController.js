@@ -52,7 +52,7 @@ const addCategory = async (req, res) => {
         } = req.body;
 
 
-        const exist = await Category.findOne({ name });
+        const exist = await Category.findOne({ name:name.trim()});
         if (exist) {
             return res.status(400).json({ message: "Category already exists" });
         }
@@ -118,7 +118,6 @@ const toggleCategory = async (req, res) => {
 
         category.isListed = !category.isListed;
         await category.save()
-
 
         res.status(200).json({ success: true, isListed: category.isListed });
     } catch (error) {

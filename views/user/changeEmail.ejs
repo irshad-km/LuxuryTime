@@ -48,8 +48,9 @@
             border-radius: 12px;
             width: 100%;
             max-width: 450px;
-            margin-top: 100px;
+            margin-top: 60px;
             text-align: left;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         h1 {
@@ -95,7 +96,7 @@
             color: var(--error-red);
             font-size: 11px;
             margin-top: 6px;
-            height: 12px;
+            height: 14px; /* Fixed height prevents layout shift */
             display: block;
         }
 
@@ -124,6 +125,20 @@
             text-decoration: none;
             font-size: 14px;
         }
+
+        /* Server-side error banner */
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-red);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid var(--error-red);
+            font-size: 14px;
+            width: 100%;
+            max-width: 426px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 
@@ -138,11 +153,14 @@
     </nav>
 
     <div class="container">
+        <% if(locals.error) { %>
+            <div class="alert-error"><%= error %></div>
+        <% } %>
+
         <h1>Change Your Email</h1>
         <p class="description">
-            Enter your new email address below. We'll send a verification code to it.<br>
-            <strong>Current Email:</strong>
-            <%= user.maskedEmail %>
+            Enter your new email address below. We'll send a verification code to it.<br><br>
+            <strong>Current Email:</strong> <%= user.maskedEmail %>
         </p>
 
         <form id="emailChangeForm" action="/change-new-email" method="POST" novalidate>
@@ -162,7 +180,7 @@
         const emailInput = document.getElementById('newEmail');
         const emailError = document.getElementById('emailError');
 
-        // Email validation helper
+        // Email validation regex
         function isValidEmail(email) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
@@ -171,11 +189,11 @@
             let isValid = true;
             const emailValue = emailInput.value.trim();
 
-            // Reset error state
+            // 1. Reset error state before validating
             emailError.textContent = "";
             emailInput.classList.remove('invalid');
 
-            // Validation logic
+            // 2. Validation logic
             if (emailValue === "") {
                 emailError.textContent = "Please enter your new email address";
                 emailInput.classList.add('invalid');
@@ -186,15 +204,18 @@
                 isValid = false;
             }
 
+            // 3. Prevent submission if invalid
             if (!isValid) {
-                e.preventDefault(); // Stop form submission
+                e.preventDefault();
             }
         };
 
-        // Real-time error removal
+        // 4. Real-time error removal as user types
         emailInput.addEventListener('input', function () {
-            this.classList.remove('invalid');
-            emailError.textContent = "";
+            if (this.classList.contains('invalid')) {
+                this.classList.remove('invalid');
+                emailError.textContent = "";
+            }
         });
     </script>
 

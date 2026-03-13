@@ -4,6 +4,8 @@ import Cart from "../../models/cartSchema.js";
 import Wallet from "../../models/walletSchema.js";
 import Address from "../../models/userAddress.js";
 import Product from "../../models/productSchema.js";
+import Coupon from "../../models/couponSchema.js";
+import crypto from "crypto";
 
 import mongoose from "mongoose";
 
@@ -11,6 +13,7 @@ import mongoose from "mongoose";
 const placeOrder = async (req, res) => {
     try {
         const userId = req.session.user?._id;
+
         if (!userId) return res.redirect("/login");
 
         const { addressId, paymentMethod } = req.body;
@@ -25,37 +28,40 @@ const placeOrder = async (req, res) => {
         if (!addressData) {
             return res.redirect("/checkout?error=Invalid address selection");
         }
-for (let item of cart.items) {
 
-    if (!item.product) {
-        return res.redirect("/cart?error=Product removed");
-    }
+        for (let item of cart.items) {
 
-    const product = await Product.findById(item.product._id)
-        .populate("category");
+            if (!item.product) {
+                return res.redirect("/cart?error=Product removed");
+            }
 
-    if (!product || product.isDeleted || !product.isListed) {
-        return res.redirect(`/cart?error=${item.product.name} is unavailable`);
-    }
+            const product = await Product.findById(item.product._id)
+                .populate("category");
 
-    if (!product.category || !product.category.isListed) {
-        return res.redirect(`/cart?error=${item.product.name} category is unavailable`);
-    }
+            if (!product || product.isDeleted || !product.isListed) {
+                return res.redirect(`/cart?error=${item.product.name} is unavailable`);
+            }
 
-    const variant = product.variants?.[item.variantIndex];
+            if (!product.category || !product.category.isListed) {
+                return res.redirect(`/cart?error=${item.product.name} category is unavailable`);
+            }
 
-    if (!variant) {
-        return res.redirect(`/cart?error=${product.name} variant unavailable`);
-    }
+            const variant = product.variants?.[item.variantIndex];
 
-    if (variant.quantity <= 0) {
-        return res.redirect(`/cart?error=${product.name} is out of stock`);
-    }
+            if (!variant) {
+                return res.redirect(`/cart?error=${product.name} variant unavailable`);
+            }
 
-    if (variant.quantity < item.quantity) {
-        return res.redirect(`/cart?error=Only ${variant.quantity} left for ${product.name}`);
-    }
-}
+            if (variant.quantity <= 0) {
+                return res.redirect(`/cart?error=${product.name} is out of stock`);
+            }
+
+            if (variant.quantity < item.quantity) {
+                return res.redirect(`/cart?error=Only ${variant.quantity} left for ${product.name}`);
+            }
+        }
+
+
 
         let subtotal = 0;
         for (let item of cart.items) {
@@ -64,12 +70,18 @@ for (let item of cart.items) {
 
         let discount = 0;
         let couponCode = null;
+        let couponId = null;
+
+        console.log(couponId)
 
         const appliedCoupon = req.session.appliedCoupon || null;
 
         if (appliedCoupon) {
             discount = appliedCoupon.discount || 0;
             couponCode = appliedCoupon.code || null;
+            console.log("coupon code", couponCode);
+            couponId = appliedCoupon._id || null;
+            console.log("couponId", couponId)
         }
 
         const shippingCharge = 0;
@@ -77,27 +89,28 @@ for (let item of cart.items) {
 
         const totalAmount = subtotal - discount + shippingCharge + tax;
 
+
         if (totalAmount < 0) {
             return res.redirect("/checkout?error=Invalid total amount");
         }
 
 
-      
-if (paymentMethod === "Wallet") {
 
-    const wallet = await Wallet.findOne({ userId: userId });
+        if (paymentMethod === "Wallet") {
 
-    if (!wallet) {
-        return res.redirect("/checkout?error=Wallet not found");
-    }
+            const wallet = await Wallet.findOne({ userId: userId });
 
-    if (wallet.balance < totalAmount) {
-        return res.redirect("/checkout?error=Insufficient wallet balance");
-    }
+            if (!wallet) {
+                return res.redirect("/checkout?error=Wallet not found");
+            }
 
-    wallet.balance -= totalAmount;
-    await wallet.save();
-}
+            if (wallet.balance < totalAmount) {
+                return res.redirect("/checkout?error=Insufficient wallet balance");
+            }
+
+            wallet.balance -= totalAmount;
+            await wallet.save();
+        }
 
         const orderItems = cart.items.map(item => {
             const variant = item.product.variants[item.variantIndex];
@@ -115,23 +128,26 @@ if (paymentMethod === "Wallet") {
             };
         });
 
+        const customOrderId = `LW-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+
         let finalPaymentMethod = "COD";
         let finalPaymentStatus = "Pending";
 
         if (paymentMethod === "Card") {
             finalPaymentMethod = "ONLINE";
             finalPaymentStatus = "Paid";
-        } 
+        }
         else if (paymentMethod === "Wallet") {
             finalPaymentMethod = "Wallet";
             finalPaymentStatus = "Paid";
-        } 
+        }
         else {
             finalPaymentMethod = "COD";
             finalPaymentStatus = "Pending";
         }
 
         const newOrder = new Order({
+            orderId: customOrderId,
             userId,
             items: orderItems,
             address: {
@@ -157,6 +173,16 @@ if (paymentMethod === "Wallet") {
         });
 
         const savedOrder = await newOrder.save();
+
+        if (couponCode) {
+            await Coupon.findOneAndUpdate(
+                { code: couponCode },
+                { $addToSet: { usedUsers: userId } }
+            );
+            console.log("Coupon updated using Code:", couponCode);
+        }
+
+
 
         for (let item of cart.items) {
             const stockKey = `variants.${item.variantIndex}.quantity`;
@@ -213,8 +239,8 @@ const loadSuccess = async (req, res) => {
 const PaymentError = async (req, res) => {
     try {
         const errorMessage = req.query.msg || "Transaction failed or was cancelled.";
-        res.render('user/paymenderror', { 
-            message: errorMessage 
+        res.render('user/paymenderror', {
+            message: errorMessage
         });
     } catch (error) {
         res.redirect('/checkout');

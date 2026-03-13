@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 
 const loadOrders = async (req, res) => {
     try {
-
+        
         const page = parseInt(req.query.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
@@ -54,6 +54,8 @@ const loadordersdetails = async (req, res) => {
             .populate("userId")
             .lean();
 
+            console.log(order)
+
 
         if (!order) {
             return res.status(404).render("404", { message: "Order not found" });
@@ -65,6 +67,7 @@ const loadordersdetails = async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 };
+
 
 const updateOrderStatus = async (req, res) => {
     try {
@@ -156,6 +159,7 @@ const approveReturn = async (req, res) => {
         }
 
         wallet.balance += refundAmount;
+
         wallet.transactions.push({
             transactionType: "credit",
             amount: refundAmount,

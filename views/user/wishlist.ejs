@@ -78,23 +78,22 @@
 
         .card:hover { transform: translateY(-5px); border-color: #333; }
 
-        /* --- IMAGE ALIGNMENT FIX --- */
         .card-img-container {
             height: 320px;
             width: 100%;
             background: linear-gradient(180deg, #161616 0%, #0c0c0c 100%);
             display: flex;
-            justify-content: center; /* Centers horizontally */
-            align-items: center;     /* Centers vertically */
+            justify-content: center;
+            align-items: center;
             position: relative;
-            padding: 20px;           /* Prevents image touching edges */
+            padding: 20px;
             box-sizing: border-box;
         }
 
         .card-img-container img {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain;     /* Keeps aspect ratio perfect */
+            object-fit: contain;
             filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
             display: block;
         }
@@ -119,12 +118,11 @@
 
         .remove-btn:hover { color: #fff; background: #ef4444; }
 
-        /* --- INFO & BUTTON ALIGNMENT --- */
         .card-info { 
             padding: 20px; 
             display: flex;
             flex-direction: column;
-            flex-grow: 1; /* Pushes bottom content down */
+            flex-grow: 1;
         }
         
         .card-info h3 { 
@@ -132,7 +130,7 @@
             font-size: 1.05rem; 
             font-weight: 600; 
             color: #fff;
-            min-height: 2.6em; /* Keeps titles aligned even if short */
+            min-height: 2.6em;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -155,7 +153,7 @@
         .price { 
             font-size: 1.15rem; 
             font-weight: 600; 
-            margin-top: auto; /* This is the magic for button alignment */
+            margin-top: auto;
             margin-bottom: 20px; 
             color: #fff; 
         }
@@ -206,7 +204,6 @@
                 <h1>My Wishlist</h1>
                 <p>Your saved premium timepieces</p>
             </div>
-         
         </div>
 
         <div class="wishlist-grid" id="wishlistGrid">
@@ -290,33 +287,15 @@
                     const data = await response.json();
                     if (data.success) {
                         const card = document.getElementById(`card-${variantId}`);
-                        card.style.opacity = '0';
-                        setTimeout(() => {
-                            card.remove();
-                            updateHeaderWishlistUI(data.wishlistCount);
-                            if (document.querySelectorAll('.card').length === 0) location.reload();
-                        }, 300);
+                        if(card) {
+                            card.style.opacity = '0';
+                            setTimeout(() => {
+                                card.remove();
+                                updateHeaderWishlistUI(data.wishlistCount);
+                                if (document.querySelectorAll('.card').length === 0) location.reload();
+                            }, 300);
+                        }
                     }
-                } catch (error) { console.error(error); }
-            }
-        }
-
-        // CLEAR ALL
-        async function clearWishlist() {
-            const result = await Swal.fire({
-                title: 'Clear All?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                background: '#111',
-                color: '#fff'
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch('/wishlist/clear', { method: 'DELETE' });
-                    const data = await response.json();
-                    if (data.success) location.reload();
                 } catch (error) { console.error(error); }
             }
         }
@@ -329,22 +308,52 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ productId, variantId })
                 });
+                
                 const data = await response.json();
+                
                 if (data.success) {
-                    Swal.fire({ icon: 'success', title: 'Added to Cart', background: '#111', color: '#fff', timer: 1500, showConfirmButton: false });
+                    await Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Added to Cart', 
+                        background: '#111', 
+                        color: '#fff', 
+                        timer: 1500, 
+                        showConfirmButton: false 
+                    });
+                    
                     const card = document.getElementById(`card-${variantId}`);
                     if(card) {
                         card.style.opacity = '0';
                         setTimeout(() => {
                             card.remove();
-                            updateHeaderWishlistUI(data.wishlistCount);
+                            // കൗണ്ട് ഹെഡറിൽ അപ്ഡേറ്റ് ചെയ്യാൻ
+                            if(typeof data.wishlistCount !== 'undefined') {
+                                updateHeaderWishlistUI(data.wishlistCount);
+                            }
                             if (document.querySelectorAll('.card').length === 0) location.reload();
                         }, 300);
                     }
                 } else {
-                    Swal.fire('Error', data.message, 'error');
+                    // Backend-ൽ നിന്നുള്ള (Out of Stock, Listed:false, Deleted:true) മെസ്സേജുകൾ ഇവിടെ കാണിക്കും
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unavailable',
+                        text: data.message,
+                        background: '#111',
+                        color: '#fff',
+                        confirmButtonColor: '#2563eb'
+                    });
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                console.error(error); 
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again.',
+                    background: '#111',
+                    color: '#fff'
+                });
+            }
         }
     </script>
 </body>

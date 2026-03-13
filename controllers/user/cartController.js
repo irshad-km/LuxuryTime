@@ -19,7 +19,7 @@ const loadcart = async (req, res) => {
             return res.render("user/cart", {
                 cart: null,
                 totalQty: 0,
-                removedMessages: []
+                removedMessages: [],
             });
         }
 
@@ -60,10 +60,10 @@ const loadcart = async (req, res) => {
 
 
             const reglPrice = variant.salePrice || 0;
-            const variantOffer = variant.offer || 0; 
+            const variantOffer = variant.offer || 0;
             const categoryOffer = product.category?.offer || 0;
             const bestOffer = Math.max(variantOffer, categoryOffer);
-            
+
             const latestPrice = Math.floor(reglPrice - (reglPrice * (bestOffer / 100)));
 
             if (!latestPrice || isNaN(latestPrice)) continue;
@@ -83,7 +83,7 @@ const loadcart = async (req, res) => {
         cart.items = validItems;
         cart.subtotal = subtotal;
         cart.grandTotal = subtotal;
-        
+
         cart.markModified('items');
         await cart.save();
 
@@ -97,14 +97,14 @@ const loadcart = async (req, res) => {
         if (updatedCart && updatedCart.items.length > 0) {
             updatedCart.items = updatedCart.items.map(item => {
                 const variant = item.product?.variants?.[item.variantIndex];
-                
+
                 const vOffer = variant?.offer || 0;
                 const cOffer = item.product?.category?.offer || 0;
                 const bOffer = Math.max(vOffer, cOffer);
                 const finalPrice = Math.floor(variant.salePrice - (variant.salePrice * (bOffer / 100)));
 
-                return { 
-                    ...item, 
+                return {
+                    ...item,
                     selectedVariant: variant,
                     calculatedPrice: finalPrice,
                     offerPercentage: bOffer
@@ -140,9 +140,14 @@ const addToCart = async (req, res) => {
         const { variantIndex } = req.body;
 
 
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
+        const product = await Product.findById(productId).populate('category');
+
+        if (!product || product.isDeleted || !product.isListed) {
+            return res.status(404).json({ success: false, message: "Product is currently unavailable." });
+        }
+
+        if (!product.category || !product.category.isListed) {
+            return res.status(400).json({ success: false, message: "Product category is hidden." });
         }
 
         const variant = product.variants?.[variantIndex];
@@ -161,7 +166,6 @@ const addToCart = async (req, res) => {
             item => item.product.toString() === productId &&
                 item.variantIndex === Number(variantIndex)
         );
-
 
         const currentQtyInCart = itemIndex > -1 ? cart.items[itemIndex].quantity : 0;
         const newTotalQty = currentQtyInCart + 1;
@@ -216,6 +220,7 @@ const removeFromCart = async (req, res) => {
         if (!userId) return res.redirect("/login");
 
         const productId = req.params.productId;
+        
         const cart = await Cart.findOne({ user: userId });
 
         if (!cart) return res.redirect("/cart");
@@ -309,15 +314,20 @@ const moveToCartFromWishlist = async (req, res) => {
         const { productId, variantId } = req.body;
 
         const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
+
+        if (!product || product.isDeleted) {
+            return res.status(404).json({ success: false, message: "Product no longer available" });
+        }
+
+        if (product.isListed === false) {
+            return res.status(400).json({ success: false, message: "This product is currently unavailable" });
         }
 
         let price = 0;
         let stockAvailable = 0;
         let vIndex = -1;
 
-        
+
         if (variantId && variantId !== "" && variantId !== productId.toString()) {
             vIndex = product.variants.findIndex(v => v._id.toString() === variantId);
         }
@@ -328,7 +338,7 @@ const moveToCartFromWishlist = async (req, res) => {
 
         if (vIndex !== -1 && product.variants[vIndex]) {
             const selectedVariant = product.variants[vIndex];
-            
+
             price = Number(selectedVariant.salePrice) || Number(selectedVariant.regularPrice) || 0;
             stockAvailable = Number(selectedVariant.quantity) || 0;
         } else {
@@ -360,7 +370,7 @@ const moveToCartFromWishlist = async (req, res) => {
         } else {
             cart.items.push({
                 product: productId,
-                variantIndex: vIndex, 
+                variantIndex: vIndex,
                 price: price,
                 quantity: 1,
                 totalPrice: price,
@@ -372,8 +382,15 @@ const moveToCartFromWishlist = async (req, res) => {
         await cart.save();
 
         await Wishlist.findOneAndUpdate(
-            { userId: userId }, 
-            { $pull: { products: { productId: productId } } }
+            { userId: userId },
+            {
+                $pull: {
+                    products: {
+                        productId: productId,
+                        variantId: variantId
+                    }
+                }
+            }
         );
 
         return res.json({

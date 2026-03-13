@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-6">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set New Password | Luxury Time</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -108,6 +108,7 @@
             margin-top: 5px;
             height: 12px;
             display: block;
+            line-height: 1.2;
         }
 
         .toggle-password {
@@ -214,28 +215,33 @@
             }
         }
 
-        // Improved Input Validation
         const resetForm = document.getElementById('resetForm');
         const newPassword = document.getElementById('newPassword');
         const confirmPassword = document.getElementById('confirmPassword');
-
         const passError = document.getElementById('passError');
         const confirmError = document.getElementById('confirmError');
 
-        resetForm.onsubmit = function (e) {
+        // Strong Password Regex: Min 6, 1 Upper, 1 Lower, 1 Num, 1 Special
+        const validateStrongPassword = (pass) => {
+            return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(pass);
+        };
+
+        function validateForm() {
             let isValid = true;
 
-            // Reset errors
-            passError.textContent = "";
-            confirmError.textContent = "";
-            newPassword.classList.remove('invalid');
-            confirmPassword.classList.remove('invalid');
-
             // Validate New Password
-            if (newPassword.value.trim().length < 6) {
-                passError.textContent = "Password must be at least 6 characters";
+            const passVal = newPassword.value.trim();
+            if (passVal.length < 6) {
+                passError.textContent = "Min 6 characters required";
                 newPassword.classList.add('invalid');
                 isValid = false;
+            } else if (!validateStrongPassword(passVal)) {
+                passError.textContent = "Use Upper, Lower, Num & Symbol";
+                newPassword.classList.add('invalid');
+                isValid = false;
+            } else {
+                passError.textContent = "";
+                newPassword.classList.remove('invalid');
             }
 
             // Validate Confirm Password
@@ -247,20 +253,23 @@
                 confirmError.textContent = "Passwords do not match!";
                 confirmPassword.classList.add('invalid');
                 isValid = false;
+            } else {
+                confirmError.textContent = "";
+                confirmPassword.classList.remove('invalid');
             }
 
-            if (!isValid) {
+            return isValid;
+        }
+
+        resetForm.onsubmit = function (e) {
+            if (!validateForm()) {
                 e.preventDefault();
             }
         };
 
-        // Clear error as user types
+        // Real-time validation
         [newPassword, confirmPassword].forEach(input => {
-            input.addEventListener('input', function () {
-                this.classList.remove('invalid');
-                if (this.id === 'newPassword') passError.textContent = "";
-                else confirmError.textContent = "";
-            });
+            input.addEventListener('input', validateForm);
         });
     </script>
 </body>

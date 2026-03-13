@@ -15,7 +15,7 @@ const loadCoupon = async (req, res) => {
             query = {
                 $or: [
                     { name: { $regex: new RegExp(search, "i") } },
-                    { code: { $regex: new RegExp(search, "i") } }
+                    { code: { $regex: new RegExp(search, "i") } },
                 ]
             };
         }
@@ -40,6 +40,7 @@ const loadCoupon = async (req, res) => {
         res.redirect("/admin/pageerror");
     }
 };
+
 
 const addCoupon = async (req, res) => {
     try {

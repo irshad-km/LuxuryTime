@@ -181,7 +181,7 @@ const updateProduct = async (req, res) => {
             }
 
             const regularPrice = Number(variant.regularPrice);
-            const salePrice = variant.salePrice ? Number(variant.salePrice) : null; 
+            const salePrice = variant.salePrice ? Number(variant.salePrice) : null;
             const offer = Number(variant.offer)
 
             if (salePrice !== null && salePrice >= regularPrice) {

@@ -230,7 +230,6 @@
                 <div class="flex justify-between items-end mb-10">
                     <div>
                         <h1 class="text-4xl font-bold mb-2">Order Tracking</h1>
-                        <p class="text-gray-500 font-mono text-sm tracking-tighter">ORDER REF: #<%= order._id %></p>
                     </div>
                     <div class="text-end">
                         <span class="px-4 py-2 rounded-full bg-purple-500/10 text-[var(--accent-purple)] text-xs font-bold border border-purple-500/20">
@@ -333,125 +332,158 @@
         </main>
     </div>
 
-    <script>
-        // --- NEW: Cancel Product Function ---
-        async function confirmCancelProduct(orderId, itemId, itemName) {
-            const result = await Swal.fire({
-                title: 'Cancel Item?',
-                text: `Are you sure you want to cancel "${itemName}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                background: '#111',
-                color: '#fff',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#333',
-                confirmButtonText: 'Yes, Cancel it!'
-            });
+   <script>
+    // --- Cancel Product Function ---
+    async function confirmCancelProduct(orderId, itemId, itemName) {
+        const result = await Swal.fire({
+            title: 'Cancel Item?',
+            text: `Are you sure you want to cancel "${itemName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#111',
+            color: '#fff',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#333',
+            confirmButtonText: 'Yes, Cancel it!'
+        });
 
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`/orders/${orderId}/cancel-item`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ itemId: itemId })
-                    });
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/orders/${orderId}/cancel-item`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ itemId: itemId })
+                });
 
-                    const res = await response.json();
-                    if (res.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Cancelled',
-                            text: 'Product has been cancelled successfully.',
-                            background: '#111',
-                            color: '#fff'
-                        }).then(() => location.reload());
-                    } else {
-                        throw new Error(res.message);
-                    }
-                } catch (err) {
-                    Swal.fire({ icon: 'error', title: 'Error', text: err.message, background: '#111', color: '#fff' });
+                const res = await response.json();
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cancelled',
+                        text: 'Product has been cancelled successfully.',
+                        background: '#111',
+                        color: '#fff'
+                    }).then(() => location.reload());
+                } else {
+                    throw new Error(res.message);
                 }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message, background: '#111', color: '#fff' });
             }
         }
+    }
 
-        // --- Invoice Download ---
-        function confirmInvoiceDownload(orderId) {
-            Swal.fire({
-                title: 'Download Invoice?',
-                text: "Do you want to download the invoice for this order?",
-                icon: 'question',
-                showCancelButton: true,
-                background: '#111',
-                color: '#fff',
-                confirmButtonColor: '#5b42f3',
-                cancelButtonColor: '#333',
-                confirmButtonText: 'Yes, Download',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = `/orders/${orderId}/invoice`;
+    // --- Invoice Download ---
+    function confirmInvoiceDownload(orderId) {
+        Swal.fire({
+            title: 'Download Invoice?',
+            text: "Do you want to download the invoice for this order?",
+            icon: 'question',
+            showCancelButton: true,
+            background: '#111',
+            color: '#fff',
+            confirmButtonColor: '#5b42f3',
+            cancelButtonColor: '#333',
+            confirmButtonText: 'Yes, Download',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/orders/${orderId}/invoice`;
+            }
+        });
+    }
+
+    // --- Single Return Logic (20 Letters Validation) ---
+    async function openReturnForm(name, orderId, itemId) {
+        const { value: reason } = await Swal.fire({
+            title: 'Return Product',
+            text: `Product: ${name}`,
+            input: 'textarea',
+            inputPlaceholder: 'Please explain the reason (Minimum 20 letters)...',
+            showCancelButton: true,
+            background: '#111',
+            color: '#fff',
+            confirmButtonColor: '#5b42f3',
+            cancelButtonColor: '#333',
+            confirmButtonText: 'SUBMIT REQUEST',
+            inputValidator: (value) => {
+                if (!value || value.trim().length < 20) {
+                    return `Please enter at least 20 letters explaining your reason!`;
                 }
-            });
-        }
+            }
+        });
 
-        // --- Return Logic ---
-        function openReturnForm(name, orderId, itemId) {
-            document.getElementById('returnItemDisplay').innerText = `Product: ${name}`;
-            document.getElementById('modalOrderId').value = orderId;
-            document.getElementById('modalItemId').value = itemId;
-            document.getElementById('modalReason').value = '';
-            document.getElementById('returnFormModal').classList.remove('hidden');
-        }
-
-        function closeReturnModal() {
-            document.getElementById('returnFormModal').classList.add('hidden');
-        }
-
-        document.getElementById('actualReturnForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                orderId: document.getElementById('modalOrderId').value,
-                itemId: document.getElementById('modalItemId').value,
-                reason: document.getElementById('modalReason').value
-            };
-
+        if (reason) {
             try {
                 const response = await fetch("/orders/return-item", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        itemId: itemId,
+                        reason: reason.trim()
+                    })
                 });
                 const res = await response.json();
-                if (res.success) location.reload();
-            } catch (err) { console.error(err); }
-        });
-
-        async function handleReturnAll() {
-            const { value: reason } = await Swal.fire({
-                title: 'Return All Items',
-                text: 'Please provide a reason for the return.',
-                input: 'textarea',
-                showCancelButton: true,
-                background: '#111', color: '#fff', confirmButtonColor: '#5b42f3',
-                inputValidator: (v) => !v && 'Reason is required!'
-            });
-
-            if (reason) {
-                try {
-                    const response = await fetch("/orders/return-all", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ orderId: '<%= order._id %>', reason })
-                    });
-                    const res = await response.json();
-                    if (res.success) {
-                        Swal.fire({ icon: 'success', title: 'Requested', background: '#111', color: '#fff' })
-                        .then(() => location.reload());
-                    }
-                } catch (err) { console.error(err); }
+                if (res.success) {
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Submitted', 
+                        text: 'Return request has been sent.', 
+                        background: '#111', 
+                        color: '#fff' 
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: res.message, background: '#111', color: '#fff' });
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Action failed', background: '#111', color: '#fff' });
             }
         }
+    }
 
-        function handleLogout() { window.location.href = '/logout'; }
-    </script>
+    async function handleReturnAll() {
+        const { value: reason } = await Swal.fire({
+            title: 'Return All Items',
+            text: 'Please provide a reason (Minimum 20 letters).',
+            input: 'textarea',
+            inputPlaceholder: 'Explain why you are returning all items...',
+            showCancelButton: true,
+            background: '#111', 
+            color: '#fff', 
+            confirmButtonColor: '#5b42f3',
+            cancelButtonColor: '#333',
+            confirmButtonText: 'SUBMIT REQUEST',
+            inputValidator: (value) => {
+                if (!value || value.trim().length < 20) {
+                    return 'Please enter at least 20 letters explaining your reason!';
+                }
+            }
+        });
+
+        if (reason) {
+            try {
+                const response = await fetch("/orders/return-all", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ orderId: '<%= order._id %>', reason: reason.trim() })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Requested', 
+                        text: 'Return request for all items sent.', 
+                        background: '#111', 
+                        color: '#fff' 
+                    }).then(() => location.reload());
+                }
+            } catch (err) { 
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Action failed', background: '#111', color: '#fff' });
+            }
+        }
+    }
+
+    function handleLogout() { window.location.href = '/logout'; }
+</script>
 </body>
 </html>
