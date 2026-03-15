@@ -33,7 +33,6 @@ const loadHomepage = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(8);
 
-      
     const filteredProducts = products.filter(
       p => p.category !== null
     );
@@ -251,24 +250,27 @@ const sendForgotOtp = async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user) return res.render("user/forgotPass", { error: "Email not registered" });
+    if (!user) {
+      return res.render("user/forgotPass", { error: "Email not registered" });
+    }
 
     const otp = generateOtp();
     const emailSent = await sendVerificationEmail(email, otp);
 
-    if (!emailSent) return res.render("user/forgotPass", { error: "OTP sending failed" });
+    if (!emailSent) {
+      return res.render("user/forgotPass", { error: "OTP sending failed" });
+    }
 
     req.session.forgotOtp = otp;
     req.session.forgotEmail = email;
     req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
     req.session.otpType = "forgot";
+    req.session.lastOtpSent = Date.now();
 
-    res.redirect("/verify-otp",
-      error
-    )
+    return res.redirect("/verify-otp");
   } catch (error) {
-    console.log(error);
-    res.redirect("/forgot-password");
+    console.log("sendForgotOtp error:", error);
+    return res.redirect("/forgot-password");
   }
 };
 
@@ -297,8 +299,11 @@ const resendotp = async (req, res) => {
     const emailSent = await sendVerificationEmail(emailToSend, otp);
     if (!emailSent) return res.json({ success: false, message: "OTP sending failed" });
 
-    req.session.userOtp = otp;
-    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
+if (otpType === "forgot") {
+  req.session.forgotOtp = otp;
+} else {
+  req.session.userOtp = otp;
+}    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
     req.session.lastOtpSent = Date.now();
 
     return res.json({ success: true, message: "OTP resent successfully" });

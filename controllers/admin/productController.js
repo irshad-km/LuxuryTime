@@ -33,7 +33,7 @@ const addProduct = async (req, res) => {
                 const regularPrice = Number(v.regularPrice);
                 const salePrice = v.salePrice ? Number(v.salePrice) : null;
                 const quantity = Number(v.quantity);
-                const offer = Number(v.offer)
+                const offer = !isNaN(Number(v.offer)) ? Number(v.offer) : 0;
 
                 if (salePrice !== null && salePrice >= regularPrice) {
                     return res.render("admin/addproduct", {

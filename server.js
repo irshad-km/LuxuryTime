@@ -12,7 +12,7 @@ import { checkUserBlocked } from "./middlewares/adminBLOCK.js";
 import connectDB from "./config/db.js";
 import userRouter from "./routes/userRouter.js";
 import adminRouter from "./routes/adminRouter.js";
-import adminSession from "./middlewares/adminsession.js";
+import createAdminSession from "./middlewares/adminsession.js";
 import {cartMiddleware}  from "./middlewares/cartCount.js";
 import {wishlistProvider}  from "./middlewares/wishlistProvider.js";
 
@@ -38,7 +38,7 @@ app.use("/uploads", express.static("uploads"));
 app.use(
   session({
     name: "LuxuryTime.user.sid",
-    secret: process.env.SESSION_SECRET,
+    secret: "myScret",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -52,11 +52,10 @@ app.use(
   })
 );
 
-
 app.use(wishlistProvider);
 app.use(cartMiddleware)
 
-app.use("/admin", adminSession);
+app.use("/admin", createAdminSession());
 
 app.use(passport.initialize());
 app.use(noCache);
