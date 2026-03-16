@@ -3,7 +3,7 @@ import globals from "globals";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-  // ✅ Ignore files/folders here
+
   {
     ignores: [
       "node_modules/**",
@@ -13,7 +13,7 @@ export default defineConfig([
     ]
   },
 
-  // Recommended base rules
+
   js.configs.recommended,
 
   {

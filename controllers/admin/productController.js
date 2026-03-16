@@ -1,8 +1,8 @@
 import Product from "../../models/productSchema.js";
 import Category from "../../models/categorySchema.js"
+import cloudinary from "../../config/cloudinary.js";
+import fs from "fs";
 
-
-//add product
 const addProduct = async (req, res) => {
     try {
         const { name, description, category } = req.body;
@@ -42,23 +42,29 @@ const addProduct = async (req, res) => {
                     });
                 }
 
-                let images = [];
+                let imageUrls = [];
 
                 if (req.files && req.files.length > 0) {
-                    images = req.files
-                        .filter(file => file.fieldname === `variants[${index}][images]`)
-                        .map(file => "/uploads/" + file.filename);
+                    const variantFiles = req.files.filter(file => file.fieldname === `variants[${index}][images]`);
+                    
+                    if (variantFiles.length < 3) {
+                        return res.render("admin/addproduct", {
+                            categories,
+                            error: "Maximum 3 images allowed per variant"
+                        });
+                    }
+
+                    for (const file of variantFiles) {
+                        const result = await cloudinary.uploader.upload(file.path, {
+                            folder: "products",
+                        });
+                        imageUrls.push(result.secure_url);
+                        
+                        if (fs.existsSync(file.path)) {
+                            fs.unlinkSync(file.path);
+                        }
+                    }
                 }
-
-
-
-                if (images.length < 3) {
-                    return res.render("admin/addproduct", {
-                        categories,
-                        error: "Maximum 3 images allowed per variant"
-                    });
-                }
-
 
                 variants.push({
                     color: v.color,
@@ -66,9 +72,9 @@ const addProduct = async (req, res) => {
                     salePrice,
                     quantity,
                     offer,
-                    images,
+                    images: imageUrls,
                 });
-            };
+            }
         }
 
         const newProduct = new Product({
@@ -79,7 +85,6 @@ const addProduct = async (req, res) => {
         });
 
         await newProduct.save();
-
         res.redirect("/admin/products");
 
     } catch (error) {
@@ -119,17 +124,16 @@ const loadEditproduct = async (req, res) => {
 //update product
 const updateProduct = async (req, res) => {
     try {
-
         const productId = req.params.id;
         const { name, description, category } = req.body;
 
         const product = await Product.findById(productId);
         const categories = await Category.find({ isListed: true, isDeleted: false });
 
-
         if (!product) {
             return res.render("admin/editproduct");
         }
+        
         const existingProduct = await Product.findOne({
             _id: { $ne: productId },
             category: category,
@@ -154,7 +158,6 @@ const updateProduct = async (req, res) => {
             const variant = variantArray[index];
 
             let existingImages = [];
-
             if (variant.existingImages) {
                 existingImages = Array.isArray(variant.existingImages)
                     ? variant.existingImages
@@ -163,14 +166,23 @@ const updateProduct = async (req, res) => {
                 existingImages = existingImages.filter(img => img && img.trim() !== "");
             }
 
-            let newImages = [];
+            let newCloudinaryImages = [];
             if (req.files && req.files.length > 0) {
-                newImages = req.files
-                    .filter(file => file.fieldname === `variants[${index}][images]`)
-                    .map(file => "/uploads/" + file.filename);
+                const variantFiles = req.files.filter(file => file.fieldname === `variants[${index}][images]`);
+                
+                for (const file of variantFiles) {
+                    const result = await cloudinary.uploader.upload(file.path, {
+                        folder: "products",
+                    });
+                    newCloudinaryImages.push(result.secure_url);
+                    
+                    if (fs.existsSync(file.path)) {
+                        fs.unlinkSync(file.path);
+                    }
+                }
             }
 
-            const totalImages = [...existingImages, ...newImages];
+            const totalImages = [...existingImages, ...newCloudinaryImages];
 
             if (totalImages.length < 3) {
                 return res.render("admin/editproduct", {
@@ -182,14 +194,14 @@ const updateProduct = async (req, res) => {
 
             const regularPrice = Number(variant.regularPrice);
             const salePrice = variant.salePrice ? Number(variant.salePrice) : null;
-            const offer = Number(variant.offer)
+            const offer = Number(variant.offer);
 
             if (salePrice !== null && salePrice >= regularPrice) {
                 return res.render("admin/editproduct", {
                     product,
                     categories,
                     error: "Salse prise is greaterdhan regularPrice",
-                })
+                });
             }
 
             updatedVariants.push({
@@ -200,7 +212,7 @@ const updateProduct = async (req, res) => {
                 quantity: Number(variant.quantity),
                 images: totalImages
             });
-        };
+        }
 
         product.name = name;
         product.description = description;
@@ -208,7 +220,6 @@ const updateProduct = async (req, res) => {
         product.variants = updatedVariants;
 
         await product.save();
-
         res.redirect("/admin/products");
 
     } catch (error) {
@@ -222,7 +233,7 @@ const updateProduct = async (req, res) => {
             error: "Something went wrong. Please try again."
         });
     }
-}
+};
 
 
 
