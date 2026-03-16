@@ -95,21 +95,23 @@
                     <% orders.forEach(order=> { %>
                         <tr class="hover:bg-white/5 transition-colors">
 
-                           <td class="px-6 py-5 text-white">
-    <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-[#1a1c23] border border-gray-700 overflow-hidden flex items-center justify-center">
-            <% if (order.userProfileImage) { %>
-                <img src="<%= order.userProfileImage %>" alt="User" class="w-full h-full object-cover">
-            <% } else { %>
-                <i class="fa-solid fa-user text-gray-600 text-xs"></i>
-            <% } %>
-        </div>
+                            <td class="px-6 py-5 text-white">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-9 h-9 rounded-full bg-[#1a1c23] border border-gray-700 overflow-hidden flex items-center justify-center">
+                                        <% if (order.userProfileImage) { %>
+                                            <img src="/uploads/re-image/<%= order.userProfileImage %>" alt="User"
+                                                class="w-full h-full object-cover">
+                                            <% } else { %>
+                                                <i class="fa-solid fa-user text-gray-600 text-xs"></i>
+                                                <% } %>
+                                    </div>
 
-        <span class="font-medium">
-            <%=order.address.fullname%>
-        </span>
-    </div>
-</td>
+                                    <span class="font-medium">
+                                      <%=order.address.fullname%>
+                                    </span>
+                                </div>
+                            </td>
 
                             <td class="px-6 py-5 text-gray-400">
                                 <%= new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit' ,

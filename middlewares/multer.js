@@ -11,6 +11,7 @@ const storage = multer.diskStorage({
     }
 });
 
+
 const fileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp/;
     const ext = path.extname(file.originalname).toLowerCase();
@@ -22,6 +23,7 @@ const fileFilter = (req, file, cb) => {
         cb(new Error("Only images are allowed"));
     }
 };
+
 
 const upload = multer({
     storage,

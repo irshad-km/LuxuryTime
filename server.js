@@ -13,14 +13,16 @@ import connectDB from "./config/db.js";
 import userRouter from "./routes/userRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import createAdminSession from "./middlewares/adminsession.js";
-import { cartMiddleware } from "./middlewares/cartCount.js";
-import { wishlistProvider } from "./middlewares/wishlistProvider.js";
+import {cartMiddleware}  from "./middlewares/cartCount.js";
+import {wishlistProvider}  from "./middlewares/wishlistProvider.js";
 
 dotenv.config();
 
 const app = express();
 
+
 connectDB();
+
 
 app.use(morgan("dev"));
 
@@ -29,6 +31,9 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
+
+
 
 app.use(
   session({
@@ -48,12 +53,13 @@ app.use(
 );
 
 app.use(wishlistProvider);
-app.use(cartMiddleware);
+app.use(cartMiddleware)
 
 app.use("/admin", createAdminSession());
 
 app.use(passport.initialize());
 app.use(noCache);
+
 
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
@@ -61,17 +67,22 @@ app.use((req, res, next) => {
   next();
 });
 
+//  View engin
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
 app.use(express.static(path.join(__dirname, "public")));
 
+//Routes
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
+app.use(cartMiddleware)
+
 
 app.use((req, res) => {
   res.status(404).render("user/404");
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

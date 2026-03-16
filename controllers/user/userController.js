@@ -3,12 +3,9 @@ import Product from "../../models/productSchema.js";
 import Category from "../../models/categorySchema.js";
 import Address from "../../models/userAddress.js";
 import Wallet from "../../models/walletSchema.js";
-import cloudinary from "../../config/cloudinary.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
-import fs from "fs";
 import dotenv from "dotenv";
-
 
 dotenv.config();
 
@@ -572,15 +569,7 @@ const updateProfile = async (req, res) => {
     }
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "user_profiles",
-      });
-
-      updateData.avatar = result.secure_url;
-
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
+      updateData.avatar = `/uploads/${req.file.filename}`;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -593,9 +582,6 @@ const updateProfile = async (req, res) => {
 
     return res.redirect("/profile");
   } catch (error) {
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
     console.log(error);
     res.redirect("/edit-profile");
   }
