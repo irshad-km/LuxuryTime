@@ -13,33 +13,22 @@ const razorpay = new Razorpay({
 });
 
 const createOrder = async (req, res) => {
-  try {
-    const { amount } = req.body;
+    try {
+        const { amount } = req.body; 
+        
+        const options = {
+            amount: parseInt(amount) * 100, 
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+        };
 
-    console.log("Received amount from frontend:", amount);
-
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      return res.status(400).json({ error: "Invalid amount" });
+        const order = await razorpay.orders.create(options);
+        
+        res.status(200).json(order); 
+    } catch (error) {
+        console.error("Razorpay Order Error:", error);
+        res.status(500).json({ error: "Order creation failed" });
     }
-
-    const options = {
-      amount: Number(amount) * 100,
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`
-    };
-
-    console.log("Razorpay order options:", options);
-
-    const order = await razorpay.orders.create(options);
-
-    console.log("Created Razorpay order:", order);
-
-    return res.status(200).json(order);
-
-  } catch (error) {
-    console.error("Razorpay Order Error:", error);
-    return res.status(500).json({ error: "Order creation failed" });
-  }
 };
 
 const loadwallet = async (req, res) => {
@@ -66,8 +55,6 @@ const loadwallet = async (req, res) => {
 const verifyPaymentadd = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-        console.log("halo verificatoin start")
         
         if (!req.session.user || !req.session.user._id) {
             return res.status(401).json({ success: false, message: "User not found" });
@@ -93,9 +80,9 @@ const verifyPaymentadd = async (req, res) => {
         console.log(paidAmount);
 
         const result = await Wallet.findOneAndUpdate(
-            { userId: req.session.user._id },
+            { userId: userId },
             {
-                $inc: { balance: Number(paidAmount) },
+                $inc: { balance: paidAmount },
                 $push: {
                     transactions: {
                         amount: paidAmount,
