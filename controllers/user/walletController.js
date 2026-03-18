@@ -15,6 +15,8 @@ const razorpay = new Razorpay({
 const createOrder = async (req, res) => {
     try {
         const { amount } = req.body; 
+
+        console.log("this is amount",amount)
         
         const options = {
             amount: parseInt(amount) * 100, 
@@ -55,6 +57,8 @@ const loadwallet = async (req, res) => {
 const verifyPaymentadd = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+        console.log("halo verificatoin start")
         
         if (!req.session.user || !req.session.user._id) {
             return res.status(401).json({ success: false, message: "User not found" });
@@ -80,9 +84,9 @@ const verifyPaymentadd = async (req, res) => {
         console.log(paidAmount);
 
         const result = await Wallet.findOneAndUpdate(
-            { userId: userId },
+            { userId: req.session.user._id },
             {
-                $inc: { balance: paidAmount },
+                $inc: { balance: Number(paidAmount) },
                 $push: {
                     transactions: {
                         amount: paidAmount,
