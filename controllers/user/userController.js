@@ -113,7 +113,7 @@ const loadnewPassword = async (req, res) => {
     if (!req.session.allowPasswordReset) {
       return res.redirect("/forgot-password");
     }
-    res.render("user/newPass");
+    res.render("user/newpass");
   } catch (error) {
     console.log("Error loading new password page:", error);
     res.redirect("/forgot-password");
@@ -156,7 +156,7 @@ const signUp = async (req, res) => {
   try {
     const { fullname, email, phone, password, confirmPassword, referral } = req.body;
 
-let message=null
+    let message = null
     if (password !== confirmPassword) {
       return res.render("user/signUp", { message: "Passwords do not match" });
     }
@@ -189,7 +189,7 @@ let message=null
     req.session.userOtp = otp;
     req.session.userData = { fullname, email, phone, password };
     req.session.referrerId = referrer ? referrer._id : null;
-    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000; 
+    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
     req.session.otpType = "signup";
     req.session.lastOtpSent = Date.now();
 
@@ -299,11 +299,11 @@ const resendotp = async (req, res) => {
     const emailSent = await sendVerificationEmail(emailToSend, otp);
     if (!emailSent) return res.json({ success: false, message: "OTP sending failed" });
 
-if (otpType === "forgot") {
-  req.session.forgotOtp = otp;
-} else {
-  req.session.userOtp = otp;
-}    req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
+    if (otpType === "forgot") {
+      req.session.forgotOtp = otp;
+    } else {
+      req.session.userOtp = otp;
+    } req.session.otpExpiresAt = Date.now() + 2 * 60 * 1000;
     req.session.lastOtpSent = Date.now();
 
     return res.json({ success: true, message: "OTP resent successfully" });
@@ -318,7 +318,7 @@ if (otpType === "forgot") {
 const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    const { otpType, otpExpiresAt, userOtp, forgotOtp, userData, changeNewEmail,referrerId } = req.session;
+    const { otpType, otpExpiresAt, userOtp, forgotOtp, userData, changeNewEmail, referrerId } = req.session;
 
     if (!otpType || !otpExpiresAt) return res.json({ success: false, message: "Session expired" });
     if (Date.now() > otpExpiresAt) return res.json({ success: false, message: "OTP expired" });
@@ -326,71 +326,71 @@ const verifyOtp = async (req, res) => {
     const correctOtp = (otpType === "forgot") ? forgotOtp : userOtp;
     if (otp !== correctOtp) return res.json({ success: false, message: "Invalid OTP" });
 
-   if (otpType === "signup") {
-  const hashedPassword = await securePassword(userData.password);
+    if (otpType === "signup") {
+      const hashedPassword = await securePassword(userData.password);
 
-  const generateReferralCode = (fullname) => {
-    const random = Math.floor(1000 + Math.random() * 9000);
-    return fullname.slice(0, 3).toUpperCase() + random;
-  };
+      const generateReferralCode = (fullname) => {
+        const random = Math.floor(1000 + Math.random() * 9000);
+        return fullname.slice(0, 3).toUpperCase() + random;
+      };
 
-  const newUser = await User.create({
-    fullname: userData.fullname,
-    email: userData.email,
-    phone: userData.phone,
-    password: hashedPassword,
-    isVerified: true,
-    referralCode: generateReferralCode(userData.fullname),
-    referredBy: referrerId || null,
-  });
+      const newUser = await User.create({
+        fullname: userData.fullname,
+        email: userData.email,
+        phone: userData.phone,
+        password: hashedPassword,
+        isVerified: true,
+        referralCode: generateReferralCode(userData.fullname),
+        referredBy: referrerId || null,
+      });
 
 
-  if (referrerId) {
+      if (referrerId) {
 
-    await Wallet.findOneAndUpdate(
-      { userId: referrerId },
-      { 
-        $inc: { balance: 100 },
-        $push: { 
-          transactions: { 
-            transactionType: "credit", 
-            amount: 100, 
-            source: "referral_bonus",  
+        await Wallet.findOneAndUpdate(
+          { userId: referrerId },
+          {
+            $inc: { balance: 100 },
+            $push: {
+              transactions: {
+                transactionType: "credit",
+                amount: 100,
+                source: "referral_bonus",
+                status: "success",
+                description: "Referral bonus for inviting " + userData.fullname
+              }
+            }
+          },
+          { upsert: true, new: true }
+        );
+
+
+        await Wallet.create({
+          userId: newUser._id,
+          balance: 50,
+          transactions: [{
+            transactionType: "credit",
+            amount: 50,
+            source: "referral_bonus",
             status: "success",
-            description: "Referral bonus for inviting " + userData.fullname
-          } 
-        } 
-      },
-      { upsert: true, new: true }
-    );
+            description: "Welcome bonus from referral"
+          }]
+        });
+      } else {
+
+        await Wallet.create({
+          userId: newUser._id,
+          balance: 0,
+          transactions: []
+        });
+      }
 
 
-    await Wallet.create({
-      userId: newUser._id,
-      balance: 50,
-      transactions: [{ 
-        transactionType: "credit",
-        amount: 50, 
-        source: "referral_bonus",
-        status: "success",
-        description: "Welcome bonus from referral" 
-      }]
-    });
-  } else {
+      req.session.userData = null;
+      req.session.referrerId = null;
 
-    await Wallet.create({
-      userId: newUser._id,
-      balance: 0,
-      transactions: []
-    });
-  }
-
-
-  req.session.userData = null;
-  req.session.referrerId = null;
-
-  return res.json({ success: true, redirectUrl: "/login" });
-}
+      return res.json({ success: true, redirectUrl: "/login" });
+    }
     else if (otpType === "forgot") {
       req.session.allowPasswordReset = true;
       return res.json({ success: true, redirectUrl: "/newpass" });
@@ -419,14 +419,14 @@ const updatePassword = async (req, res) => {
 
     if (!req.session.allowPasswordReset || !email) return res.redirect("/forgot-password");
 
-    if (password !== confirmPassword) return res.render("user/newPass", { message: "Passwords do not match" });
+    if (password !== confirmPassword) return res.render("user/newpass", { message: "Passwords do not match" });
 
     const hashedPassword = await securePassword(password);
     await User.findOneAndUpdate({ email }, { password: hashedPassword });
     delete req.session.user
     res.redirect("/login");
   } catch (error) {
-    res.render("user/newPass", { message: "Failed to update password. Try again." });
+    res.render("user/newpass", { message: "Failed to update password. Try again." });
   }
 };
 
@@ -684,9 +684,9 @@ const loadshopepage = async (req, res) => {
       const regPrice = mainVariant.salePrice || 0;
 
 
-      const variantOffer = mainVariant.offer || 0; 
+      const variantOffer = mainVariant.offer || 0;
       const categoryOffer = p.category?.offer || 0;
-      
+
 
       const bestOffer = Math.max(variantOffer, categoryOffer);
 
@@ -791,30 +791,30 @@ const loadProductDetails = async (req, res) => {
 
 
 const loadAboutPage = async (req, res) => {
-    try {
-        const pageData = {
-            title: "Our Heritage | Luxury Time",
-            
-            history: [
-                { year: "1985", milestone: "The Foundation", desc: "Our first workshop opens in Geneva." },
-                { year: "2010", milestone: "Modern Innovation", desc: "Launch of our first proprietary automatic movement." },
-                { year: "2026", milestone: "Digital Legacy", desc: "Blending traditional horology with modern smart tech." }
-            ],
+  try {
+    const pageData = {
+      title: "Our Heritage | Luxury Time",
 
-            features: [
-                { icon: "⚙️", label: "Precision Engineering", detail: "Internationally recognized movements." },
-                { icon: "💎", label: "Premium Materials", detail: "Surgical steel and sapphire crystal." },
-                { icon: "🤲", label: "Hand-Finished", detail: "Assembled by master watchmakers." },
-                { icon: "🛡️", label: "Quality Checks", detail: "72-hour rigorous performance testing." }
-            ]
-        };
+      history: [
+        { year: "1985", milestone: "The Foundation", desc: "Our first workshop opens in Geneva." },
+        { year: "2010", milestone: "Modern Innovation", desc: "Launch of our first proprietary automatic movement." },
+        { year: "2026", milestone: "Digital Legacy", desc: "Blending traditional horology with modern smart tech." }
+      ],
 
-        res.render('user/about', pageData);
+      features: [
+        { icon: "⚙️", label: "Precision Engineering", detail: "Internationally recognized movements." },
+        { icon: "💎", label: "Premium Materials", detail: "Surgical steel and sapphire crystal." },
+        { icon: "🤲", label: "Hand-Finished", detail: "Assembled by master watchmakers." },
+        { icon: "🛡️", label: "Quality Checks", detail: "72-hour rigorous performance testing." }
+      ]
+    };
 
-    } catch (error) {
-        console.error("Error rendering about page:", error);
-        res.status(500).render('error', { message: "Could not load the about page." });
-    }
+    res.render('user/about', pageData);
+
+  } catch (error) {
+    console.error("Error rendering about page:", error);
+    res.status(500).render('error', { message: "Could not load the about page." });
+  }
 };
 
 
