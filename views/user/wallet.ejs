@@ -214,83 +214,137 @@
   </div>
 
   <script>
-    // --- Razorpay Payment Logic ---
+  // --- Razorpay Payment Logic ---
   async function addMoney() {
     const { value: amount } = await Swal.fire({
-        title: 'Add Funds',
-        input: 'number',
-        inputLabel: 'Amound',
-        inputPlaceholder: '₹ 500',
-        background: '#111',
-        color: '#fff',
-        confirmButtonColor: '#5b42f3',
-        showCancelButton: true,
-        inputValidator: (value) => {
-            if (!value || value <= 0) return 'pleas add amound';
+      title: 'Add Funds',
+      input: 'number',
+      inputLabel: 'Amount',
+      inputPlaceholder: '₹ 500',
+      background: '#111',
+      color: '#fff',
+      confirmButtonColor: '#5b42f3',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value || Number(value) <= 0) {
+          return 'Please enter a valid amount';
         }
+      }
     });
 
     if (amount) {
-        try {
-            const response = await fetch('/add-money', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount }) 
-            });
+      try {
+        console.log("Frontend entered amount:", amount, Number(amount));
 
-            const order = await response.json();
+        const response = await fetch('/add-money', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ amount: Number(amount) })
+        });
 
-            console.log("Backend-il ninnu vanna order:", order);
+        const order = await response.json();
 
-            const options = {
-                "key": "<%= razorpay_key %>", 
-                "amount": order.amount, 
-                "currency": "INR",
-                "name": "Luxury Watches",
-                "description": "Wallet Top-up",
-                "order_id": order.id,
-                "handler": async function (rzpRes) {
-                    const verifyRes = await fetch('/verify-payment-add', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ...rzpRes })
-                    });
-                    const result = await verifyRes.json();
-                    if (result.success) {
-                        Swal.fire({ icon: 'success', title: 'Funds Added!', background: '#111', color: '#fff' })
-                        .then(() => location.reload());
-                    }
-                },
-                "prefill": { "name": "<%= user.name %>", "email": "<%= user.email %>" },
-                "theme": { "color": "#5b42f3" }
-            };
+        console.log("Backend order response:", order);
 
-            const rzp = new window.Razorpay(options);
-            rzp.open();
-        } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'paymend faild', background: '#111', color: '#fff' });
+        if (!response.ok || !order.id || !order.amount) {
+          throw new Error(order.error || "Order creation failed");
         }
-    }
-}
 
-    // --- Logout Handler ---
-    function handleLogout() {
-      Swal.fire({
-        title: 'Logout?',
-        text: "Are you sure you want to end your session?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#5b42f3',
-        cancelButtonColor: '#1a1a1a',
-        confirmButtonText: 'Yes, Logout',
-        background: '#111111',
-        color: '#ffffff',
-        iconColor: '#5b42f3'
-      }).then((result) => {
-        if (result.isConfirmed) document.getElementById('logout-form').submit();
-      });
+        const options = {
+          key: "<%= razorpay_key %>",
+          amount: order.amount,
+          currency: "INR",
+          name: "Luxury Watches",
+          description: "Wallet Top-up",
+          order_id: order.id,
+          handler: async function (rzpRes) {
+            try {
+              const verifyRes = await fetch('/verify-payment-add', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(rzpRes)
+              });
+
+              const result = await verifyRes.json();
+
+              console.log("Payment verification response:", result);
+
+              if (result.success) {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Funds Added!',
+                  background: '#111',
+                  color: '#fff'
+                }).then(() => location.reload());
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Verification Failed',
+                  text: result.message || 'Payment verification failed',
+                  background: '#111',
+                  color: '#fff'
+                });
+              }
+            } catch (error) {
+              console.error("Verification error:", error);
+              Swal.fire({
+                icon: 'error',
+                title: 'Verification Error',
+                text: 'Payment verification failed',
+                background: '#111',
+                color: '#fff'
+              });
+            }
+          },
+          prefill: {
+            name: "<%= user.fullname %>",
+            email: "<%= user.email %>"
+          },
+          theme: {
+            color: "#5b42f3"
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+
+      } catch (err) {
+        console.error("Payment error:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.message || 'Payment failed',
+          background: '#111',
+          color: '#fff'
+        });
+      }
     }
-  </script>
+  }
+
+  // --- Logout Handler ---
+  function handleLogout() {
+    Swal.fire({
+      title: 'Logout?',
+      text: "Are you sure you want to end your session?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#5b42f3',
+      cancelButtonColor: '#1a1a1a',
+      confirmButtonText: 'Yes, Logout',
+      background: '#111111',
+      color: '#ffffff',
+      iconColor: '#5b42f3'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById('logout-form').submit();
+      }
+    });
+  }
+</script>
 </body>
 
 </html>
