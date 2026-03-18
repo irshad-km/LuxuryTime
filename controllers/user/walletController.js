@@ -40,7 +40,12 @@ const loadwallet = async (req, res) => {
 
         let wallet = await Wallet.findOne({ userId });
         if (!wallet) wallet = await Wallet.create({ userId, balance: 0, transactions: [] });
-        res.render("user/wallet", { user: req.session.user, wallet,user });
+        res.render("user/wallet", { 
+            user: req.session.user, 
+            wallet, 
+            user,
+            razorpay_key: process.env.RAZORPAY_KEY_ID 
+        });
     } catch (error) {
         res.status(500).send("Internal Server Error");
     }
