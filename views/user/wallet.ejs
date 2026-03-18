@@ -241,7 +241,7 @@
             const order = await response.json();
 
             const options = {
-                "key": "rzp_test_SL4UUWfxlMKHO2", 
+                "key": "<%= razorpayKey %>", 
                 "amount": order.amount, 
                 "currency": "INR",
                 "name": "Luxury Watches",
@@ -259,7 +259,7 @@
                         .then(() => location.reload());
                     }
                 },
-                "prefill": { "name": "<%= user.name %>", "email": "<%= user.email %>" },
+                "prefill": { "name": "<%= user.fullname %>", "email": "<%= user.email %>"},
                 "theme": { "color": "#5b42f3" }
             };
 
