@@ -18,11 +18,6 @@ const placeOrder = async (req, res) => {
 
         const { addressId, paymentMethod } = req.body;
 
-
-        console.log(addressId)
-        if (!addressId) {
-            return res.redirect("/checkout?error=Please select an address");
-        }
         const cart = await Cart.findOne({ user: userId }).populate("items.product");
 
         if (!cart || cart.items.length === 0) {
