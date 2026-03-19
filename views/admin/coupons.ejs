@@ -110,7 +110,7 @@
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs text-gray-400 uppercase">Discount Value</label>
-                        <input type="number" name="discountValue" class="w-full input-bg border rounded-lg p-2.5"
+                        <input type="number" name="discountValue" min="0" max="100" class="w-full input-bg border rounded-lg p-2.5"
                             required>
                         <p class="error-msg">Value must be positive</p>
                     </div>
@@ -297,7 +297,7 @@
                         <div class="space-y-1">
                             <label class="text-xs text-gray-400 uppercase">Discount Value</label>
                             <input type="number" name="discountValue" id="edit_discountValue"
-                                class="w-full input-bg border rounded-lg p-2.5 outline-none">
+                              min="0" max="100"  class="w-full input-bg border rounded-lg p-2.5 outline-none">
                             <p class="error-msg">Must be positive</p>
                         </div>
                         <div class="space-y-1">
@@ -445,25 +445,30 @@
             }
 
             document.querySelectorAll('form').forEach(form => {
-                if (form.id === 'searchForm') return; // Don't validate search form
+                if (form.id === 'searchForm') return;
 
                 form.addEventListener('submit', function (e) {
                     let isValid = true;
                     const nameInput = this.querySelector('[name="name"]');
                     const codeInput = this.querySelector('[name="code"]');
                     const expiryInput = this.querySelector('[name="expiryDate"]');
-                    const numberInputs = this.querySelectorAll('input[type="number"]');
+                    const typeInput = this.querySelector('[name="discountType"]');
+                    const valueInput = this.querySelector('[name="discountValue"]');
+                    const otherNumbers = this.querySelectorAll('input[type="number"]:not([name="discountValue"])');
 
+                    // 1. Name Validation
                     if (nameInput && !/^[A-Za-z\s]+$/.test(nameInput.value.trim())) {
                         showError(nameInput, true);
                         isValid = false;
-                    } else if (nameInput) { showError(nameInput, false); }
+                    } else { showError(nameInput, false); }
 
+                    // 2. Code Validation
                     if (codeInput && (codeInput.value.includes(' ') || codeInput.value.trim() === "")) {
                         showError(codeInput, true);
                         isValid = false;
-                    } else if (codeInput) { showError(codeInput, false); }
+                    } else { showError(codeInput, false); }
 
+                    // 3. Expiry Date Validation
                     if (expiryInput) {
                         const selectedDate = new Date(expiryInput.value);
                         const today = new Date();
@@ -474,14 +479,40 @@
                         } else { showError(expiryInput, false); }
                     }
 
-                    numberInputs.forEach(input => {
-                        if (input.value === "" || parseFloat(input.value) < 0) {
+                    // 4. Discount Value Validation (CRITICAL FIX)
+                    if (valueInput) {
+                        const val = parseFloat(valueInput.value);
+                        const isPercentage = typeInput.value === 'percentage';
+
+                        if (isNaN(val) || val < 0 || (isPercentage && val > 100)) {
+                            // Update error message dynamically for percentage
+                            const errorP = valueInput.parentElement.querySelector('.error-msg');
+                            if (isPercentage && val > 100) {
+                                errorP.innerText = "Percentage cannot exceed 100%";
+                            } else {
+                                errorP.innerText = "Value must be positive";
+                            }
+                            showError(valueInput, true);
+                            isValid = false;
+                        } else {
+                            showError(valueInput, false);
+                        }
+                    }
+
+                    // 5. Other Number Inputs (Min Price, Max Discount, etc.)
+                    otherNumbers.forEach(input => {
+                        if (input.value !== "" && parseFloat(input.value) < 0) {
                             showError(input, true);
                             isValid = false;
                         } else { showError(input, false); }
                     });
 
-                    if (!isValid) e.preventDefault();
+                    if (!isValid) {
+                        e.preventDefault();
+                        // Optional: Scroll to the first error
+                        const firstError = this.querySelector('.border-red-500');
+                        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 });
             });
 
