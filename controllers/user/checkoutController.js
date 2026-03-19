@@ -128,6 +128,12 @@ const addAddress = async (req, res) => {
             return res.redirect("/checkout?error=Please fill all fields.");
         }
 
+        await Address.updateMany(
+            { userId: userId, isDefault: true },
+            { $set: { isDefault: false } }
+        );
+
+
         const newAddress = new Address({
             userId: userId,
             fullname: fullname,
@@ -137,6 +143,7 @@ const addAddress = async (req, res) => {
             state: state,
             pincode: pincode,
             country: "India",
+            isDefault:true,
         })
 
         await Address.updateMany({ user: userId, isDefault: true }, { $set: { isDefault: false } })
