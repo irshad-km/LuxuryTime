@@ -18,6 +18,8 @@ const placeOrder = async (req, res) => {
 
         const { addressId, paymentMethod } = req.body;
 
+
+        console.log(addressId)
         if (!addressId) {
             return res.redirect("/checkout?error=Please select an address");
         }
