@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-6">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set New Password | Luxury Time</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -203,7 +203,6 @@
     </div>
 
     <script>
-        // Toggle password visibility
         function togglePass(inputId, icon) {
             const input = document.getElementById(inputId);
             if (input.type === "password") {
@@ -221,22 +220,21 @@
         const passError = document.getElementById('passError');
         const confirmError = document.getElementById('confirmError');
 
-        // Strong Password Regex: Min 6, 1 Upper, 1 Lower, 1 Num, 1 Special
+        // Updated: Min 6, 1 Upper, 1 Number
         const validateStrongPassword = (pass) => {
-            return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(pass);
+            return /^(?=.*[A-Z])(?=.*\d).{6,}$/.test(pass);
         };
 
         function validateForm() {
             let isValid = true;
 
-            // Validate New Password
             const passVal = newPassword.value.trim();
             if (passVal.length < 6) {
                 passError.textContent = "Min 6 characters required";
                 newPassword.classList.add('invalid');
                 isValid = false;
             } else if (!validateStrongPassword(passVal)) {
-                passError.textContent = "Use Upper, Lower, Num & Symbol";
+                passError.textContent = "At least one uppercase and one number";
                 newPassword.classList.add('invalid');
                 isValid = false;
             } else {
@@ -244,7 +242,6 @@
                 newPassword.classList.remove('invalid');
             }
 
-            // Validate Confirm Password
             if (confirmPassword.value.trim() === "") {
                 confirmError.textContent = "Please confirm your password";
                 confirmPassword.classList.add('invalid');
@@ -267,7 +264,6 @@
             }
         };
 
-        // Real-time validation
         [newPassword, confirmPassword].forEach(input => {
             input.addEventListener('input', validateForm);
         });

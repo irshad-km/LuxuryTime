@@ -4,6 +4,7 @@ import Coupon from "../../models/couponSchema.js";
 import Orders from "../../models/orderSchema.js";
 import Wallet from "../../models/walletSchema.js";
 import mongoose from "mongoose";
+import User from "../../models/userSchema.js";
 
 
 const loadcheckout = async (req, res) => {
@@ -25,7 +26,6 @@ const loadcheckout = async (req, res) => {
 
           const wallet = await Wallet.findOne({userId});
 
-
         const coupon = await Coupon.find({ isActive: true });
         let subtotal = 0;
 
@@ -33,7 +33,7 @@ const loadcheckout = async (req, res) => {
             if (!item.product || item.product.isDeleted || !item.product.isListed ||
                 !item.product.category || !item.product.category.isListed) {
                 return res.redirect("/cart?error=Some products are unavailable.");
-            }
+            } 
 
             const product = item.product;
             const variant = product.variants?.[item.variantIndex];

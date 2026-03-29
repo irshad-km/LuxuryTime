@@ -107,7 +107,6 @@
 </div>
 
 <script>
-  // Password Visibility Toggle Function
   function toggleVisibility(inputId, btn) {
     const input = document.getElementById(inputId);
     const icon = btn.querySelector('i');
@@ -143,14 +142,15 @@
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
   
+  // Custom Regex: Min 6 chars, 1 Uppercase, 1 Number
   const validateStrongPassword = (pass) => {
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(pass);
+    return /^(?=.*[A-Z])(?=.*\d).{6,}$/.test(pass);
   };
 
   function checkValidity() {
     let isValid = true;
 
-    // Name
+    // Full Name Validation
     if (inputs.fullname.value.trim().length < 3) {
       errors.fullname.textContent = "Name must be at least 3 characters";
       isValid = false;
@@ -159,29 +159,29 @@
       isValid = false;
     } else { errors.fullname.textContent = ""; }
 
-    // Email
+    // Email Validation
     if (!validateEmail(inputs.email.value)) {
       errors.email.textContent = "Invalid email address";
       isValid = false;
     } else { errors.email.textContent = ""; }
 
-    // Phone
+    // Phone Validation
     if (!validatePhone(inputs.phone.value)) {
       errors.phone.textContent = "Valid 10-digit number required";
       isValid = false;
     } else { errors.phone.textContent = ""; }
 
-    // Password
+    // Updated Password Validation
     const passVal = inputs.password.value;
     if (passVal.length < 6) {
       errors.password.textContent = "Min 6 characters required";
       isValid = false;
     } else if (!validateStrongPassword(passVal)) {
-      errors.password.textContent = "Include Upper, Lower, Num & Special char";
+      errors.password.textContent = "At least one uppercase and one number";
       isValid = false;
     } else { errors.password.textContent = ""; }
 
-    // Confirm Password
+    // Confirm Password Validation
     if (inputs.confirmPassword.value === "") {
       errors.confirmPassword.textContent = "Please confirm password";
       isValid = false;

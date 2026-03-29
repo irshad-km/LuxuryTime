@@ -220,7 +220,7 @@
 
             <div class="security-requirements">
                 <div class="req-title"><i class="fa-solid fa-shield-halved"></i> Security Requirements</div>
-                <div class="req-item" id="req-length"><i class="fa-solid fa-circle-check"></i> Min 8 characters, Upper, Lower, Num & Symbol</div>
+                <div class="req-item" id="req-length"><i class="fa-solid fa-circle-check"></i> Min 6 characters, Upper & Number</div>
                 <div class="req-item" id="req-match"><i class="fa-solid fa-circle-check"></i> Passwords must match</div>
             </div>
         </div>
@@ -247,16 +247,16 @@
         const reqLength = document.getElementById('req-length');
         const reqMatch = document.getElementById('req-match');
 
-        // Strong Password Regex
+        // Updated: Min 6 characters, 1 Uppercase, 1 Number
         const validateStrongPassword = (pass) => {
-            return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(pass);
+            return /^(?=.*[A-Z])(?=.*\d).{6,}$/.test(pass);
         };
 
         function validate() {
             const val = newPass.value;
             const confirmVal = confirmPass.value;
             
-            // Validate Strength and Length (8 characters)
+            // Validate Strength and Length
             const isStrong = validateStrongPassword(val);
             reqLength.classList.toggle('valid', isStrong);
 
