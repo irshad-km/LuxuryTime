@@ -651,7 +651,6 @@ const loadshopepage = async (req, res) => {
     const skip = (page - 1) * limit;
 
     let filter = { isListed: true, isDeleted: false };
-    let sortOption = { createdAt: -1 };
 
     const listedCategories = await Category.find({ isListed: true, isDeleted: false });
     filter.category = { $in: listedCategories.map(cat => cat._id) };
@@ -671,39 +670,37 @@ const loadshopepage = async (req, res) => {
       else if (price === "above5000") filter["variants.salePrice"] = { $gt: 5000 };
     }
 
-    if (sort === "priceLow") sortOption = { "variants.0.salePrice": 1 };
-    else if (sort === "priceHigh") sortOption = { "variants.0.salePrice": -1 };
-    else if (sort === "new") sortOption = { createdAt: -1 };
-    else if (sort === "a-z") sortOption = { name: 1 };
-    else if (sort === "z-a") sortOption = { name: -1 };
+    const allProducts = await Product.find(filter).populate("category");
 
-    const totalProducts = await Product.countDocuments(filter);
-    const products = await Product.find(filter).populate("category").sort(sortOption).skip(skip).limit(limit);
-
-    const formattedProducts = products.map(p => {
+    let formattedProducts = allProducts.map(p => {
       const mainVariant = p.variants[0] || {};
-      const regPrice = mainVariant.regularPrice || 0;
       const sPrice = mainVariant.salePrice || 0;
-
-      const variantOffer = mainVariant.offer || 0;
-      const categoryOffer = p.category?.offer || 0;
-      const bestOffer = Math.max(variantOffer, categoryOffer);
-
-      const calculatedSalePrice = Math.floor(sPrice - (sPrice * (bestOffer / 100)));
+      const bestOffer = Math.max(mainVariant.offer || 0, p.category?.offer || 0);
+      const finalPrice = Math.floor(sPrice - (sPrice * (bestOffer / 100)));
 
       return {
         _id: p._id,
         name: p.name,
         description: p.description,
-        regularPrice: regPrice,
-        salePrice: calculatedSalePrice,
+        regularPrice: mainVariant.regularPrice || 0,
+        salePrice: finalPrice,
         offerPercentage: bestOffer,
-        image: mainVariant.images?.[0] || "/images/products/default.png"
+        image: mainVariant.images?.[0] || "/images/products/default.png",
+        createdAt: p.createdAt
       };
     });
 
+    if (sort === "priceLow") formattedProducts.sort((a, b) => a.salePrice - b.salePrice);
+    else if (sort === "priceHigh") formattedProducts.sort((a, b) => b.salePrice - a.salePrice);
+    else if (sort === "new") formattedProducts.sort((a, b) => b.createdAt - a.createdAt);
+    else if (sort === "a-z") formattedProducts.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === "z-a") formattedProducts.sort((a, b) => b.name.localeCompare(a.name));
+
+    const totalProducts = formattedProducts.length;
+    const paginatedProducts = formattedProducts.slice(skip, skip + limit);
+
     res.render("user/shop", {
-      products: formattedProducts,
+      products: paginatedProducts,
       categories: listedCategories,
       currentPage: page,
       totalPages: Math.ceil(totalProducts / limit),
