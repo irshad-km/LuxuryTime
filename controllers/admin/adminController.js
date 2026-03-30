@@ -4,8 +4,7 @@ import Category from "../../models/categorySchema.js";
 import Product from "../../models/productSchema.js";
 import PDFDocument from "pdfkit";
 import bcrypt from "bcrypt";
-const { Parser } = require('json2csv');
-
+import { Parser } from 'json2csv';
 
 const loadLoginPage = async (req, res) => {
     try {
