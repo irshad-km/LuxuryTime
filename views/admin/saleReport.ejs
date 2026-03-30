@@ -47,9 +47,14 @@
                     <button onclick="applyFilters()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-semibold transition">Apply</button>
                 </div>
 
-                <button onclick="confirmExport()" class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition transform active:scale-95 shadow-lg shadow-green-900/20">
-                    <i class="fas fa-file-pdf"></i> Export PDF
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="confirmExport('pdf')" class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition transform active:scale-95 shadow-lg shadow-green-900/20">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button onclick="confirmExport('csv')" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition transform active:scale-95 shadow-lg shadow-blue-900/20">
+                        <i class="fas fa-file-csv"></i> CSV
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -125,7 +130,6 @@
     </main>
 
     <script>
-        // ടൈം റേഞ്ച് മാറ്റുമ്പോൾ പേജ് റീലോഡ് ചെയ്യും
         function handleRangeChange() {
             const range = document.getElementById('reportRange').value;
             if (range === 'custom') {
@@ -135,7 +139,6 @@
             }
         }
 
-        // കസ്റ്റം ഡേറ്റ് അപ്ലൈ ചെയ്യുമ്പോൾ
         function applyFilters() {
             const range = document.getElementById('reportRange').value;
             const start = document.getElementById('startDate').value;
@@ -153,47 +156,46 @@
             }
         }
 
-        // എക്സ്പോർട്ട് ചെയ്യുന്നതിന് മുൻപുള്ള കൺഫർമേഷൻ
-        function confirmExport() {
+        // Modified confirmation for both PDF and CSV
+        function confirmExport(format) {
             const range = document.getElementById('reportRange').value;
             const rangeText = range === 'all' ? 'All Time' : range.charAt(0).toUpperCase() + range.slice(1);
+            const typeLabel = format.toUpperCase();
 
             Swal.fire({
-                title: 'Download Report?',
-                text: `Do you want to export the ${rangeText} sales report as a PDF document?`,
+                title: `Download ${typeLabel} Report?`,
+                text: `Do you want to export the ${rangeText} sales report as a ${typeLabel} file?`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#059669', // Tailwind green-600
-                cancelButtonColor: '#374151',  // Tailwind gray-700
-                confirmButtonText: '<i class="fas fa-download mr-2"></i>Yes, Export',
+                confirmButtonColor: format === 'pdf' ? '#059669' : '#2563eb',
+                cancelButtonColor: '#374151',
+                confirmButtonText: `<i class="fas fa-download mr-2"></i>Export ${typeLabel}`,
                 cancelButtonText: 'Cancel',
                 background: '#141414',
                 color: '#ffffff',
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    executePDFDownload();
+                    executeDownload(format);
                 }
             });
         }
 
-        // ഫിൽട്ടർ ചെയ്ത വാല്യൂസ് വെച്ച് PDF ഡൗൺലോഡ് ചെയ്യും
-        function executePDFDownload() {
+        function executeDownload(format) {
             const range = document.getElementById('reportRange').value;
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
             
-            // URL കൺസ്ട്രക്ഷൻ - നിലവിലെ സെലക്ഷൻ തന്നെ കൺട്രോളറിലേക്ക് അയക്കുന്നു
-            let url = `/admin/sales-report/download/pdf?range=${range}`;
+            // Format (pdf/csv) matches the backend route
+            let url = `/admin/sales-report/download/${format}?range=${range}`;
             
             if (range === 'custom' && start && end) {
                 url += `&startDate=${start}&endDate=${end}`;
             }
             
-            // ലോഡിംഗ് സ്റ്റേറ്റ് കാണിക്കണമെങ്കിൽ Swal ഉപയോഗിക്കാം
             Swal.fire({
-                title: 'Generating PDF...',
-                html: 'Please wait while we prepare your luxury report.',
+                title: `Generating ${format.toUpperCase()}...`,
+                html: 'Please wait while we prepare your report.',
                 timerProgressBar: true,
                 didOpen: () => {
                     Swal.showLoading();
@@ -204,7 +206,6 @@
                 showConfirmButton: false
             });
 
-            // ഡൗൺലോഡ് ട്രിഗർ ചെയ്യുന്നു
             window.location.href = url;
         }
     </script>

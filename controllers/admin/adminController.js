@@ -4,6 +4,7 @@ import Category from "../../models/categorySchema.js";
 import Product from "../../models/productSchema.js";
 import PDFDocument from "pdfkit";
 import bcrypt from "bcrypt";
+const { Parser } = require('json2csv');
 
 
 const loadLoginPage = async (req, res) => {
@@ -322,10 +323,10 @@ const loadSalesReport = async (req, res) => {
 const downloadSalesReport = async (req, res) => {
     try {
         const { startDate, endDate, range } = req.query;
+        const { format } = req.params; // റൂട്ടിൽ നിന്നുള്ള ഫോർമാറ്റ് (pdf/csv)
 
         let start = new Date();
         let end = new Date();
-
 
         if (range === 'all') {
             start = new Date(0); 
@@ -348,25 +349,41 @@ const downloadSalesReport = async (req, res) => {
             orderStatus: { $in: ["delivered", "pending"] } 
         }).populate("userId").sort({ createdAt: -1 });
 
+        // --- CSV ഡൗൺലോഡ് ലോജിക് ---
+        if (format === 'csv') {
+            const fields = [
+                { label: 'Date', value: (row) => row.createdAt ? row.createdAt.toLocaleDateString('en-IN') : 'N/A' },
+                { label: 'Order ID', value: '_id' },
+                { label: 'Customer', value: (row) => row.userId ? (row.userId.fullname || row.userId.name || 'Guest') : 'Guest' },
+                { label: 'Status', value: 'orderStatus' },
+                { label: 'Discount', value: 'discount' },
+                { label: 'Total Amount', value: 'totalAmount' }
+            ];
 
+            const json2csvParser = new Parser({ fields });
+            const csv = json2csvParser.parse(orders);
+
+            res.setHeader("Content-Type", "text/csv");
+            res.setHeader("Content-Disposition", "attachment; filename=LuxuryTime_Sales_Report.csv");
+            return res.status(200).send(csv);
+        }
+
+        // --- PDF ഡൗൺലോഡ് ലോജിക് (നിങ്ങൾ നേരത്തെ നൽകിയത്) ---
         const doc = new PDFDocument({ margin: 30, size: "A4" });
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `attachment; filename=LuxuryTime_Sales_Report.pdf`);
         doc.pipe(res);
-
 
         doc.rect(0, 0, 612, 100).fill("#0a0a0a"); 
         doc.fillColor("#d4af37").fontSize(26).font("Helvetica-Bold").text("LUXURY TIME", 40, 35); 
         doc.fillColor("#ffffff").fontSize(10).font("Helvetica").text("PREMIUM SALES AUDIT REPORT", 40, 65);
         doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 450, 65);
 
-
         const stats = orders.reduce((acc, o) => {
             acc.total += (o.totalAmount || 0);
             acc.discount += (o.discount || 0);
             return acc;
         }, { total: 0, discount: 0 });
-
 
         doc.fillColor("#1a1a1a").fontSize(14).font("Helvetica-Bold").text("Executive Summary", 40, 120);
         doc.rect(40, 140, 530, 60).fill("#f4f4f4").stroke("#d4af37");
@@ -378,11 +395,9 @@ const downloadSalesReport = async (req, res) => {
         doc.fontSize(12).text(`Total Net Revenue:`, 340, 155);
         doc.fillColor("#b8860b").fontSize(16).text(`INR ${stats.total.toLocaleString('en-IN')}`, 340, 175);
 
-
         const tableTop = 230;
         doc.rect(40, tableTop, 530, 20).fill("#1a1a1a");
         doc.fillColor("#ffffff").fontSize(8).font("Helvetica-Bold");
-
 
         doc.text("DATE", 45, tableTop + 6);
         doc.text("ORDER ID", 100, tableTop + 6);
@@ -394,40 +409,29 @@ const downloadSalesReport = async (req, res) => {
         let currentRowY = tableTop + 25;
         doc.font("Helvetica").fontSize(8);
 
-        
         orders.forEach((order, i) => {
-
             if (currentRowY > 750) {
                 doc.addPage();
                 currentRowY = 50;
             }
-
-
             if (i % 2 === 0) doc.rect(40, currentRowY - 5, 530, 20).fill("#fafafa");
-            
             doc.fillColor("#333333");
-            
 
             const dateStr = order.createdAt ? order.createdAt.toLocaleDateString('en-IN') : "N/A";
             doc.text(dateStr, 45, currentRowY);
 
-
             const idStr = order._id ? order._id.toString().slice(-10).toUpperCase() : "N/A";
             doc.text(idStr, 100, currentRowY);
-
 
             const customerName = order.userId ? (order.userId.fullname || order.userId.name || "Guest") : "Guest";
             doc.text(customerName.substring(0, 22), 190, currentRowY);
 
-
             const status = (order.orderStatus || "N/A").toUpperCase();
             doc.text(status, 330, currentRowY);
-
 
             const discount = order.discount || 0;
             doc.text(`- ${discount}`, 420, currentRowY);
             
-
             doc.fillColor("#000000").font("Helvetica-Bold");
             const total = (order.totalAmount || 0).toLocaleString('en-IN');
             doc.text(`INR ${total}`, 480, currentRowY, { align: "right" });
@@ -438,7 +442,7 @@ const downloadSalesReport = async (req, res) => {
         doc.end();
 
     } catch (error) {
-        console.error("PDF Download Error:", error);
+        console.error("Download Error:", error);
         res.status(500).send("Internal Server Error");
     }
 };
