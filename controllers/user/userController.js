@@ -671,26 +671,25 @@ const loadshopepage = async (req, res) => {
       else if (price === "above5000") filter["variants.salePrice"] = { $gt: 5000 };
     }
 
-    if (sort === "priceLow") sortOption = { "variants.salePrice": 1 };
-    else if (sort === "priceHigh") sortOption = { "variants.salePrice": -1 };
+    if (sort === "priceLow") sortOption = { "variants.0.salePrice": 1 };
+    else if (sort === "priceHigh") sortOption = { "variants.0.salePrice": -1 };
     else if (sort === "new") sortOption = { createdAt: -1 };
+    else if (sort === "a-z") sortOption = { name: 1 };
+    else if (sort === "z-a") sortOption = { name: -1 };
 
     const totalProducts = await Product.countDocuments(filter);
     const products = await Product.find(filter).populate("category").sort(sortOption).skip(skip).limit(limit);
 
     const formattedProducts = products.map(p => {
-
       const mainVariant = p.variants[0] || {};
-      const regPrice = mainVariant.salePrice || 0;
-
+      const regPrice = mainVariant.regularPrice || 0;
+      const sPrice = mainVariant.salePrice || 0;
 
       const variantOffer = mainVariant.offer || 0;
       const categoryOffer = p.category?.offer || 0;
-
-
       const bestOffer = Math.max(variantOffer, categoryOffer);
 
-      const calculatedSalePrice = Math.floor(regPrice - (regPrice * (bestOffer / 100)));
+      const calculatedSalePrice = Math.floor(sPrice - (sPrice * (bestOffer / 100)));
 
       return {
         _id: p._id,
