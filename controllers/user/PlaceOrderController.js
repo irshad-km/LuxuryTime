@@ -95,10 +95,11 @@ const placeOrder = async (req, res) => {
         }
 
 
+        let wallet = null;
 
         if (paymentMethod === "Wallet") {
 
-            const wallet = await Wallet.findOne({ userId: userId });
+             wallet = await Wallet.findOne({ userId: userId });
 
             if (!wallet) {
                 return res.redirect("/checkout?error=Wallet not found");
@@ -107,9 +108,6 @@ const placeOrder = async (req, res) => {
             if (wallet.balance < totalAmount) {
                 return res.redirect("/checkout?error=Insufficient wallet balance");
             }
-
-            wallet.balance -= totalAmount;
-            await wallet.save();
         }
 
         const orderItems = cart.items.map(item => {
@@ -173,6 +171,27 @@ const placeOrder = async (req, res) => {
         });
 
         const savedOrder = await newOrder.save();
+
+        if (paymentMethod === "Wallet") {
+            await Wallet.findOneAndUpdate(
+                { userId: userId },
+                {
+                    $inc: { balance: -totalAmount },
+                    $push: {
+                        transactions: {
+                            amount: totalAmount,
+                            transactionType: "debit",
+                            description: "Product purchase using wallet",
+                            source: "purchase",
+                            date: new Date(),
+                            status: "success",
+                            orderId: savedOrder._id.toString()
+                        }
+                    }
+                },
+                { new: true }
+            );
+        }
 
         if (couponCode) {
             await Coupon.findOneAndUpdate(
