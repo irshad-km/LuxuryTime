@@ -348,9 +348,17 @@
                     if (parseFloat(salePrice) >= parseFloat(regPrice)) return showError("Sale price must be lower than Regular price");
                 }
 
-                let hasImage = false;
-                images.forEach(input => { if (input.files.length > 0) hasImage = true; });
-                if (!hasImage) return showError(`Add at least one image for variant ${i + 1}`);
+               let imageCount = 0;
+
+images.forEach(input => {
+    if (input.files.length > 0) {
+        imageCount++;
+    }
+});
+
+if (imageCount < 3) {
+    return showError(`Add at least 3 images for variant ${i + 1}`);
+}
             }
 
             const btn = document.getElementById('submitBtn');

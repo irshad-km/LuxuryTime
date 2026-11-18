@@ -1,5 +1,27 @@
 import Product from "../../models/productSchema.js";
 import Category from "../../models/categorySchema.js"
+import cloudinary from "../../config/cloudinary.js";
+
+// Upload image to Cloudinary
+const uploadToCloudinary = (file) => {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: "luxurytime",
+                resource_type: "image"
+            },
+            (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result.secure_url);
+                }
+            }
+        );
+
+        uploadStream.end(file.buffer);
+    });
+};
 
 
 //add product
@@ -42,14 +64,18 @@ const addProduct = async (req, res) => {
                     });
                 }
 
-                let images = [];
+               let images = [];
 
-                if (req.files && req.files.length > 0) {
-                    images = req.files
-                        .filter(file => file.fieldname === `variants[${index}][images]`)
-                        .map(file => "/uploads/" + file.filename);
-                }
+if (req.files && req.files.length > 0) {
+    const variantFiles = req.files.filter(
+        file => file.fieldname === `variants[${index}][images]`
+    );
 
+    for (const file of variantFiles) {
+        const imageUrl = await uploadToCloudinary(file);
+        images.push(imageUrl);
+    }
+}
 
 
                 if (images.length < 3) {
@@ -164,12 +190,17 @@ const updateProduct = async (req, res) => {
             }
 
             let newImages = [];
-            if (req.files && req.files.length > 0) {
-                newImages = req.files
-                    .filter(file => file.fieldname === `variants[${index}][images]`)
-                    .map(file => "/uploads/" + file.filename);
-            }
 
+if (req.files && req.files.length > 0) {
+    const variantFiles = req.files.filter(
+        file => file.fieldname === `variants[${index}][images]`
+    );
+
+    for (const file of variantFiles) {
+        const imageUrl = await uploadToCloudinary(file);
+        newImages.push(imageUrl);
+    }
+}
             const totalImages = [...existingImages, ...newImages];
 
             if (totalImages.length < 3) {

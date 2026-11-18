@@ -449,6 +449,31 @@
                 if (salePrice !== "" && parseFloat(salePrice) >= parseFloat(regPrice)) {
                     return showToast(`Variant ${i + 1}: Sale price must be less than regular price`);
                 }
+
+const existingImages = variantCards[i].querySelectorAll(
+    'input[name*="[existingImages]"]'
+);
+
+let imageCount = 0;
+
+existingImages.forEach(input => {
+    if (input.value.trim() !== "") {
+        imageCount++;
+    }
+});
+
+const newImages = variantCards[i].querySelectorAll('.img-input');
+
+newImages.forEach(input => {
+    if (input.files.length > 0) {
+        imageCount++;
+    }
+});
+
+if (imageCount < 3) {
+    return showToast(`Variant ${i + 1}: At least 3 images are required`);
+}
+
             }
 
             const btn = document.getElementById('submitBtn');
